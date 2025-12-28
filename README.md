@@ -2,7 +2,7 @@
 
 ## 1. Branch workflow (bắt buộc tuân theo)
 
-### Luồng chuẩn: check → dev → main
+### Luồng chuẩn: check/winform → dev → main
 
 ### Ý nghĩa từng nhánh
 
