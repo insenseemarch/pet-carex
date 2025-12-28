@@ -21,7 +21,7 @@
   - Chỉ merge khi đã ok toàn bộ
   - Dùng để nộp bài / demo
 
-⚠️ Dode SQL **không** push thẳng vào `dev` hoặc `main` mà phải push vào `check`, tạo PR rồi chờ duyệt.
+⚠️ Code SQL **không** push thẳng vào `dev` hoặc `main` mà phải push vào `check`, tạo PR rồi chờ duyệt.
 
 ---
 
