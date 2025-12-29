@@ -1,11 +1,11 @@
 ﻿-- =========================================
--- database: petcarex
+-- database: pet-carx
 -- =========================================
 
-create database petcarex;
+create database petcarx;
 go
 
-use petcarex;
+use petcarx;
 go
 
 -- =========================================
@@ -17,16 +17,20 @@ create table chinhanh
     macn varchar(10) primary key,
     tencn nvarchar(100) not null,
     diachi nvarchar(255) not null,
-    sdt varchar(15) not null,
+    sdt varchar(15) unique not null,
     giomocua time not null,
-    giodongcua time not null
+    giodongcua time not null,
+
+    constraint c_gio
+        check(giomocua < giodongcua)
 )
 
 -- =========================================
 -- bảng nhanvien
 -- thông tin nhân viên tại chi nhánh
 -- =========================================
-create table nhanvien (
+create table nhanvien 
+(
     manv varchar(10) primary key,
     macn varchar(10) not null,
     hoten nvarchar(100) not null,
@@ -35,33 +39,85 @@ create table nhanvien (
     ngayvaolam date not null,
     chucvu nvarchar(50) not null,
     luongcoban decimal(18,2) not null,
-    loainv nvarchar(50) not null
+    loainv nvarchar(50) not null,
+
+    constraint fk_nv_cn
+        foreign key (macn) references chinhanh(macn),
+
+    constraint ck_nv_ngay
+        check (ngaysinh < ngayvaolam),
+
+    constraint ck_nv_tuoi
+        check (datediff(year, ngaysinh, getdate()) >= 18),
+
+    constraint ck_nv_gioitinh
+        check (gioitinh in (N'Nam', N'Nữ', N'Khác')),
+
+    constraint ck_nv_chucvu
+        check (chucvu in (
+            N'Nhân viên',
+            N'Quản lý',
+            N'Giám đốc'
+        )),
+
+    constraint ck_nv_loainv
+        check (loainv in (
+            N'Quản lý chi nhánh',
+            N'Nhân viên tiếp tân',
+            N'Bác sĩ thú y',
+            N'Giám đốc'
+        )),
+
+    constraint ck_nv_luong
+        check (luongcoban > 0)
 )
 
 -- =========================================
 -- bảng taikhoannhanvien
 -- tài khoản đăng nhập vào hệ thống của nhân viên
 -- =========================================
-create table taikhoannhanvien (
+create table taikhoannhanvien 
+(
     tendangnhap varchar(50) primary key,
-    manv varchar(10) not null,
+    manv varchar(10) unique not null,
     matkhau varchar(255) not null,
     vaitro nvarchar(50) not null,
-    trangthai nvarchar(50) not null
-);
+    trangthai nvarchar(50) not null,
+
+    constraint fk_tknv_nv
+        foreign key (manv) references nhanvien(manv),
+
+    constraint ck_tknv_vaitro
+        check (vaitro in (
+            N'Quản lý chi nhánh',
+            N'Nhân viên tiếp tân',
+            N'Bác sĩ thú y',
+            N'Giám đốc'
+        )),
+
+    constraint ck_tknv_trangthai
+        check (trangthai in (
+            N'Đang hoạt động',
+            N'Vô hiệu hóa'
+        ))
+)
 
 -- =========================================
 -- bảng khachhang
 -- lưu thông tin khách hàng
 -- =========================================
-create table khachhang (
+create table khachhang 
+(
     makh varchar(10) primary key,
     hoten nvarchar(100) not null,
-    sdt varchar(15) not null,
-    email varchar(100),
-    cccd varchar(20),
+    sdt char(10) unique not null,
+    email varchar(100) unique,
+    cccd varchar(20) unique,
     gioitinh nvarchar(10),
-    ngaysinh date
+    ngaysinh date,
+
+    constraint ck_kh_gioitinh
+        check (gioitinh in (N'Nam', N'Nữ', N'Khác'))
 ) 
 
 -- =========================================
@@ -75,7 +131,23 @@ create table taikhoankhachhang
     matkhau varchar(255) not null,
     diemtichluy int not null,
     capbac nvarchar(50) not null,
-    trangthai nvarchar(50) not null
+    trangthai nvarchar(50) not null,
+
+    constraint fk_tkkh_kh
+        foreign key (makh) references khachhang(makh),
+
+    constraint ck_tkkh_trangthai
+        check (trangthai in (
+            N'Đang hoạt động',
+            N'Vô hiệu hóa'
+        )),
+
+    constraint ck_tkkh_capbac
+        check (trangthai in (
+            N'Cơ bản',
+            N'Thân thiết',
+            N'VIP'
+        ))
 )
 
 -- =========================================
@@ -88,10 +160,16 @@ create table thucung
     makh varchar(10) not null,
     tenthucung nvarchar(100) not null,
     loai nvarchar(50) not null,
-    giong nvarchar(50),
+    giong nvarchar(50) not null,
     ngaysinh date,
     gioitinh nvarchar(10),
-    tinhtrangsuckhoe nvarchar(255)
+    tinhtrangsuckhoe nvarchar(255),
+
+    constraint fk_tc_kh
+        foreign key (makh) references khachhang(makh),
+
+    constraint ck_tc_gioitinh
+        check (gioitinh in (N'Đực', N'Cái', N'Không rõ'))
 )
 
 -- =========================================
@@ -103,7 +181,13 @@ create table dichvu
     madv varchar(10) primary key,
     tendv nvarchar(100) not null,
     loai nvarchar(50) not null,
-    gia decimal(18,2) not null
+    gia decimal(18,2) not null,
+
+    constraint ck_dv_loai
+        check (loai in (N'Khám bệnh', N'Tiêm phòng')),
+
+    constraint ck_dv_gia
+        check (gia > 0)
 )
 
 -- =========================================
@@ -117,7 +201,16 @@ create table sanpham
     loaisp nvarchar(50) not null,
     gia decimal(18,2) not null,
     soluongton int not null,
-    hsd date
+    hsd date,
+
+    constraint ck_sp_soluongton
+        check(soluongton >= 0),
+
+    constraint ck_sp_loaisp
+        check (loaisp in (N'Thức ăn', N'Thuốc', N'Phụ kiện')),
+
+    constraint ck_sp_gia
+        check(gia > 0)
 )
 
 -- =========================================
@@ -130,7 +223,10 @@ create table vacxin
     tenvacxin nvarchar(100) not null,
     loaivacxin nvarchar(50),
     ngaysanxuat date not null,
-    ngayhethan date not null
+    ngayhethan date not null,
+
+    constraint c_vacxin
+        check(ngaysanxuat < ngayhethan)
 )
 
 -- =========================================
@@ -144,15 +240,17 @@ create table lichsulamviec
     macncu varchar(10),
     macnmoi varchar(10) not null,
     ngayketthuccncu date,
+
     primary key (manv, ngaybdtaicnmoi),
+
     constraint fk_lslv_nhanvien
         foreign key (manv) references nhanvien(manv),
+
     constraint fk_lslv_cncu
         foreign key (macncu) references chinhanh(macn),
+
     constraint fk_lslv_cnmoi
-        foreign key (macnmoi) references chinhanh(macn),
-    constraint ck_lslv_ngay
-        check (ngayketthuccncu is null or ngaybdtaicnmoi >= ngayketthuccncu)
+        foreign key (macnmoi) references chinhanh(macn)
 )
 
 -- =========================================
@@ -163,9 +261,12 @@ create table dichvutaichinhanh
 (
     macn varchar(10) not null,
     madv varchar(10) not null,
+
     primary key (macn, madv),
+
     constraint fk_dvcn_cn
         foreign key (macn) references chinhanh(macn),
+
     constraint fk_dvcn_dv
         foreign key (madv) references dichvu(madv)
 )
@@ -178,9 +279,12 @@ create table sanphamtaichinhanh
 (
     macn varchar(10) not null,
     masp varchar(10) not null,
+
     primary key (macn, masp),
+
     constraint fk_spcn_cn
         foreign key (macn) references chinhanh(macn),
+
     constraint fk_spcn_sp
         foreign key (masp) references sanpham(masp)
 )
@@ -206,13 +310,85 @@ create table thuocsudung
     soluong int not null,
     lieuluong nvarchar(100),
     ghichu nvarchar(255),
+
     primary key (matoathuoc, masp),
+
     constraint fk_tsd_toa
         foreign key (matoathuoc) references toathuoc(matoathuoc),
-    constraint fk_tsd_sp
+
+    constraint fk_tsd_sptcn
         foreign key (masp) references sanpham(masp),
+
     constraint ck_tsd_soluong
         check (soluong > 0)
+)
+
+-- =========================================
+-- bảng tiemphong
+-- thông tin về gói tiêm của một bệnh
+-- =========================================
+create table tiemphong
+(
+    madv varchar(10) primary key,
+    lieuluong varchar(10),
+
+    constraint fk_tp_dv
+        foreign key (madv) references dichvu(madv),
+
+    constraint ck_tp_lieuluong
+        check (lieuluong > 0)
+)
+
+-- =========================================
+-- bảng tiemgoi
+-- thông tin của các gói tiêm theo tháng
+-- =========================================
+create table tiemgoi 
+(
+    madv varchar(10) primary key,
+    sothang int not null,
+
+    constraint fk_tg_dv
+        foreign key (madv) references tiemphong(madv),
+
+    constraint ck_tg_sothang
+        check (sothang > 0)
+)
+
+-- =========================================
+-- bảng danhgia
+-- đánh giá chất lượng phục vụ
+-- =========================================
+create table danhgia 
+(
+    madanhgia varchar(10) primary key,
+    madv varchar(10) not null,
+    manv varchar(10) not null,
+    makh varchar(10) not null,
+    ngaydanhgia date not null,
+    diemchatluongdv int not null,
+    diemthaidonv int not null,
+    mucdohailong int not null,
+    binhluan nvarchar(255),
+
+    constraint fk_dg_dv
+        foreign key (madv) references dichvu(madv),
+
+    constraint fk_dg_nv
+        foreign key (manv) references nhanvien(manv),
+
+    constraint fk_dg_kh
+        foreign key (makh) references khachhang(makh),
+
+    constraint ck_dg_diem
+        check (
+            diemchatluongdv between 1 and 5 and
+            diemthaidonv between 1 and 5 and
+            mucdohailong between 1 and 5
+        ),
+
+    constraint ck_dg_ngaydanhgia
+        check (ngaydanhgia <= getdate())
 )
 
 -- =========================================
@@ -229,44 +405,28 @@ create table chitietkhambenh
     chandoan nvarchar(255),
     matoathuoc varchar(10),
     ngaytaikham date,
+    madanhgia varchar(10),
     ghichu nvarchar(255),
+
     primary key (madv, mathucung, ngaysudung, mabs),
+
     constraint fk_ckb_dv
         foreign key (madv) references dichvu(madv),
+
     constraint fk_ckb_tc
         foreign key (mathucung) references thucung(mathucung),
+
     constraint fk_ckb_bs
         foreign key (mabs) references nhanvien(manv),
+
     constraint fk_ckb_toa
         foreign key (matoathuoc) references toathuoc(matoathuoc),
+
     constraint ck_ckb_ngaytaikham
-        check (ngaytaikham is null or ngaytaikham > ngaysudung)
-)
+        check (ngaytaikham > ngaysudung),
 
--- =========================================
--- bảng tiemphong
--- thông tin về gói tiêm của một bệnh
--- =========================================
-create table tiemphong
-(
-    madv varchar(10) primary key,
-    lieuluong varchar(10),
-    constraint fk_tp_dv
-        foreign key (madv) references dichvu(madv)
-)
-
--- =========================================
--- bảng tiemgoi
--- thông tin của các gói tiêm theo tháng
--- =========================================
-create table tiemgoi 
-(
-    madv varchar(10) primary key,
-    sothang int not null,
-    constraint fk_tg_dv
-        foreign key (madv) references dichvu(madv),
-    constraint ck_tg_sothang
-        check (sothang > 0)
+    constraint fk_ckb_dg
+        foreign key (madanhgia) references danhgia(madanhgia)
 )
 
 -- =========================================
@@ -283,15 +443,23 @@ create table chitiettiemphong
     ngaytiem date not null,
     trangthai nvarchar(50),
     madanhgia varchar(10),
+
     primary key (stt, madv, mathucung, mavacxin, mabs),
+
     constraint fk_cttp_dv
-        foreign key (madv) references dichvu(madv),
+        foreign key (madv) references tiemphong(madv),
+
     constraint fk_cttp_tc
         foreign key (mathucung) references thucung(mathucung),
+
     constraint fk_cttp_vx
         foreign key (mavacxin) references vacxin(mavacxin),
+
     constraint fk_cttp_bs
-        foreign key (mabs) references nhanvien(manv)
+        foreign key (mabs) references nhanvien(manv),
+
+    constraint fk_cttp_dg
+        foreign key (madanhgia) references danhgia(madanhgia)
 )
 
 -- =========================================
@@ -313,14 +481,25 @@ create table hoadon
     thanhtien decimal(18,2) not null,
     hinhthucthanhtoan nvarchar(50),
     trangthai nvarchar(50) not null,
+
     constraint fk_hd_tc
         foreign key (mathucung) references thucung(mathucung),
+
     constraint fk_hd_nv
         foreign key (manvlap) references nhanvien(manv),
+
     constraint fk_hd_cn
         foreign key (macn) references chinhanh(macn),
+
     constraint fk_hd_kh
         foreign key (makh) references khachhang(makh),
+
+    constraint fk_hd_makham
+        foreign key (makham) references dichvu(madv),
+    
+    constraint fk_hd_matiem
+        foreign key (matiem) references dichvu(madv),
+
     constraint ck_hd_thanhtien
         check (thanhtien = tongtien - khuyenmai)
 )
@@ -335,42 +514,20 @@ create table chitietmuasanpham
     masp varchar(10) not null,
     soluong int not null,
     thanhtien decimal(18,2) not null,
+
     primary key (mahd, masp),
+
     constraint fk_ctm_hd
         foreign key (mahd) references hoadon(mahd),
+
     constraint fk_ctm_sp
         foreign key (masp) references sanpham(masp),
-    constraint ck_ctm_soluong
-        check (soluong > 0)
-)
 
--- =========================================
--- bảng danhgia
--- đánh giá chất lượng phục vụ
--- =========================================
-create table danhgia 
-(
-    madanhgia varchar(10) primary key,
-    madv varchar(10) not null,
-    manv varchar(10) not null,
-    makh varchar(10) not null,
-    ngaydanhgia date not null,
-    diemchatluongdv int not null,
-    diemthaidonv int not null,
-    mucdohailong int not null,
-    binhluan nvarchar(255),
-    constraint fk_dg_dv
-        foreign key (madv) references dichvu(madv),
-    constraint fk_dg_nv
-        foreign key (manv) references nhanvien(manv),
-    constraint fk_dg_kh
-        foreign key (makh) references khachhang(makh),
-    constraint ck_dg_diem
-        check (
-            diemchatluongdv between 1 and 5 and
-            diemthaidonv between 1 and 5 and
-            mucdohailong between 1 and 5
-        )
+    constraint ck_ctm_soluong
+        check (soluong > 0),
+
+    constraint ck_ctm_thanhtien
+        check (thanhtien > 0)
 )
 go
 
@@ -390,10 +547,9 @@ begin
           and sp.hsd < cast(getdate() as date)
     )
     begin
-        raiserror (N'Thuốc đã hết hạn, không thể kê toa.', 16, 1);
-        rollback tran
+        ;throw 50001, N'Thuốc đã hết hạn, không thể kê toa.', 1
     end
-end;
+end
 go
 
 -- =========================================
@@ -411,15 +567,14 @@ begin
         where v.ngayhethan < cast(getdate() as date)
     )
     begin
-        raiserror (N'Vắc-xin đã hết hạn, không thể dùng để tiêm.', 16, 1);
-        rollback tran
+        ;throw 50001, N'Vắc-xin đã hết hạn, không thể dùng để tiêm.', 1
     end
-end;
+end
 go
 
 
 -- =========================================
--- trigger: trừ tồn kho sau khi tính hóa đơn
+-- trigger: trừ tồn kho khi khách hàng đã thanh toán hóa đơn
 -- =========================================
 create trigger trg_hoadon_tru_tonkho
 on hoadon
@@ -429,16 +584,31 @@ begin
     if exists (
         select 1
         from inserted i
+        join deleted d on i.mahd = d.mahd
         where i.trangthai = N'Đã thanh toán'
+          and d.trangthai <> N'Đã thanh toán'
     )
     begin
+        -- chặn bán vượt tồn kho
+        if exists (
+            select 1
+            from chitietmuasanpham ctm
+            join sanpham sp on ctm.masp = sp.masp
+            join inserted i on ctm.mahd = i.mahd
+            where sp.soluongton < ctm.soluong
+        )
+        begin
+            ;throw 50002, N'Số lượng tồn kho không đủ.', 1
+        end
+
+        -- trừ tồn kho
         update sp
         set sp.soluongton = sp.soluongton - ctm.soluong
         from sanpham sp
         join chitietmuasanpham ctm on sp.masp = ctm.masp
-        join inserted i on ctm.mahd = i.mahd;
+        join inserted i on ctm.mahd = i.mahd
     end
-end;
+end
 go
 
 -- =========================================
@@ -454,51 +624,69 @@ begin
     set diemtichluy = diemtichluy + (i.thanhtien / 50000)
     from taikhoankhachhang tkkh
     join inserted i on tkkh.makh = i.makh
-    where i.trangthai = N'Đã thanh toán';
-end;
+    join deleted d on i.mahd = d.mahd
+    where i.trangthai = N'Đã thanh toán'
+      and d.trangthai <> N'Đã thanh toán'
+end
 go
 
-/*
-=====================================================
-cac rang buoc nghiep vu chua cai trong script nay
-(se thuc hien o giai doan 2 – muc vat ly / hieu nang)
-=====================================================
-
-3. kiem soat nhan vien lap hoa don
-   - manvlap chi duoc la 'le tan' hoac 'ban hang'
-   ly do:
-   - phu thuoc vai tro, nen xu ly bang procedure / app
-
-4. rang buoc mot dich vu chi duoc danh gia mot lan
-   - rang buoc (madv, makh, mathucung) la duy nhat
-   ly do:
-   - can xu ly theo trang thai hoan tat + thanh toan
-
-5. rang buoc hoa don – ngay su dung dich vu
-   - ngaysudung khong duoc lon hon ngaylap
-   ly do:
-   - lien bang, can trigger theo nghiep vu
-=====================================================
-*/
-
-
--- ==================
-create procedure sp_doanhthu_chinhanh_thang
-    @macn varchar(10),
-    @thang int,
-    @nam int
+-- =========================================
+-- trigger: 1 chi nhánh chỉ có 1 quản lý
+-- =========================================
+create trigger trg_1_quanly_moi_chinhanh
+on nhanvien
+after insert, update
 as
 begin
-    select
-        macn,
-        sum(thanhtien) as doanhthu
-    from hoadon
-    where macn = @macn
-      and month(ngaylap) = @thang
-      and year(ngaylap) = @nam
-      and trangthai = N'Đã thanh toán'
-    group by macn;
-end;
+    if exists (
+        select macn
+        from nhanvien
+        where chucvu = N'Quản lý'
+        group by macn
+        having count(*) > 1
+    )
+    begin
+        ;throw 50003, N'Mỗi chi nhánh chỉ được có một quản lý.', 1
+    end
+end
 go
--- ==================
 
+-- =========================================
+-- trigger: Chỉ bác sĩ thú y mới được khám / tiêm
+-- =========================================
+create trigger trg_only_bs_kham
+on chitietkhambenh
+after insert, update
+as
+begin
+    if exists (
+        select 1
+        from inserted i
+        join nhanvien nv on i.mabs = nv.manv
+        where nv.loainv <> N'Bác sĩ thú y'
+    )
+    begin
+        ;throw 50004, N'Chỉ bác sĩ thú y mới được thực hiện chữa bệnh.', 1
+    end
+end
+go
+
+-- =========================================
+-- trigger: Chỉ nhân viên tiếp tân mới được lập hóa đơn
+-- =========================================
+create trigger trg_kiemsoat_nv_lap_hoadon
+on hoadon
+after insert, update
+as
+begin
+    if exists (
+        select 1
+        from inserted i
+        join nhanvien nv on i.manvlap = nv.manv
+        where nv.loainv <> N'Nhân viên tiếp tân'
+    )
+    begin
+        ;throw 50005, N'Chỉ nhân viên tiếp tân mới được phép lập hóa đơn.', 1
+    end
+end
+go
