@@ -8,6 +8,7 @@ GO
 
 SET QUOTED_IDENTIFIER ON;
 GO
+SET DATEFORMAT ymd;
 
 -- Statement 1/1
 INSERT INTO lichsulamviec (manv, ngaybdtaicnmoi, macncu, macnmoi, ngayketthuccncu) VALUES
@@ -65,7 +66,7 @@ INSERT INTO lichsulamviec (manv, ngaybdtaicnmoi, macncu, macnmoi, ngayketthuccnc
     (N'NV0760', '2023-05-03', N'CN002', N'CN006', '2023-05-02'),
     (N'NV1486', '2022-12-06', N'CN003', N'CN005', '2022-12-05'),
     (N'NV0721', '2027-03-18', N'CN002', N'CN004', '2027-03-17'),
-    (N'NV0033', '2020-03-01', N'CN009', N'CN002', '2020-02-29'),
+    (N'NV0033', '2020-03-01', N'CN009', N'CN002', '2020-02-28'),
     (N'NV0013', '2020-04-17', N'CN006', N'CN007', '2020-04-16'),
     (N'NV1081', '2023-09-29', N'CN008', N'CN007', '2023-09-28'),
     (N'NV1130', '2022-05-31', N'CN010', N'CN003', '2022-05-30'),
@@ -276,7 +277,7 @@ INSERT INTO lichsulamviec (manv, ngaybdtaicnmoi, macncu, macnmoi, ngayketthuccnc
     (N'NV1466', '2023-02-28', N'CN004', N'CN003', '2023-02-27'),
     (N'NV0809', '2023-03-12', N'CN010', N'CN002', '2023-03-11'),
     (N'NV0143', '2027-02-21', N'CN004', N'CN009', '2027-02-20'),
-    (N'NV0623', '2027-03-01', N'CN002', N'CN006', '2027-02-29'),
+    (N'NV0623', '2027-03-01', N'CN002', N'CN006', '2027-02-27'),
     (N'NV0769', '2021-03-03', N'CN007', N'CN005', '2021-03-02'),
     (N'NV0278', '2027-04-28', N'CN002', N'CN007', '2027-04-27'),
     (N'NV0632', '2020-10-10', N'CN007', N'CN004', '2020-10-09'),
