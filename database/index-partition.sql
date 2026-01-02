@@ -65,7 +65,8 @@ create table nhanvien
             N'Quản lý chi nhánh',
             N'Nhân viên tiếp tân',
             N'Bác sĩ thú y',
-            N'Giám đốc'
+            N'Giám đốc',
+            N'Nhân viên bán hàng'
         )),
 
     constraint ck_nv_luong
@@ -143,7 +144,7 @@ create table taikhoankhachhang
         )),
 
     constraint ck_tkkh_capbac
-        check (trangthai in (
+        check (capbac in (
             N'Cơ bản',
             N'Thân thiết',
             N'VIP'
@@ -331,12 +332,9 @@ create table tiemphong
 (
     madv varchar(10) primary key,
     lieuluong varchar(10),
-
     constraint fk_tp_dv
-        foreign key (madv) references dichvu(madv),
+        foreign key (madv) references dichvu(madv)
 
-    constraint ck_tp_lieuluong
-        check (lieuluong > 0)
 )
 
 -- =========================================
@@ -347,8 +345,8 @@ create table tiemgoi
 (
     madv varchar(10) primary key,
     sothang int not null,
-
-    constraint fk_tg_dv
+    phantramgiamgia decimal(5,2),
+    constraint fk_tg_dv 
         foreign key (madv) references tiemphong(madv),
 
     constraint ck_tg_sothang
@@ -361,7 +359,7 @@ create table tiemgoi
 -- =========================================
 create table danhgia 
 (
-    madanhgia varchar(10),
+    madanhgia varchar(10) primary key,
     madv varchar(10) not null,
     manv varchar(10) not null,
     makh varchar(10) not null,
@@ -370,8 +368,6 @@ create table danhgia
     diemthaidonv int not null,
     mucdohailong int not null,
     binhluan nvarchar(255),
-
-    constraint pk_danhgia primary key nonclustered (madanhgia),
 
     constraint fk_dg_dv
         foreign key (madv) references dichvu(madv),
@@ -401,7 +397,7 @@ create table chitietkhambenh
 (
     madv varchar(10) not null,
     mathucung varchar(10) not null,
-    ngaysudung date not null,
+    ngaysudung datetime not null,
     mabs varchar(10) not null,
     trieuchung nvarchar(255),
     chandoan nvarchar(255),
@@ -410,7 +406,7 @@ create table chitietkhambenh
     madanhgia varchar(10),
     ghichu nvarchar(255),
 
-    primary key nonclustered (madv, mathucung, ngaysudung, mabs),
+    primary key (madv, mathucung, ngaysudung, mabs),
 
     constraint fk_ckb_dv
         foreign key (madv) references dichvu(madv),
@@ -446,7 +442,7 @@ create table chitiettiemphong
     trangthai nvarchar(50),
     madanhgia varchar(10),
 
-    primary key nonclustered (stt, madv, mathucung, mavacxin, mabs),
+    primary key (stt, madv, mathucung, mavacxin, mabs),
 
     constraint fk_cttp_dv
         foreign key (madv) references tiemphong(madv),
@@ -468,23 +464,23 @@ create table chitiettiemphong
 -- bảng hoadon
 -- lập hóa đơn cho khách hàng
 -- =========================================
+set quoted_identifier on;
+go
 create table hoadon 
 (
-    mahd varchar(10),
+    mahd varchar(10) primary key,
     mathucung varchar(10) not null,
     manvlap varchar(10) not null,
     macn varchar(10) not null,
     makh varchar(10) not null,
     makham varchar(10),
     matiem varchar(10),
-    ngaylap date not null,
+    ngaylap datetime not null,
     tongtien decimal(18,2) not null,
     khuyenmai decimal(18,2) not null,
-    thanhtien decimal(18,2) not null,
+    thanhtien as (tongtien - khuyenmai) persisted,
     hinhthucthanhtoan nvarchar(50),
     trangthai nvarchar(50) not null,
-
-    constraint pk_hoadon primary key nonclustered (mahd), -- phục vụ cho partition
 
     constraint fk_hd_tc
         foreign key (mathucung) references thucung(mathucung),
@@ -502,10 +498,7 @@ create table hoadon
         foreign key (makham) references dichvu(madv),
     
     constraint fk_hd_matiem
-        foreign key (matiem) references dichvu(madv),
-
-    constraint ck_hd_thanhtien
-        check (thanhtien = tongtien - khuyenmai)
+        foreign key (matiem) references dichvu(madv)
 )
 
 -- =========================================
@@ -536,7 +529,7 @@ create table chitietmuasanpham
 go
 
 -- =========================================
--- function: Xác định cấp bậc khách hàng
+-- function: xác định cấp bậc khách hàng
 -- =========================================
 create or alter function fn_xac_dinh_capbac
 (
@@ -562,6 +555,37 @@ begin
         return N'Thân thiết'
 
     return N'Cơ bản'
+end
+go
+
+-- =========================================
+-- function: Tính khuyến mãi cho dịch vụ
+-- =========================================
+create or alter function fn_tinh_khuyenmai_dichvu
+(
+    @madv varchar(10)
+)
+returns decimal(18,2)
+as
+begin
+    declare @khuyenmai decimal(18,2) = 0
+    declare @gia decimal(18,2)
+    declare @phantramgiam decimal(5,2)
+
+    -- Kiểm tra có phải gói tiêm không
+    if exists (select 1 from tiemgoi where madv = @madv)
+    begin
+        select 
+            @gia = dv.gia,
+            @phantramgiam = tg.phantramgiamgia
+        from tiemgoi tg
+        join dichvu dv on tg.madv = dv.madv
+        where tg.madv = @madv
+
+        set @khuyenmai = @gia * @phantramgiam / 100
+    end
+
+    return @khuyenmai
 end
 go
 
@@ -972,21 +996,41 @@ create or alter procedure sp_lap_hoadon
 )
 as
 begin
-    set nocount on
+    set nocount on;
 
     insert into hoadon
-    values (
-        @mahd, @mathucung, @manvlap, @macn, @makh,
-        null, null,
+    (
+        mahd,
+        mathucung,
+        manvlap,
+        macn,
+        makh,
+        makham,
+        matiem,
+        ngaylap,
+        tongtien,
+        khuyenmai,
+        hinhthucthanhtoan,
+        trangthai
+    )
+    values
+    (
+        @mahd,
+        @mathucung,
+        @manvlap,
+        @macn,
+        @makh,
+        null,
+        null,
         getdate(),
         @tongtien,
         @khuyenmai,
-        @tongtien - @khuyenmai,
         null,
         N'Chưa thanh toán'
-    )
+    );
 end
 go
+
 
 -- =========================================
 -- procedure: Thanh toán hóa đơn
@@ -1349,7 +1393,7 @@ go
 -- =========================================
 -- partition
 -- =========================================
-create partition function pf_nam (date)
+create partition function pf_nam (datetime)
 as range right for values
 (
     '2020-01-01',
