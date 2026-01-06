@@ -1,0 +1,15 @@
+@model KhachHangWeb.Models.LoginViewModel
+<h3>Đăng nhập</h3>
+<form method="post">
+  <div class="mb-3">
+    <label>Tài khoản</label>
+    <input asp-for="UserName" class="form-control" />
+  </div>
+  <div class="mb-3">
+    <label>Mật khẩu</label>
+    <input asp-for="Password" class="form-control" type="password" />
+  </div>
+  <button class="btn btn-primary">Đăng nhập</button>
+  <a class="ms-3" href="/account/register">Đăng ký</a>
+</form>
+@Html.ValidationSummary()

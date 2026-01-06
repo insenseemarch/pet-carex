@@ -36,20 +36,24 @@ namespace KhachHang
             this.panelSearch = new System.Windows.Forms.Panel();
             this.cboGia = new System.Windows.Forms.ComboBox();
             this.lbGia = new System.Windows.Forms.Label();
-            this.cboLoaiTC = new System.Windows.Forms.ComboBox();
-            this.lbLoaiTC = new System.Windows.Forms.Label();
             this.lbLoai = new System.Windows.Forms.Label();
             this.cboLoaiSP = new System.Windows.Forms.ComboBox();
             this.btnSearch = new System.Windows.Forms.Button();
-            this.flpDanhSachSanPham = new System.Windows.Forms.FlowLayoutPanel();
             this.imageListCho = new System.Windows.Forms.ImageList(this.components);
             this.imageListMeo = new System.Windows.Forms.ImageList(this.components);
             this.imageListDoChoi = new System.Windows.Forms.ImageList(this.components);
             this.imageListTho = new System.Windows.Forms.ImageList(this.components);
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.btnPrev = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.btnThanhToan = new System.Windows.Forms.Button();
+            this.pnlPaging = new System.Windows.Forms.Panel();
+            this.flpDanhSachSanPham = new System.Windows.Forms.FlowLayoutPanel();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.pnlMuaSP.SuspendLayout();
             this.panelSearch.SuspendLayout();
+            this.pnlPaging.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnlMuaSP
@@ -61,7 +65,7 @@ namespace KhachHang
             this.pnlMuaSP.Location = new System.Drawing.Point(0, 0);
             this.pnlMuaSP.MaximumSize = new System.Drawing.Size(0, 80);
             this.pnlMuaSP.Name = "pnlMuaSP";
-            this.pnlMuaSP.Size = new System.Drawing.Size(1215, 80);
+            this.pnlMuaSP.Size = new System.Drawing.Size(1218, 80);
             this.pnlMuaSP.TabIndex = 0;
             this.pnlMuaSP.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlMuaSP_Paint);
             // 
@@ -72,8 +76,6 @@ namespace KhachHang
             this.panelSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelSearch.Controls.Add(this.cboGia);
             this.panelSearch.Controls.Add(this.lbGia);
-            this.panelSearch.Controls.Add(this.cboLoaiTC);
-            this.panelSearch.Controls.Add(this.lbLoaiTC);
             this.panelSearch.Controls.Add(this.lbLoai);
             this.panelSearch.Controls.Add(this.cboLoaiSP);
             this.panelSearch.Controls.Add(this.btnSearch);
@@ -81,7 +83,7 @@ namespace KhachHang
             this.panelSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F);
             this.panelSearch.Location = new System.Drawing.Point(0, 0);
             this.panelSearch.Name = "panelSearch";
-            this.panelSearch.Size = new System.Drawing.Size(1215, 77);
+            this.panelSearch.Size = new System.Drawing.Size(1218, 77);
             this.panelSearch.TabIndex = 1;
             this.panelSearch.Paint += new System.Windows.Forms.PaintEventHandler(this.panelSearch_Paint);
             // 
@@ -109,34 +111,6 @@ namespace KhachHang
             this.lbGia.Size = new System.Drawing.Size(45, 20);
             this.lbGia.TabIndex = 6;
             this.lbGia.Text = "Giá: ";
-            // 
-            // cboLoaiTC
-            // 
-            this.cboLoaiTC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cboLoaiTC.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
-            this.cboLoaiTC.FormattingEnabled = true;
-            this.cboLoaiTC.Items.AddRange(new object[] {
-            "Tất cả",
-            "Chó",
-            "Mèo",
-            "Thỏ",
-            "Chim",
-            "Hamster",
-            "Sóc"});
-            this.cboLoaiTC.Location = new System.Drawing.Point(141, 36);
-            this.cboLoaiTC.Name = "cboLoaiTC";
-            this.cboLoaiTC.Size = new System.Drawing.Size(204, 28);
-            this.cboLoaiTC.TabIndex = 5;
-            // 
-            // lbLoaiTC
-            // 
-            this.lbLoaiTC.AutoSize = true;
-            this.lbLoaiTC.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
-            this.lbLoaiTC.Location = new System.Drawing.Point(2, 39);
-            this.lbLoaiTC.Name = "lbLoaiTC";
-            this.lbLoaiTC.Size = new System.Drawing.Size(123, 20);
-            this.lbLoaiTC.TabIndex = 4;
-            this.lbLoaiTC.Text = "Loài Thú Cưng:";
             // 
             // lbLoai
             // 
@@ -176,19 +150,9 @@ namespace KhachHang
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(103, 31);
             this.btnSearch.TabIndex = 1;
-            this.btnSearch.Text = "Tìm Kiếm";
+            this.btnSearch.Text = "Lọc";
             this.btnSearch.UseVisualStyleBackColor = false;
             this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
-            // 
-            // flpDanhSachSanPham
-            // 
-            this.flpDanhSachSanPham.AutoScroll = true;
-            this.flpDanhSachSanPham.BackColor = System.Drawing.Color.SteelBlue;
-            this.flpDanhSachSanPham.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flpDanhSachSanPham.Location = new System.Drawing.Point(0, 80);
-            this.flpDanhSachSanPham.Name = "flpDanhSachSanPham";
-            this.flpDanhSachSanPham.Size = new System.Drawing.Size(1215, 586);
-            this.flpDanhSachSanPham.TabIndex = 1;
             // 
             // imageListCho
             // 
@@ -231,35 +195,90 @@ namespace KhachHang
             this.imageList1.ImageSize = new System.Drawing.Size(16, 16);
             this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
             // 
+            // btnPrev
+            // 
+            this.btnPrev.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.btnPrev.Location = new System.Drawing.Point(7, 13);
+            this.btnPrev.Name = "btnPrev";
+            this.btnPrev.Size = new System.Drawing.Size(97, 40);
+            this.btnPrev.TabIndex = 1;
+            this.btnPrev.Text = "Prev";
+            this.btnPrev.UseVisualStyleBackColor = false;
+            this.btnPrev.Click += new System.EventHandler(this.btnPrev_Click);
+            // 
+            // button2
+            // 
+            this.button2.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.button2.Location = new System.Drawing.Point(120, 13);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(97, 40);
+            this.button2.TabIndex = 2;
+            this.button2.Text = "Next";
+            this.button2.UseVisualStyleBackColor = false;
+            this.button2.Click += new System.EventHandler(this.btnNext_Click);
+            // 
             // btnThanhToan
             // 
             this.btnThanhToan.BackColor = System.Drawing.Color.Green;
+            this.btnThanhToan.Dock = System.Windows.Forms.DockStyle.Right;
             this.btnThanhToan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnThanhToan.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnThanhToan.ForeColor = System.Drawing.Color.White;
-            this.btnThanhToan.Location = new System.Drawing.Point(993, 583);
+            this.btnThanhToan.Location = new System.Drawing.Point(1055, 0);
             this.btnThanhToan.Name = "btnThanhToan";
-            this.btnThanhToan.Size = new System.Drawing.Size(190, 58);
-            this.btnThanhToan.TabIndex = 0;
+            this.btnThanhToan.Size = new System.Drawing.Size(163, 61);
+            this.btnThanhToan.TabIndex = 3;
             this.btnThanhToan.Text = "Thanh Toán";
             this.btnThanhToan.UseVisualStyleBackColor = false;
-            this.btnThanhToan.Click += new System.EventHandler(this.btnThanhToan_Click);
+            this.btnThanhToan.Click += new System.EventHandler(this.btnThanhToan_Click_1);
+            // 
+            // pnlPaging
+            // 
+            this.pnlPaging.BackColor = System.Drawing.SystemColors.InactiveCaption;
+            this.pnlPaging.Controls.Add(this.btnThanhToan);
+            this.pnlPaging.Controls.Add(this.button2);
+            this.pnlPaging.Controls.Add(this.btnPrev);
+            this.pnlPaging.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlPaging.Location = new System.Drawing.Point(0, 605);
+            this.pnlPaging.Name = "pnlPaging";
+            this.pnlPaging.Size = new System.Drawing.Size(1218, 61);
+            this.pnlPaging.TabIndex = 4;
+            // 
+            // flpDanhSachSanPham
+            // 
+            this.flpDanhSachSanPham.AutoScroll = true;
+            this.flpDanhSachSanPham.BackColor = System.Drawing.Color.SteelBlue;
+            this.flpDanhSachSanPham.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flpDanhSachSanPham.Location = new System.Drawing.Point(0, 0);
+            this.flpDanhSachSanPham.Name = "flpDanhSachSanPham";
+            this.flpDanhSachSanPham.Size = new System.Drawing.Size(1215, 516);
+            this.flpDanhSachSanPham.TabIndex = 1;
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.flpDanhSachSanPham);
+            this.panel1.Location = new System.Drawing.Point(0, 83);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(1215, 516);
+            this.panel1.TabIndex = 5;
             // 
             // ucMuaSanPham
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.AutoSize = true;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.Controls.Add(this.btnThanhToan);
-            this.Controls.Add(this.flpDanhSachSanPham);
             this.Controls.Add(this.pnlMuaSP);
+            this.Controls.Add(this.pnlPaging);
+            this.Controls.Add(this.panel1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F);
             this.Name = "ucMuaSanPham";
-            this.Size = new System.Drawing.Size(1215, 666);
+            this.Size = new System.Drawing.Size(1218, 666);
             this.Load += new System.EventHandler(this.ucMuaSanPham_Load);
             this.pnlMuaSP.ResumeLayout(false);
             this.panelSearch.ResumeLayout(false);
             this.panelSearch.PerformLayout();
+            this.pnlPaging.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -267,20 +286,22 @@ namespace KhachHang
         #endregion
 
         private System.Windows.Forms.Panel pnlMuaSP;
-        private System.Windows.Forms.Panel panelSearch;
-        private System.Windows.Forms.Label lbLoai;
-        private System.Windows.Forms.ComboBox cboLoaiSP;
-        private System.Windows.Forms.Button btnSearch;
-        private System.Windows.Forms.ComboBox cboLoaiTC;
-        private System.Windows.Forms.Label lbLoaiTC;
-        private System.Windows.Forms.ComboBox cboGia;
-        private System.Windows.Forms.Label lbGia;
-        private System.Windows.Forms.FlowLayoutPanel flpDanhSachSanPham;
         private System.Windows.Forms.ImageList imageListCho;
         private System.Windows.Forms.ImageList imageListMeo;
         private System.Windows.Forms.ImageList imageListDoChoi;
         private System.Windows.Forms.ImageList imageListTho;
         private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.Button btnPrev;
+        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button btnThanhToan;
+        private System.Windows.Forms.Panel pnlPaging;
+        private System.Windows.Forms.FlowLayoutPanel flpDanhSachSanPham;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panelSearch;
+        private System.Windows.Forms.ComboBox cboGia;
+        private System.Windows.Forms.Label lbGia;
+        private System.Windows.Forms.Label lbLoai;
+        private System.Windows.Forms.ComboBox cboLoaiSP;
+        private System.Windows.Forms.Button btnSearch;
     }
 }

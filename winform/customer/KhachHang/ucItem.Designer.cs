@@ -38,7 +38,7 @@
             // lblTenSP
             // 
             this.lblTenSP.AutoSize = true;
-            this.lblTenSP.Location = new System.Drawing.Point(4, 285);
+            this.lblTenSP.Location = new System.Drawing.Point(28, 276);
             this.lblTenSP.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTenSP.Name = "lblTenSP";
             this.lblTenSP.Size = new System.Drawing.Size(64, 20);
@@ -50,7 +50,7 @@
             // 
             this.lblGiaSP.AutoSize = true;
             this.lblGiaSP.ForeColor = System.Drawing.Color.Red;
-            this.lblGiaSP.Location = new System.Drawing.Point(6, 332);
+            this.lblGiaSP.Location = new System.Drawing.Point(28, 323);
             this.lblGiaSP.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblGiaSP.Name = "lblGiaSP";
             this.lblGiaSP.Size = new System.Drawing.Size(62, 20);
@@ -87,9 +87,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(224)))), ((int)(((byte)(192)))));
             this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.lblGiaSP);
             this.Controls.Add(this.lblTenSP);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.picAnhSP);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(20);

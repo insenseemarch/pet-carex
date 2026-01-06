@@ -2,16 +2,21 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using KhachHang.Common;
+using KhachHang.Data;
 
 namespace KhachHang
 {
     public partial class ucLogIn_Out : UserControl
     {
+        public event Action LoggedIn;
+
         public ucLogIn_Out()
         {
             InitializeComponent();
@@ -48,16 +53,31 @@ namespace KhachHang
 
         private void btnDangNhap_Click(object sender, EventArgs e)
         {
-            // Giả sử mã KH lấy được sau khi kiểm tra DB là "KH001"
-            string maKH = "KH001";
+            try
+            {
+                var dt = Db.ExecProcToTable("sp_dangnhap",
+                    new SqlParameter("@tendangnhap", txtUser.Text.Trim()),
+                    new SqlParameter("@matkhau", txtPass.Text.Trim())
+                );
 
-            Form1 mainForm = (Form1)this.FindForm();
+                if (dt.Rows.Count == 0) { MessageBox.Show("Sai tài khoản/mật khẩu"); return; }
 
-            // 1. Hiện mã KH lên cạnh nút Login/Out
-            //mainForm.CapNhatTrangThaiDangNhap(true, maKH);
+                var r = dt.Rows[0];
 
-            // 2. Chuyển hướng màn hình về Trang Chủ
-            mainForm.Navigation(new ucTrangChu());
+                Session.Login(
+                    txtUser.Text.Trim(),                 // TenDangNhap
+                    r["makh"].ToString(),                // MaKH
+                    r["capbac"].ToString(),              // CapBac
+                    Convert.ToInt32(r["diemtichluy"])    // DiemTichLuy
+                );
+
+                LoggedIn?.Invoke();
+
+            }
+            catch (SqlException ex)
+            {
+                MessageBox.Show(ex.Message, $"Lỗi đăng nhập ({ex.Number})");
+            }
         }
     }
 }

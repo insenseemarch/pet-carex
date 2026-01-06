@@ -1,0 +1,41 @@
+@model List<KhachHangWeb.Models.CartItem>
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    var total = Model.Sum(x => x.UnitPrice * x.Quantity);
+}
+<h3>Giỏ hàng</h3>
+@if (!Model.Any())
+{
+    <p>Giỏ hàng trống. <a href="/shop">Tiếp tục mua</a></p>
+}
+else
+{
+<table class="table">
+  <thead><tr><th>Sản phẩm</th><th>SL</th><th>Giá</th><th>Tổng</th><th></th></tr></thead>
+  <tbody>
+  @foreach (var i in Model)
+  {
+    <tr>
+      <td>@i.Name</td>
+      <td>
+        <form method="post" action="/cart/update" class="d-flex">
+          <input type="hidden" name="id" value="@i.MaSP" />
+          <input class="form-control form-control-sm w-50" type="number" name="qty" value="@i.Quantity" min="1" />
+          <button class="btn btn-sm btn-secondary ms-2">Cập nhật</button>
+        </form>
+      </td>
+      <td>@String.Format("{0:N0}", i.UnitPrice)</td>
+      <td>@String.Format("{0:N0}", i.UnitPrice * i.Quantity)</td>
+      <td>
+        <form method="post" action="/cart/remove">
+          <input type="hidden" name="id" value="@i.MaSP" />
+          <button class="btn btn-sm btn-outline-danger">Xóa</button>
+        </form>
+      </td>
+    </tr>
+  }
+  </tbody>
+</table>
+<p class="fw-bold">Tổng: @String.Format("{0:N0} đ", total)</p>
+<a class="btn btn-primary" href="/checkout">Thanh toán</a>
+}

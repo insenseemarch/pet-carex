@@ -1,0 +1,78 @@
+@model KhachHangWeb.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap">
+<style>
+  .register-shell { font-family: "Space Grotesk", sans-serif; background: radial-gradient(circle at top, #00d1c1 0%, #00b9d6 45%, #00a6b2 100%); padding: 28px; border-radius: 18px; color: #033b3a; }
+  .register-card { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 24px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15); }
+  .register-title { font-size: 28px; font-weight: 700; color: #0b3b49; text-align: center; margin-bottom: 14px; }
+  .register-sub { text-align: center; color: #2a5f6a; margin-bottom: 22px; }
+  .register-actions { display: flex; gap: 12px; justify-content: center; }
+  .register-note { color: #2b6f6a; font-size: 13px; }
+</style>
+
+<div class="register-shell">
+  <div class="register-card">
+    <div class="register-title">Đăng ký tài khoản</div>
+    <div class="register-sub">Vui lòng nhập đầy đủ thông tin để tạo tài khoản mới.</div>
+
+    @Html.ValidationSummary()
+
+    <form method="post" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Họ và tên *</label>
+        <input asp-for="FullName" class="form-control" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">CCCD</label>
+        <input asp-for="Cccd" class="form-control" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input asp-for="Email" class="form-control" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Giới tính</label>
+        <select asp-for="Gender" class="form-select">
+          <option value="">-- Chọn --</option>
+          <option>Nam</option>
+          <option>Nữ</option>
+          <option>Khác</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">SĐT *</label>
+        <input asp-for="Phone" class="form-control" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Ngày sinh</label>
+        <input asp-for="BirthDate" type="date" class="form-control" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Tên đăng nhập *</label>
+        <input asp-for="UserName" class="form-control" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Mật khẩu *</label>
+        <input asp-for="Password" type="password" class="form-control" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Nhập lại mật khẩu *</label>
+        <input asp-for="ConfirmPassword" type="password" class="form-control" />
+      </div>
+      <div class="col-md-6 d-flex align-items-end">
+        <div class="register-note">Dấu * là bắt buộc.</div>
+      </div>
+
+      <div class="col-12 register-actions">
+        <a class="btn btn-outline-light" href="/account/login">Đã có tài khoản</a>
+        <button class="btn btn-success px-4">Đăng ký</button>
+      </div>
+    </form>
+  </div>
+</div>

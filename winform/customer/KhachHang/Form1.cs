@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using KhachHang.Common;
 
 namespace KhachHang
 {
@@ -18,19 +20,48 @@ namespace KhachHang
             InitializeComponent();
         }
 
+        private void UpdateAuthUI()
+        {
+            if (Session.IsLoggedIn)
+            {
+                lblTKKH.Visible = true;
+                lblTKKH.Text = "TK Khách hàng: " + Session.TenDangNhap; // hoặc MaKH
+                btnLogIn_Out.Text = "Logout";
+            }
+            else
+            {
+                lblTKKH.Visible = false;
+                lblTKKH.Text = "";
+                btnLogIn_Out.Text = "Login/Out";
+            }
+        }
+
+
         private void labelSDT1_Click(object sender, EventArgs e)
         {
 
         }
 
-        public class Product
+        public static List<ProductModel> GioHang = new List<ProductModel>();
+
+        private UserControl _currentUc;
+
+        public void Navigation(UserControl uc)
         {
-            public string TenSP { get; set; }
-            public double GiaSP { get; set; }
-            public Image AnhSP { get; set; }
+            panelContent.Controls.Clear();
+            uc.Dock = DockStyle.Fill;
+            panelContent.Controls.Add(uc);
+            panelContent.Controls[0].Size = panelContent.ClientSize;
+
+            _currentUc = uc; // <- lưu UC hiện tại để search
         }
 
-        public static List<Product> GioHang = new List<Product>();
+        private string GetSearchKeyword()
+        {
+            var kw = (txtSearch.Text ?? "").Trim();
+            if (kw == "Nhập từ khóa để tìm kiếm...") return "";
+            return kw;
+        }
 
         private void linkFB_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
@@ -74,15 +105,6 @@ namespace KhachHang
         }
 
         // Trong Form1.cs
-        public void Navigation(UserControl uc)
-        {
-            panelContent.Controls.Clear(); // pnlContent là cái Panel chính của bạn
-            uc.Dock = DockStyle.Fill;
-            panelContent.Controls.Add(uc);
-            panelContent.Controls[0].Size = panelContent.ClientSize;
-        }
-
-        // Trong Form1.cs
         public void SetMenuTitle(string title)
         {
             // Giả sử cái nút "Dịch Vụ" hoặc "Trang Chủ" của bạn là một Button
@@ -100,21 +122,43 @@ namespace KhachHang
 
         private void btnMuaHang_Click(object sender, EventArgs e)
         {
+            // nếu muốn bắt login trước khi mua:
+            // if (!RequireLogin()) return;
             Navigation(new ucMuaSanPham());
         }
 
         private void btnDatLichHen_Click(object sender, EventArgs e)
         {
-            Navigation(new ucDichVu());
+            Navigation(new ucDatLich());
         }
 
         private void btnTraCuu_Click(object sender, EventArgs e)
         {
+            if (!RequireLogin()) return;
             Navigation(new ucTraCuu());
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            try
+            {
+                var dt = KhachHang.Data.Db.QueryToTable("select @@servername as s, db_name() as d");
+                MessageBox.Show($"Server={dt.Rows[0]["s"]}\nDB={dt.Rows[0]["d"]}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            string cfgPath = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
+
+            var keys = string.Join(", ",
+                ConfigurationManager.ConnectionStrings.Cast<ConnectionStringSettings>()
+                    .Select(x => x.Name));
+
+            MessageBox.Show("Config đang dùng:\n" + cfgPath + "\n\nKeys:\n" + keys);
+
+            UpdateAuthUI();
             Navigation(new ucTrangChu());
         }
 
@@ -125,21 +169,68 @@ namespace KhachHang
 
         private void btnLogIn_Out_Click(object sender, EventArgs e)
         {
-            // Nếu chưa đăng nhập (lblTKKH đang ẩn)
-            if (lblTKKH.Visible == false)
+            if (!Session.IsLoggedIn)
             {
-                Navigation(new ucLogIn_Out()); // Mở trang login vừa tạo
+                var ucLogin = new ucLogIn_Out();
+                ucLogin.LoggedIn += () =>
+                {
+                    UpdateAuthUI();
+                    Navigation(new ucTrangChu()); // hoặc chuyển thẳng qua Trang cá nhân
+                };
+                Navigation(ucLogin);
             }
-            else // Nếu đã đăng nhập thì nhấn vào là Logout
+            else
             {
-                lblTKKH.Visible = false;
+                // Logout
+                Session.Logout();
+                UpdateAuthUI();
+
+                // nếu muốn xoá giỏ hàng khi logout:
+                GioHang.Clear();
+
                 Navigation(new ucTrangChu());
             }
         }
 
+        private bool RequireLogin()
+        {
+            if (Session.IsLoggedIn) return true;
+
+            MessageBox.Show("Bạn cần đăng nhập để dùng chức năng này.");
+            btnLogIn_Out_Click(null, null); // mở trang login
+            return false;
+        }
+
         private void btnTrangCaNhan_Click(object sender, EventArgs e)
         {
+            if (!RequireLogin()) return;
             Navigation(new ucTrangCaNhan());
+        }
+
+        private void btnTimKiem_Click(object sender, EventArgs e)
+        {
+            var kw = GetSearchKeyword();
+            if (string.IsNullOrWhiteSpace(kw))
+            {
+                MessageBox.Show("Bạn chưa nhập từ khóa tìm kiếm.");
+                return;
+            }
+
+            // chuyển sang tab mua SP
+            var uc = new ucMuaSanPham();
+            Navigation(uc);
+
+            // đẩy keyword xuống UC mua SP
+            uc.ApplySearch(kw);
+        }
+
+        private void txtSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                btnTimKiem_Click(null, null);
+            }
         }
     }
 

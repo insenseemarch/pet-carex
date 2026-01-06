@@ -36,6 +36,7 @@
             this.btnDichVu = new System.Windows.Forms.Button();
             this.btnMuaHang = new System.Windows.Forms.Button();
             this.panelIntro = new System.Windows.Forms.Panel();
+            this.lblTKKH = new System.Windows.Forms.Label();
             this.btnLogIn_Out = new System.Windows.Forms.Button();
             this.linkFB = new System.Windows.Forms.LinkLabel();
             this.labelSDT2 = new System.Windows.Forms.Label();
@@ -45,7 +46,6 @@
             this.txtSearch = new System.Windows.Forms.TextBox();
             this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
             this.panelContent = new System.Windows.Forms.Panel();
-            this.lblTKKH = new System.Windows.Forms.Label();
             this.panelMenu.SuspendLayout();
             this.pnlMenuKH.SuspendLayout();
             this.panelIntro.SuspendLayout();
@@ -180,6 +180,16 @@
             this.panelIntro.Size = new System.Drawing.Size(1197, 84);
             this.panelIntro.TabIndex = 5;
             // 
+            // lblTKKH
+            // 
+            this.lblTKKH.AutoSize = true;
+            this.lblTKKH.Location = new System.Drawing.Point(1020, 57);
+            this.lblTKKH.Name = "lblTKKH";
+            this.lblTKKH.Size = new System.Drawing.Size(135, 22);
+            this.lblTKKH.TabIndex = 5;
+            this.lblTKKH.Text = "TK Khách hàng";
+            this.lblTKKH.Visible = false;
+            // 
             // btnLogIn_Out
             // 
             this.btnLogIn_Out.Location = new System.Drawing.Point(1024, 15);
@@ -245,6 +255,7 @@
             this.btnTimKiem.TabIndex = 1;
             this.btnTimKiem.Text = "Tìm Kiếm";
             this.btnTimKiem.UseVisualStyleBackColor = true;
+            this.btnTimKiem.Click += new System.EventHandler(this.btnTimKiem_Click);
             // 
             // txtSearch
             // 
@@ -254,6 +265,7 @@
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.Size = new System.Drawing.Size(356, 23);
             this.txtSearch.TabIndex = 0;
+            this.txtSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtSearch_KeyDown);
             this.txtSearch.MouseEnter += new System.EventHandler(this.txtSearch_MouseEnter);
             this.txtSearch.MouseLeave += new System.EventHandler(this.txtSearch_MouseLeave);
             // 
@@ -280,16 +292,6 @@
             this.panelContent.Size = new System.Drawing.Size(1332, 676);
             this.panelContent.TabIndex = 1;
             this.panelContent.Paint += new System.Windows.Forms.PaintEventHandler(this.panelContent_Paint);
-            // 
-            // lblTKKH
-            // 
-            this.lblTKKH.AutoSize = true;
-            this.lblTKKH.Location = new System.Drawing.Point(1020, 57);
-            this.lblTKKH.Name = "lblTKKH";
-            this.lblTKKH.Size = new System.Drawing.Size(135, 22);
-            this.lblTKKH.TabIndex = 5;
-            this.lblTKKH.Text = "TK Khách hàng";
-            this.lblTKKH.Visible = false;
             // 
             // Form1
             // 

@@ -1,0 +1,102 @@
+@model KhachHangWeb.Models.CheckoutViewModel
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+<h3>Thanh toán</h3>
+
+@if (!Model.Items.Any())
+{
+    <p>Giỏ hàng trống. <a href="/shop">Mua tiếp</a></p>
+}
+else
+{
+<div class="row g-3">
+  <div class="col-md-7">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Tên sản phẩm</th>
+          <th>Đơn giá</th>
+          <th>Số lượng</th>
+          <th>Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+      @foreach (var i in Model.Items)
+      {
+        <tr>
+          <td>@i.Name</td>
+          <td>@String.Format("{0:N0} đ", i.UnitPrice)</td>
+          <td>@i.Quantity</td>
+          <td>@String.Format("{0:N0} đ", i.UnitPrice * i.Quantity)</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-body">
+        <p class="fw-bold">Tổng tiền: @String.Format("{0:N0} đ", Model.Total)</p>
+
+        <form method="post" action="/checkout/placeorder">
+          <div class="mb-3">
+            <label class="form-label">Nhập mã giảm giá</label>
+            <div class="input-group">
+              <input class="form-control" name="promoCode" value="@Model.PromoCode" />
+              <button class="btn btn-outline-secondary" type="submit">Áp dụng</button>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Chi nhánh</label>
+            <select class="form-select" name="branchId">
+              @foreach (var b in Model.Branches)
+              {
+                <option value="@b.Id" selected="@(Model.SelectedBranch == b.Id ? "selected" : null)">@b.Name</option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Thú cưng</label>
+            <input class="form-control" value="@(Model.DefaultPetName ?? Model.DefaultPetId)" readonly />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Hình thức thanh toán</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="paymentMethod" value="Thẻ" @(Model.PaymentMethod == "Thẻ" ? "checked" : "") />
+              <label class="form-check-label">Thẻ</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="paymentMethod" value="Tiền mặt" @(Model.PaymentMethod == "Tiền mặt" ? "checked" : "") />
+              <label class="form-check-label">Tiền mặt</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="paymentMethod" value="Chuyển khoản" @(Model.PaymentMethod == "Chuyển khoản" ? "checked" : "") />
+              <label class="form-check-label">Chuyển khoản</label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Số tiền phải trả</label>
+            <div class="fw-bold">@String.Format("{0:N0} đ", Model.Payable)</div>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="payNow" value="true" checked />
+            <label class="form-check-label">Thanh toán ngay</label>
+          </div>
+
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="/cart">Quay lại</a>
+            <button class="btn btn-success">Xác nhận</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+}

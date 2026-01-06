@@ -69,17 +69,22 @@
             // 
             // txtHoTen
             // 
+            this.txtHoTen.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtHoTen.Location = new System.Drawing.Point(105, 116);
             this.txtHoTen.Name = "txtHoTen";
             this.txtHoTen.Size = new System.Drawing.Size(207, 27);
             this.txtHoTen.TabIndex = 2;
+            this.txtHoTen.TabStop = false;
             // 
             // txtSDT
             // 
+            this.txtSDT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtSDT.Location = new System.Drawing.Point(105, 180);
             this.txtSDT.Name = "txtSDT";
+            this.txtSDT.ReadOnly = true;
             this.txtSDT.Size = new System.Drawing.Size(207, 27);
             this.txtSDT.TabIndex = 4;
+            this.txtSDT.TabStop = false;
             // 
             // lblSDT
             // 
@@ -92,10 +97,13 @@
             // 
             // txtEmail
             // 
+            this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtEmail.Location = new System.Drawing.Point(385, 116);
             this.txtEmail.Name = "txtEmail";
+            this.txtEmail.ReadOnly = true;
             this.txtEmail.Size = new System.Drawing.Size(207, 27);
             this.txtEmail.TabIndex = 6;
+            this.txtEmail.TabStop = false;
             // 
             // lblEmail
             // 
@@ -108,10 +116,13 @@
             // 
             // txtCCCD
             // 
+            this.txtCCCD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtCCCD.Location = new System.Drawing.Point(385, 180);
             this.txtCCCD.Name = "txtCCCD";
+            this.txtCCCD.ReadOnly = true;
             this.txtCCCD.Size = new System.Drawing.Size(207, 27);
             this.txtCCCD.TabIndex = 8;
+            this.txtCCCD.TabStop = false;
             // 
             // lblCCCD
             // 
@@ -124,10 +135,13 @@
             // 
             // txtGioiTinh
             // 
+            this.txtGioiTinh.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtGioiTinh.Location = new System.Drawing.Point(690, 116);
             this.txtGioiTinh.Name = "txtGioiTinh";
+            this.txtGioiTinh.ReadOnly = true;
             this.txtGioiTinh.Size = new System.Drawing.Size(207, 27);
             this.txtGioiTinh.TabIndex = 10;
+            this.txtGioiTinh.TabStop = false;
             // 
             // lblGioiTinh
             // 
@@ -149,6 +163,9 @@
             // 
             // dtpNgaySinh
             // 
+            this.dtpNgaySinh.CustomFormat = "dd/MM/yyyy";
+            this.dtpNgaySinh.Enabled = false;
+            this.dtpNgaySinh.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
             this.dtpNgaySinh.Location = new System.Drawing.Point(690, 183);
             this.dtpNgaySinh.Name = "dtpNgaySinh";
             this.dtpNgaySinh.Size = new System.Drawing.Size(271, 27);

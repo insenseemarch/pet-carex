@@ -1,0 +1,56 @@
+@model List<KhachHangWeb.Models.sanpham>
+@using System.Collections.Generic
+@{
+    ViewData["Title"] = "Mua hàng";
+}
+
+<form method="get" class="mb-3">
+  <div class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <input class="form-control" name="q" value="@(ViewBag.Keyword ?? "")" placeholder="Tìm theo tên sản phẩm..." />
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" name="loai">
+        <option value="all" selected="@(ViewBag.SelectedCategory == "all" ? "selected" : null)">Tất cả loại</option>
+        @foreach (var c in (IEnumerable<string>)ViewBag.Categories)
+        {
+          <option value="@c" selected="@(ViewBag.SelectedCategory == c ? "selected" : null)">@c</option>
+        }
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" name="gia">
+        <option value="all" selected="@(ViewBag.SelectedPrice == "all" ? "selected" : null)">Tất cả giá</option>
+        <option value="lt100" selected="@(ViewBag.SelectedPrice == "lt100" ? "selected" : null)">&lt; 100.000</option>
+        <option value="100-300" selected="@(ViewBag.SelectedPrice == "100-300" ? "selected" : null)">100.000 - 300.000</option>
+        <option value="300-500" selected="@(ViewBag.SelectedPrice == "300-500" ? "selected" : null)">300.000 - 500.000</option>
+        <option value="gt500" selected="@(ViewBag.SelectedPrice == "gt500" ? "selected" : null)">&gt; 500.000</option>
+      </select>
+    </div>
+    <div class="col-md-1">
+      <button class="btn btn-primary w-100" type="submit">Lọc</button>
+    </div>
+  </div>
+</form>
+
+<div class="row g-3">
+@foreach (var p in Model)
+{
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6>@p.tensp</h6>
+        <p class="mb-1">@String.Format("{0:N0} đ", p.gia)</p>
+        <small class="text-muted">Tồn: @p.soluongton</small>
+      </div>
+      <div class="card-footer">
+        <form method="post" action="/shop/addtocart">
+          <input type="hidden" name="id" value="@p.masp" />
+          <input type="number" name="qty" value="1" min="1" class="form-control form-control-sm mb-2" />
+          <button class="btn btn-sm btn-primary w-100">Thêm giỏ</button>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+</div>

@@ -1,0 +1,46 @@
+@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>KhachHang Web</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="/">PetCareX</a>
+    <div class="collapse navbar-collapse show">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/shop">Mua hang</a></li>
+        <li class="nav-item"><a class="nav-link" href="/cart">Gio hang</a></li>
+        <li class="nav-item"><a class="nav-link" href="/booking">Dat lich</a></li>
+        <li class="nav-item"><a class="nav-link" href="/history">Lich su</a></li>
+        <li class="nav-item"><a class="nav-link" href="/lookup">Tra cuu</a></li>
+      </ul>
+      <ul class="navbar-nav">
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <li class="nav-item"><a class="nav-link" href="/account/profile">Xin chao @User.Identity!.Name</a></li>
+            <li class="nav-item">
+                <form method="post" action="/account/logout" class="d-inline">
+                    <button class="btn btn-sm btn-light">Dang xuat</button>
+                </form>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item"><a class="nav-link" href="/account/login">Dang nhap</a></li>
+            <li class="nav-item"><a class="nav-link" href="/account/register">Dang ky</a></li>
+        }
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container mt-4">
+  @RenderBody()
+</div>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

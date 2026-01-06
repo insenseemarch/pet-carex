@@ -17,7 +17,7 @@ namespace KhachHang
             InitializeComponent();
         }
 
-        double tongTienChuaGiam = 0; // Số tiền lấy từ giỏ hàng
+        decimal tongTienChuaGiam = 0m; // Số tiền lấy từ giỏ hàng
 
         private void ucThanhToan_Load(object sender, EventArgs e)
         {
@@ -30,36 +30,37 @@ namespace KhachHang
                 return;
             }
 
-            double tong = 0;
-            // Bước 2: Đổ dữ liệu từng dòng
+            decimal tong = 0m;
+
             foreach (var sp in Form1.GioHang)
             {
                 int n = dgvGioHang.Rows.Add();
-                // Thay vì truyền cả cụm, hãy gán trực tiếp vào từng ô (Cells)
+
                 dgvGioHang.Rows[n].Cells["colTen"].Value = sp.TenSP;
                 dgvGioHang.Rows[n].Cells["colGia"].Value = sp.GiaSP;
-                dgvGioHang.Rows[n].Cells["colSoLuong"].Value = 1;
-                dgvGioHang.Rows[n].Cells["colThanhTien"].Value = sp.GiaSP;
 
-                tong += sp.GiaSP;
+                int sl = sp.SoLuong;                 // <-- lấy số lượng từ model
+                decimal thanhTien = sp.GiaSP * sl;   // <-- tính thành tiền
+
+                dgvGioHang.Rows[n].Cells["colSoLuong"].Value = sl;
+                dgvGioHang.Rows[n].Cells["colThanhTien"].Value = thanhTien;
+
+                tong += thanhTien;
             }
 
-            // Bước 3: Hiển thị tiền
             lblTien.Text = tong.ToString("N0") + " VNĐ";
             lblThanhTien.Text = tong.ToString("N0") + " VNĐ";
             tongTienChuaGiam = tong;
         }
 
         // Lưu trữ các mã giảm giá: Tên mã và số tiền giảm (VNĐ)
-        Dictionary<string, double> danhSachMaGiam = new Dictionary<string, double>()
+        Dictionary<string, decimal> danhSachMaGiam = new Dictionary<string, decimal>()
         {
-            { "PETCARE10", 10000 },
-            { "GIAM50K", 50000 },
-            { "NHANVIEN", 100000 },
-            {"GIAM10", 10000 }
+            { "PETCARE10", 10000m },
+            { "GIAM50K", 50000m },
+            { "NHANVIEN", 100000m },
+            { "GIAM10", 10000m }
         };
-
-       
 
         private void lblTienPhaiTra_Click(object sender, EventArgs e)
         {
@@ -84,10 +85,9 @@ namespace KhachHang
 
         private void btnApDung_Click(object sender, EventArgs e)
         {
-            string maNhap = txtMaGiamGia.Text.Trim().ToUpper(); // Lấy mã khách nhập
-            double soTienGiam = 0;
+            string maNhap = txtMaGiamGia.Text.Trim().ToUpper();
+            decimal soTienGiam = 0m;
 
-            // Kiểm tra xem mã có trong danh sách không
             if (danhSachMaGiam.ContainsKey(maNhap))
             {
                 soTienGiam = danhSachMaGiam[maNhap];
@@ -98,13 +98,9 @@ namespace KhachHang
                 MessageBox.Show("Mã giảm giá không hợp lệ hoặc đã hết hạn!");
             }
 
-            // Tính toán số tiền cuối cùng
-            double soTienPhaiTra = tongTienChuaGiam - soTienGiam;
+            decimal soTienPhaiTra = tongTienChuaGiam - soTienGiam;
+            if (soTienPhaiTra < 0m) soTienPhaiTra = 0m;
 
-            // Đảm bảo số tiền không bị âm
-            if (soTienPhaiTra < 0) soTienPhaiTra = 0;
-
-            // Hiển thị lên giao diện
             lblThanhTien.Text = soTienPhaiTra.ToString("N0") + " VNĐ";
         }
 

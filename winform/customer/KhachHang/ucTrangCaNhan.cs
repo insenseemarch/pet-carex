@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using KhachHang.Common;
+using KhachHang.Data;
 
 namespace KhachHang
 {
@@ -20,47 +22,57 @@ namespace KhachHang
 
         private void ucTrangCaNhan_Load(object sender, EventArgs e)
         {
-            //string connectionString = "Server=YOUR_SERVER;Database=YOUR_DB;Trusted_Connection=True;";
-            //string maKH;
+            if (!Session.IsLoggedIn) return;
 
-            //using (SqlConnection conn = new SqlConnection(connectionString))
-            //{
-            //    conn.Open();
+            // 1) Thông tin KH
+            var dt = Db.QueryToTable(@"
+                select  kh.makh, kh.hoten, kh.sdt, kh.email, kh.cccd, kh.gioitinh, kh.ngaysinh,
+                tk.capbac, tk.diemtichluy
+                from khachhang kh
+                join taikhoankhachhang tk on tk.makh = kh.makh
+                where kh.makh = @makh
+               ", new SqlParameter("@makh", SqlDbType.VarChar, 10) { Value = Session.MaKH });
 
-            //    // 1. Đổ dữ liệu vào các ô thông tin khách hàng
-            //    string sqlKH = "SELECT * FROM KHACHHANG WHERE MaKH = @MaKH";
-            //    SqlCommand cmdKH = new SqlCommand(sqlKH, conn);
-            //    cmdKH.Parameters.AddWithValue("@MaKH", maKH);
-            //    SqlDataReader reader = cmdKH.ExecuteReader();
 
-            //    if (reader.Read())
-            //    {
-            //        txtHoTen.Text = reader["HoTen"].ToString();
-            //        txtEmail.Text = reader["Email"].ToString();
-            //        txtGioiTinh.Text = reader["GioiTinh"].ToString();
-            //        txtSDT.Text = reader["SDT"].ToString();
-            //        txtCCCD.Text = reader["CCCD"].ToString();
-            //        dtpNgaySinh.Value = Convert.ToDateTime(reader["NgaySinh"]);
-            //    }
-            //    reader.Close();
+            if (dt.Rows.Count == 0) return;
+            var r = dt.Rows[0];
 
-            //    // 2. Đổ dữ liệu vào DataGridView (Thú cưng đang sở hữu)
-            //    string sqlPet = "SELECT Mathucung, Tenthucung, Loai, GioiTinh, TinhTrangSucKhoe FROM THUCUNG WHERE MaKH = @MaKH";
-            //    SqlDataAdapter da = new SqlDataAdapter(sqlPet, conn);
-            //    da.SelectCommand.Parameters.AddWithValue("@MaKH", maKH);
+            txtHoTen.Text = r["hoten"].ToString();
+            txtSDT.Text = r["sdt"].ToString();
+            txtEmail.Text = r["email"].ToString();
+            txtCCCD.Text = r["cccd"].ToString();
+            txtGioiTinh.Text = r["gioitinh"].ToString();
 
-            //    DataTable dtPet = new DataTable();
-            //    da.Fill(dtPet);
+            if (r["ngaysinh"] != DBNull.Value)
+                dtpNgaySinh.Value = Convert.ToDateTime(r["ngaysinh"]);
 
-            //    dgvThuCung.DataSource = dtPet; // dgvThuCung là cái bảng màu xám trong ảnh của bạn
+            // 2) Danh sách thú cưng
+            ReloadThuCung();
+        }
 
-            //    // Tùy chỉnh tiêu đề cột cho đẹp
-            //    dgvThuCung.Columns[0].HeaderText = "Mã Thú Cưng";
-            //    dgvThuCung.Columns[1].HeaderText = "Tên Thú Cưng";
-            //    dgvThuCung.Columns[2].HeaderText = "Loài";
-            //    dgvThuCung.Columns[3].HeaderText = "Giới Tính";
-            //    dgvThuCung.Columns[4].HeaderText = "Tình Trạng Sức Khỏe";
-            //}
+        private void ReloadThuCung()
+        {
+            dgvThuCung.DataSource = Db.QueryToTable(@"
+                select  mathucung, tenthucung, loai, giong, ngaysinh, gioitinh,
+                tinhtrangsuckhoe as tinhtrang
+                from thucung
+                where makh = @makh",
+                new SqlParameter("@makh", SqlDbType.VarChar, 10) { Value = Session.MaKH }
+            );
+            dgvThuCung.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvThuCung.RowHeadersVisible = false;
+            dgvThuCung.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvThuCung.MultiSelect = false;
+            dgvThuCung.AllowUserToAddRows = false;
+            dgvThuCung.ReadOnly = true;
+            dgvThuCung.Columns["mathucung"].HeaderText = "Mã thú cưng";
+            dgvThuCung.Columns["tenthucung"].HeaderText = "Tên";
+            dgvThuCung.Columns["loai"].HeaderText = "Loài";
+            dgvThuCung.Columns["giong"].HeaderText = "Giống";
+            dgvThuCung.Columns["ngaysinh"].HeaderText = "Ngày sinh";
+            dgvThuCung.Columns["gioitinh"].HeaderText = "Giới tính";
+            dgvThuCung.Columns["tinhtrang"].HeaderText = "Tình trạng";
+            dgvThuCung.Columns["ngaysinh"].DefaultCellStyle.Format = "dd/MM/yyyy";
         }
     }
 }

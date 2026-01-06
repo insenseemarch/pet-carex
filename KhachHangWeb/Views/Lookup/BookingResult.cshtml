@@ -1,0 +1,8 @@
+@model KhachHangWeb.Models.ServiceBooking?
+@if (Model == null) { <p>Không tìm thấy lịch.</p> }
+else {
+  <h5>Lịch @Model.Id</h5>
+  <p>Dịch vụ: @Model.ServiceName</p>
+  <p>Thời gian: @Model.BookingTime</p>
+  <p>Ghi chú: @Model.Note</p>
+}

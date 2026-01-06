@@ -1,0 +1,91 @@
+@model KhachHangWeb.Models.BookingViewModel
+@{
+    ViewData["Title"] = "Đặt lịch khám";
+}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;700&display=swap">
+<style>
+  .booking-shell { font-family: "Sora", sans-serif; background: radial-gradient(circle at top left, #c3fff6 0%, #def6ff 40%, #f8fff9 100%); padding: 28px; border-radius: 18px; }
+  .booking-title { font-size: 28px; font-weight: 700; color: #0a6b62; margin-bottom: 16px; }
+  .booking-card { background: #ffffff; border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(12, 62, 54, 0.08); }
+  .booking-label { font-weight: 600; color: #0d3b33; }
+  .booking-actions { display: flex; gap: 12px; }
+  .booking-sub { color: #2a6b62; font-size: 14px; }
+  .booking-note { min-height: 90px; }
+</style>
+
+<div class="booking-shell">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <div class="booking-title">Đặt lịch khám</div>
+      <div class="booking-sub">Chọn chi nhánh, thú cưng, bác sĩ và khung giờ phù hợp.</div>
+    </div>
+    <a class="btn btn-outline-success" href="/booking/schedule">Tra cứu lịch bác sĩ</a>
+  </div>
+
+  @if (TempData["Booked"] != null)
+  {
+    <div class="alert alert-success">Đặt lịch thành công.</div>
+  }
+  @if (!ViewData.ModelState.IsValid)
+  {
+    <div class="alert alert-danger">Vui lòng kiểm tra lại thông tin.</div>
+  }
+
+  <div class="booking-card">
+    <form method="post" action="/booking/create">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label booking-label">Chi nhánh</label>
+          <select class="form-select" name="BranchId">
+            @foreach (var b in Model.Branches)
+            {
+              <option value="@b.Id" selected="@(Model.BranchId == b.Id ? "selected" : null)">@b.Name</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label booking-label">Mã thú cưng</label>
+          <select class="form-select" name="PetId">
+            @foreach (var p in Model.Pets)
+            {
+              <option value="@p.Id" selected="@(Model.PetId == p.Id ? "selected" : null)">@p.Id - @p.Name</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label booking-label">Ngày hẹn</label>
+          <input class="form-control" type="date" name="Date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label booking-label">Khung giờ</label>
+          <select class="form-select" name="Slot">
+            @foreach (var s in Model.Slots)
+            {
+              <option value="@s.Id" selected="@(Model.Slot == s.Id ? "selected" : null)">@s.Name</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label booking-label">Bác sĩ trực</label>
+          <select class="form-select" name="DoctorId">
+            @foreach (var d in Model.Doctors)
+            {
+              <option value="@d.Id" selected="@(Model.DoctorId == d.Id ? "selected" : null)">@d.Name</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label booking-label">Ghi chú</label>
+          <textarea class="form-control booking-note" name="Note" placeholder="Triệu chứng hoặc yêu cầu thêm...">@Model.Note</textarea>
+        </div>
+      </div>
+
+      <div class="booking-actions mt-4">
+        <a class="btn btn-outline-secondary" href="/">Quay lại</a>
+        <button class="btn btn-success">Xác nhận</button>
+      </div>
+    </form>
+  </div>
+</div>
