@@ -1,0 +1,92 @@
+@model StaffWeb.Models.ManagerRevenueViewModel
+@{
+    ViewData["Title"] = "Bao cao doanh thu";
+}
+
+<section class="card">
+    <h1 class="page-title">Bao cao doanh thu chi nhanh</h1>
+    <p class="page-subtitle">Chon khoang thoi gian de xem doanh thu.</p>
+
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Tu ngay</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Den ngay</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem bao cao</button>
+        @if (!string.IsNullOrWhiteSpace(Model.BranchId) && Model.FromDate.HasValue && Model.ToDate.HasValue)
+        {
+            <a class="btn btn-secondary" asp-action="RevenueExcel" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")">Xuat Excel</a>
+            <a class="btn btn-secondary" asp-action="RevenuePdf" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")">Xuat PDF</a>
+        }
+    </form>
+</section>
+
+@if (string.IsNullOrWhiteSpace(Model.BranchId))
+{
+    <div class="alert" style="margin-top: 16px;">Khong xac dinh duoc chi nhanh cua quan ly.</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.BranchId) && Model.BranchRevenue.HasValue)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu chi nhanh cua ban</h3>
+        <p><strong>Chi nhanh:</strong> @(Model.BranchName ?? Model.BranchId)</p>
+        <p><strong>Tong doanh thu:</strong> @Model.BranchRevenue.Value.ToString("N0")</p>
+    </section>
+}
+
+@if (Model.Trend.Count > 0)
+{
+    var max = Model.Trend.Max(x => x.tongdoanhthu);
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu theo ngay</h3>
+        <div class="manager-chart">
+            @foreach (var item in Model.Trend)
+            {
+                var height = max == 0 ? 0 : (int)Math.Round(item.tongdoanhthu / max * 100);
+                <div class="manager-bar" title="@item.ngay.ToString("dd/MM/yyyy"): @item.tongdoanhthu.ToString("N0")">
+                    <div class="manager-bar-fill" style="height:@height%"></div>
+                    <span>@item.ngay.ToString("dd/MM")</span>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@if (Model.Items.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Ket qua</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ma CN</th>
+                    <th>Ten chi nhanh</th>
+                    <th>So hoa don</th>
+                    <th>Tong doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Items)
+                {
+                    <tr>
+                        <td>@row.macn</td>
+                        <td>@row.tencn</td>
+                        <td>@row.sohoadon</td>
+                        <td>@row.tongdoanhthu.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+else if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+{
+    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+}

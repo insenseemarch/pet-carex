@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PetCareX Doctor</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="doctor-body">
+    <header class="doctor-header">
+        <div class="doctor-brand">
+            <a class="doctor-logo" asp-area="Doctor" asp-controller="Home" asp-action="Index">PetCareX</a>
+            <div>
+                <div class="doctor-title">Doctor Desk</div>
+                <div class="doctor-subtitle">He thong bac si thu y</div>
+            </div>
+        </div>
+        <nav class="doctor-nav">
+            <a class="doctor-tab" href="/Doctor/Lookup/Index">Tra cuu</a>
+            <a class="doctor-tab" href="/Doctor/Lookup/DoctorHistory">Lich su kham</a>
+            <a class="doctor-tab" href="/Doctor/Records/Create">Phieu kham benh</a>
+            <a class="doctor-tab" href="/Doctor/Prescription/Create">Ke toa thuoc</a>
+            <a class="doctor-tab" href="/Doctor/Vaccination/Create">Ghi nhan tiem</a>
+        </nav>
+        <div class="doctor-user">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <span>@User.Identity?.Name</span>
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-secondary">Dang xuat</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn" asp-controller="Account" asp-action="Login">Dang nhap</a>
+            }
+        </div>
+    </header>
+    <main class="doctor-main">
+        @RenderBody()
+    </main>
+</body>
+</html>

@@ -1,0 +1,59 @@
+@model StaffWeb.Models.DoctorDashboardViewModel
+@{
+    ViewData["Title"] = "Bac si";
+}
+
+<section class="doctor-dashboard">
+    <div class="doctor-hero">
+        <h1>Chao bac si, bat dau ca truc moi</h1>
+        <p>Tra cuu nhanh ho so, ke toa va quan ly lich kham trong mot giao dien thong nhat.</p>
+        <div class="doctor-actions">
+            <a class="btn" href="/Doctor/Records/Create">Tao benh an</a>
+            <a class="btn btn-secondary" href="/Doctor/Lookup/Index">Tra cuu</a>
+            <a class="btn btn-secondary" href="/Doctor/Vaccination/Create">Ghi nhan tiem</a>
+        </div>
+    </div>
+
+    <div class="doctor-info-grid">
+        <div class="doctor-info-card">
+            <h3>Thong tin bac si</h3>
+            <p><strong>Ho ten:</strong> @(Model.Doctor?.hoten ?? "Dang cap nhat")</p>
+            <p><strong>Ma NV:</strong> @(Model.Doctor?.manv ?? "-")</p>
+            <p><strong>Loai NV:</strong> @(Model.Doctor?.loainv ?? "-")</p>
+        </div>
+        <div class="doctor-info-card">
+            <h3>Chi nhanh</h3>
+            <p><strong>Ten:</strong> @(Model.Branch?.tencn ?? "Dang cap nhat")</p>
+            <p><strong>Dia chi:</strong> @(Model.Branch?.diachi ?? "-")</p>
+            <p><strong>SDT:</strong> @(Model.Branch?.sdt ?? "-")</p>
+        </div>
+        <div class="doctor-info-card">
+            <h3>Ca truc</h3>
+            <p><strong>Ngay:</strong> @DateTime.Now.ToString("dd/MM/yyyy")</p>
+            <p><strong>Gio:</strong> @DateTime.Now.ToString("HH:mm")</p>
+            <p><strong>Trang thai:</strong> Dang lam viec</p>
+        </div>
+    </div>
+
+    @if (Model.ShowSearchBoxes)
+    {
+        <div class="doctor-cards">
+            <a class="doctor-card" href="/Doctor/Lookup/Pet">
+                <h3>Thong tin</h3>
+                <p>Tra cuu ho so thu cung hoac khach hang</p>
+            </a>
+            <a class="doctor-card" href="/Doctor/Medicines/Index">
+                <h3>Tra cuu thuoc</h3>
+                <p>Danh muc thuoc va lieu luong</p>
+            </a>
+            <a class="doctor-card" href="/Doctor/Lookup/Vaccines">
+                <h3>Tra cuu vaccine</h3>
+                <p>Lich tiem va cac loai vaccine</p>
+            </a>
+            <a class="doctor-card" href="/Doctor/Lookup/WorkSchedule">
+                <h3>Lich lam viec</h3>
+                <p>Xem lich truc bac si</p>
+            </a>
+        </div>
+    }
+</section>

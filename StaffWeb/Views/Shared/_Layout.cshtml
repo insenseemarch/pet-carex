@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PetCareX Staff</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="app-header">
+        <div class="brand">
+            <span class="badge">Staff</span>
+            <span>PetCareX</span>
+        </div>
+        <nav class="nav-links">
+            @if (User.IsInRole("Doctor"))
+            {
+                <a asp-area="Doctor" asp-controller="Home" asp-action="Index">Tong quan</a>
+                <a asp-area="Doctor" asp-controller="Pets" asp-action="Index">Tra cuu thu cung</a>
+                <a asp-area="Doctor" asp-controller="Medicines" asp-action="Index">Tra cuu thuoc</a>
+                <a asp-area="Doctor" asp-controller="Records" asp-action="Create">Tao benh an</a>
+            }
+            @if (User.IsInRole("Staff"))
+            {
+                <a asp-area="Staff" asp-controller="Home" asp-action="Index">Tong quan</a>
+                <a asp-area="Staff" asp-controller="Appointments" asp-action="Index">Tao lich kham</a>
+                <a asp-area="Staff" asp-controller="Pets" asp-action="Index">Tra cuu thu cung</a>
+            }
+            @if (User.IsInRole("Manager"))
+            {
+                <a asp-area="Manager" asp-controller="Home" asp-action="Index">Tong quan</a>
+                <a asp-area="Manager" asp-controller="Reports" asp-action="Revenue">Bao cao doanh thu</a>
+                <a asp-area="Manager" asp-controller="Reports" asp-action="Doctors">Thong ke bac si</a>
+                <a asp-area="Manager" asp-controller="Reports" asp-action="Visits">So luot kham</a>
+                <a asp-area="Manager" asp-controller="Reports" asp-action="Products">Doanh thu san pham</a>
+            }
+        </nav>
+        <div class="user-box">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <span>@User.Identity?.Name</span>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-secondary">Dang xuat</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn" asp-controller="Account" asp-action="Login">Dang nhap</a>
+            }
+        </div>
+    </header>
+    <main class="app-main">
+        @RenderBody()
+    </main>
+    <footer class="app-footer">
+        PetCareX Staff Portal - noi bo phong kham thu cung
+    </footer>
+</body>
+</html>

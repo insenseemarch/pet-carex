@@ -1,0 +1,54 @@
+@model StaffWeb.Models.ManagerVisitViewModel
+@{
+    ViewData["Title"] = "So luot kham";
+}
+
+<section class="card">
+    <h1 class="page-title">So luot kham</h1>
+    <p class="page-subtitle">Thong ke luot kham theo khoang ngay.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Tu ngay</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Den ngay</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem thong ke</button>
+        @if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+        {
+            <a class="btn btn-secondary" asp-action="VisitsExcel" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")">Xuat Excel</a>
+            <a class="btn btn-secondary" asp-action="VisitsPdf" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")">Xuat PDF</a>
+        }
+    </form>
+</section>
+
+@if (Model.Items.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ngay</th>
+                    <th>So luot</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Items)
+                {
+                    <tr>
+                        <td>@row.ngay.ToString("dd/MM/yyyy")</td>
+                        <td>@row.soluot</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+else if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+{
+    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+}

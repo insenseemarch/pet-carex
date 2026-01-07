@@ -1,0 +1,51 @@
+@model StaffWeb.Models.MedicineSearchViewModel
+@{
+    ViewData["Title"] = "Tra cuu thuoc";
+}
+
+<section class="card">
+    <h1 class="page-title">Tra cuu thuoc</h1>
+    <p class="page-subtitle">Tim san pham loai thuoc trong kho.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Tu khoa</label>
+                <input name="q" value="@Model.Query" placeholder="Ten thuoc hoac loai" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Tim kiem</button>
+    </form>
+</section>
+
+<section class="card" style="margin-top: 20px;">
+    <h3>Danh sach thuoc</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ma</th>
+                <th>Ten</th>
+                <th>Loai</th>
+                <th>Gia</th>
+                <th>Ton</th>
+                <th>HSD</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Medicines)
+            {
+                <tr>
+                    <td>@item.masp</td>
+                    <td>@item.tensp</td>
+                    <td>@item.loaisp</td>
+                    <td>@item.gia.ToString("N0")</td>
+                    <td>@item.soluongton</td>
+                    <td>@(item.hsd?.ToString("dd/MM/yyyy") ?? "-")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Medicines.Count == 0)
+    {
+        <p class="page-subtitle">Khong co du lieu.</p>
+    }
+</section>

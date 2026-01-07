@@ -1,0 +1,41 @@
+@model StaffWeb.Models.ManagerDoctorViewModel
+@{
+    ViewData["Title"] = "Thong ke bac si";
+}
+
+<section class="card">
+    <h1 class="page-title">Thong ke bac si</h1>
+    <p class="page-subtitle">So lan kham va tiem theo bac si.</p>
+    <a class="btn btn-secondary" asp-action="DoctorsExcel">Xuat Excel</a>
+    <a class="btn btn-secondary" asp-action="DoctorsPdf">Xuat PDF</a>
+</section>
+
+<section class="card" style="margin-top: 20px;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ma NV</th>
+                <th>Ho ten</th>
+                <th>So lan kham</th>
+                <th>So lan tiem</th>
+                <th>Doanh thu uoc tinh</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Items)
+            {
+                <tr>
+                    <td>@row.manv</td>
+                    <td>@row.hoten</td>
+                    <td>@row.solankham</td>
+                    <td>@row.solantiem</td>
+                    <td>@row.doanhthu.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Items.Count == 0)
+    {
+        <p class="page-subtitle">Khong co du lieu.</p>
+    }
+</section>

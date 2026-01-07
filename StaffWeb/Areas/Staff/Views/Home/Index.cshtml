@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Tiep tan";
+}
+
+<section class="staff-dashboard">
+    <div class="staff-hero">
+        <h1>Bang dieu khien tiep tan</h1>
+        <p>Xu ly khach den truc tiep, dat lich kham va kiem tra thong tin thu cung.</p>
+        <div class="staff-actions">
+            <a class="btn" asp-area="Staff" asp-controller="Appointments" asp-action="Index">Tao lich kham</a>
+            <a class="btn btn-secondary" asp-area="Staff" asp-controller="Pets" asp-action="Index">Tra cuu thu cung</a>
+        </div>
+    </div>
+    <div class="staff-cards">
+        <a class="staff-card" asp-area="Staff" asp-controller="Appointments" asp-action="Index">
+            <h3>Tao lich kham truc tiep</h3>
+            <p>Ghi nhan lich kham ngay tai quay tiep nhan.</p>
+        </a>
+        <a class="staff-card" asp-area="Staff" asp-controller="Pets" asp-action="Index">
+            <h3>Tra cuu thu cung</h3>
+            <p>Xac dinh khach moi/khach cu theo ma thu cung hoac SDT.</p>
+        </a>
+    </div>
+</section>

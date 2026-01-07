@@ -1,0 +1,101 @@
+@model StaffWeb.Models.DoctorHistoryViewModel
+@{
+    ViewData["Title"] = "Lich su kham";
+}
+
+<section class="card">
+    <h1 class="page-title">Lich su kham cua bac si</h1>
+    <p class="page-subtitle">Tu dong lay theo tai khoan dang dang nhap.</p>
+    <div class="grid two">
+        <div>
+            <p><strong>Ho ten:</strong> @Model.Doctor?.hoten</p>
+            <p><strong>Ma NV:</strong> @Model.Doctor?.manv</p>
+        </div>
+        <div>
+            <p><strong>Chi nhanh:</strong> @Model.Doctor?.macnNavigation?.tencn</p>
+            <p><strong>SDT chi nhanh:</strong> @Model.Doctor?.macnNavigation?.sdt</p>
+        </div>
+    </div>
+</section>
+
+<section class="card" style="margin-top: 20px;">
+    <h3>Loc du lieu</h3>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Ma thu cung</label>
+                <input name="petId" value="@Model.Filter.PetId" />
+            </div>
+            <div>
+                <label>Tu ngay</label>
+                <input type="date" name="from" value="@(Model.Filter.From?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Den ngay</label>
+                <input type="date" name="to" value="@(Model.Filter.To?.ToString("yyyy-MM-dd"))" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Ap dung</button>
+        <a class="btn btn-secondary" href="/Doctor/Lookup/DoctorHistory">Reset</a>
+    </form>
+</section>
+
+<section class="card" style="margin-top: 20px;">
+    <h3>Lich su kham</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ngay</th>
+                <th>Dich vu</th>
+                <th>Thu cung</th>
+                <th>Trieu chung</th>
+                <th>Chan doan</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Exams)
+            {
+                <tr>
+                    <td>@item.ngaysudung.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@item.madvNavigation?.tendv</td>
+                    <td>@item.mathucungNavigation?.tenthucung (@item.mathucung)</td>
+                    <td>@item.trieuchung</td>
+                    <td>@item.chandoan</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Exams.Count == 0)
+    {
+        <p class="page-subtitle">Chua co du lieu kham.</p>
+    }
+</section>
+
+<section class="card" style="margin-top: 20px;">
+    <h3>Lich su tiem</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ngay tiem</th>
+                <th>Vac xin</th>
+                <th>Thu cung</th>
+                <th>Trang thai</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Vaccines)
+            {
+                <tr>
+                    <td>@item.ngaytiem.ToString("dd/MM/yyyy")</td>
+                    <td>@item.mavacxinNavigation?.tenvacxin</td>
+                    <td>@item.mathucungNavigation?.tenthucung (@item.mathucung)</td>
+                    <td>@item.trangthai</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Vaccines.Count == 0)
+    {
+        <p class="page-subtitle">Chua co du lieu tiem.</p>
+    }
+</section>

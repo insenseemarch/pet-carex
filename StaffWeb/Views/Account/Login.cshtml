@@ -1,0 +1,30 @@
+@model StaffWeb.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Dang nhap";
+}
+
+<section class="card" style="max-width: 520px; margin: 0 auto;">
+    <h1 class="page-title">Dang nhap nhan vien</h1>
+    <p class="page-subtitle">Su dung tai khoan nhan vien de truy cap he thong.</p>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert">Kiem tra lai thong tin dang nhap.</div>
+    }
+
+    <form method="post">
+        <div class="form-row">
+            <div>
+                <label>Ten dang nhap</label>
+                <input asp-for="UserName" />
+                <span asp-validation-for="UserName"></span>
+            </div>
+            <div>
+                <label>Mat khau</label>
+                <input asp-for="Password" type="password" />
+                <span asp-validation-for="Password"></span>
+            </div>
+        </div>
+        <button type="submit" class="btn">Dang nhap</button>
+    </form>
+</section>

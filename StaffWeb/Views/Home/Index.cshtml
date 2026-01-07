@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Trang chu";
+}
+
+<section class="grid two">
+    <div class="card">
+        <h1 class="page-title">PetCareX Staff Portal</h1>
+        <p class="page-subtitle">
+            He thong quan ly noi bo cho bac si, tiep tan va quan ly.
+        </p>
+        @if (!(User.Identity?.IsAuthenticated ?? false))
+        {
+            <a class="btn" asp-controller="Account" asp-action="Login">Dang nhap de tiep tuc</a>
+        }
+    </div>
+</section>

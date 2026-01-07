@@ -1,0 +1,152 @@
+@model StaffWeb.Models.VaccinationRecordViewModel
+@{
+    ViewData["Title"] = "Ghi nhan tiem phong";
+}
+
+<section class="card">
+    <h1 class="page-title">Ghi nhan tiem phong</h1>
+    <p class="page-subtitle">Nhap thong tin tiem phong cho thu cung.</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert">@TempData["Success"]</div>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert">Kiem tra lai thong tin bat buoc.</div>
+    }
+
+    <form method="post">
+        <div class="form-row">
+            <div>
+                <label>Ma thu cung</label>
+                <input asp-for="PetId" />
+            </div>
+            <div class="align-end">
+                <label>&nbsp;</label>
+                <button type="submit" name="action" value="load" class="btn btn-ghost">Tai goi dang cho</button>
+            </div>
+            <div>
+                <label>Che do tiem</label>
+                <div class="inline-options">
+                    <label>
+                        <input type="radio" name="Mode" value="Le" @(Model.Mode == "Goi" ? "" : "checked") />
+                        Tiem le
+                    </label>
+                    <label>
+                        <input type="radio" name="Mode" value="Goi" @(Model.Mode == "Goi" ? "checked" : "") />
+                        Tiem goi
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row mode-le">
+            <div>
+                <label>Dich vu tiem le</label>
+                <select asp-for="ServiceId">
+                    <option value="">Chon dich vu</option>
+                    @foreach (var dv in Model.Services)
+                    {
+                        <option value="@dv.madv">@dv.madvNavigation?.tendv (@dv.madv)</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row mode-goi">
+            <div class="full">
+                <label>Goi dang cho (neu co)</label>
+                <input type="hidden" name="SelectedPendingServiceId" value="@Model.SelectedPendingServiceId" />
+                @if (Model.PendingPackages.Count == 0)
+                {
+                    <div class="muted">Thu cung nay chua co goi nao dang cho.</div>
+                }
+                else
+                {
+                    <div class="pending-list">
+                        @foreach (var item in Model.PendingPackages)
+                        {
+                            <label class="pending-item">
+                                <input type="radio"
+                                       name="SelectedPendingStt"
+                                       value="@item.Stt"
+                                       data-serviceid="@item.ServiceId"
+                                       @(Model.SelectedPendingStt == item.Stt ? "checked" : "") />
+                                <span>
+                                    @item.ServiceName (@item.ServiceId) -
+                                    @item.VaccineName (@item.VaccineId) -
+                                    @item.PlannedDate?.ToString("dd/MM/yyyy") -
+                                    @(string.IsNullOrWhiteSpace(item.Status) ? "Cho tiem" : item.Status)
+                                </span>
+                            </label>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="form-row mode-goi">
+            <div>
+                <label>Tao goi moi</label>
+                <select asp-for="NewPackageServiceId">
+                    <option value="">Chon goi</option>
+                    @foreach (var goi in Model.PackageOptions)
+                    {
+                        <option value="@goi.ServiceId">
+                            @goi.Name (@goi.ServiceId) - @goi.Months thang
+                        </option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label>Ngay bat dau goi</label>
+                <input asp-for="PackageStartDate" type="date" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label>Vaccine</label>
+                <select asp-for="VaccineId">
+                    <option value="">Chon vaccine</option>
+                    @foreach (var vx in Model.Vaccines)
+                    {
+                        <option value="@vx.mavacxin">@vx.tenvacxin (@vx.mavacxin)</option>
+                    }
+                </select>
+                <div class="muted">Neu chon goi dang cho, vaccine se dung theo lich da tao.</div>
+            </div>
+            <div>
+                <label>Ngay tiem</label>
+                <input asp-for="Date" type="date" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Luu</button>
+    </form>
+</section>
+
+<script>
+    (function () {
+        const updateMode = () => {
+            const mode = document.querySelector('input[name="Mode"]:checked')?.value || "Le";
+            document.querySelectorAll('.mode-le').forEach(el => el.style.display = mode === "Le" ? "" : "none");
+            document.querySelectorAll('.mode-goi').forEach(el => el.style.display = mode === "Goi" ? "" : "none");
+        };
+        const updatePendingService = () => {
+            const selected = document.querySelector('input[name="SelectedPendingStt"]:checked');
+            const holder = document.querySelector('input[name="SelectedPendingServiceId"]');
+            if (holder) {
+                holder.value = selected?.dataset?.serviceid || "";
+            }
+        };
+        document.querySelectorAll('input[name="Mode"]').forEach(el => {
+            el.addEventListener('change', updateMode);
+        });
+        document.querySelectorAll('input[name="SelectedPendingStt"]').forEach(el => {
+            el.addEventListener('change', updatePendingService);
+        });
+        updateMode();
+        updatePendingService();
+    })();
+</script>

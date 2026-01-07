@@ -1,0 +1,48 @@
+@model StaffWeb.Models.ManagerProductViewModel
+@{
+    ViewData["Title"] = "Doanh thu san pham";
+}
+
+<section class="card">
+    <h1 class="page-title">Doanh thu ban san pham</h1>
+    <p class="page-subtitle">Thong ke san pham ban chay.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Top</label>
+                <input type="number" name="top" value="@Model.Top" min="1" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem bao cao</button>
+        <a class="btn btn-secondary" asp-action="ProductsExcel" asp-route-top="@Model.Top">Xuat Excel</a>
+        <a class="btn btn-secondary" asp-action="ProductsPdf" asp-route-top="@Model.Top">Xuat PDF</a>
+    </form>
+</section>
+
+<section class="card" style="margin-top: 20px;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ma SP</th>
+                <th>Ten san pham</th>
+                <th>So luong</th>
+                <th>Doanh thu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Items)
+            {
+                <tr>
+                    <td>@row.masp</td>
+                    <td>@row.tensp</td>
+                    <td>@row.tongsoluong</td>
+                    <td>@row.tongdoanhthu.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Items.Count == 0)
+    {
+        <p class="page-subtitle">Khong co du lieu.</p>
+    }
+</section>

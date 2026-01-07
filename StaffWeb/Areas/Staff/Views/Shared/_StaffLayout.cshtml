@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PetCareX Staff</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="staff-body">
+    <header class="staff-header">
+        <div class="staff-brand">
+            <a class="staff-logo" asp-area="Staff" asp-controller="Home" asp-action="Index">PetCareX</a>
+            <div>
+                <div class="staff-title">Reception Desk</div>
+                <div class="staff-subtitle">He thong tiep nhan kham benh</div>
+            </div>
+        </div>
+        <nav class="staff-nav">
+            <a class="staff-tab" asp-area="Staff" asp-controller="Home" asp-action="Index">Tong quan</a>
+            <a class="staff-tab" asp-area="Staff" asp-controller="Appointments" asp-action="Index">Tao lich kham</a>
+            <a class="staff-tab" asp-area="Staff" asp-controller="Pets" asp-action="Index">Tra cuu thu cung</a>
+        </nav>
+        <div class="staff-user">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <span>@User.Identity?.Name</span>
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-secondary">Dang xuat</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn" asp-controller="Account" asp-action="Login">Dang nhap</a>
+            }
+        </div>
+    </header>
+    <main class="staff-main">
+        @RenderBody()
+    </main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+@model StaffWeb.Models.StaffAppointmentViewModel
+@{
+    ViewData["Title"] = "Tao lich kham";
+}
+
+<section class="card">
+    <h1 class="page-title">Tao lich kham truc tiep</h1>
+    <p class="page-subtitle">Nhap thong tin co ban de tao lich.</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert">@TempData["Success"]</div>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert">Kiem tra lai thong tin bat buoc.</div>
+    }
+
+    <form method="post" id="appointmentForm">
+        <input type="hidden" name="action" id="actionField" value="" />
+        <div class="form-row">
+            <div>
+                <label>Ngay gio kham</label>
+                <input asp-for="VisitTime" type="datetime-local" id="visitTimeInput" />
+            </div>
+            <div>
+                <label>Ma thu cung</label>
+                <input asp-for="PetId" />
+            </div>
+            <div>
+                <label>Dich vu</label>
+                <select asp-for="ServiceId">
+                    <option value="">Chon dich vu</option>
+                    @foreach (var dv in Model.Services)
+                    {
+                        <option value="@dv.madv">@dv.tendv</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label>Bac si</label>
+                <select asp-for="DoctorId">
+                    <option value="">Chon bac si</option>
+                    @foreach (var bs in Model.Doctors)
+                    {
+                        <option value="@bs.manv">@bs.hoten</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div>
+            <label>Ghi chu / Trieu chung</label>
+            <textarea asp-for="Notes"></textarea>
+        </div>
+        <div style="margin-top: 16px;">
+            <button type="submit" class="btn" id="submitAppointment">Tao lich</button>
+        </div>
+    </form>
+</section>
+
+<script>
+    (function () {
+        const form = document.getElementById("appointmentForm");
+        const actionField = document.getElementById("actionField");
+        const visitTime = document.getElementById("visitTimeInput");
+        const submitBtn = document.getElementById("submitAppointment");
+
+        if (visitTime) {
+            visitTime.addEventListener("change", () => {
+                actionField.value = "load";
+                form.submit();
+            });
+        }
+
+        if (form) {
+            form.addEventListener("submit", (e) => {
+                if (e.submitter === submitBtn) {
+                    actionField.value = "";
+                }
+            });
+        }
+    })();
+</script>

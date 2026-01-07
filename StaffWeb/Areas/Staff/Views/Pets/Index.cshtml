@@ -1,0 +1,81 @@
+@model StaffWeb.Models.PetLookupViewModel
+@{
+    ViewData["Title"] = "Tra cuu thu cung";
+}
+
+<section class="card">
+    <h1 class="page-title">Tra cuu thu cung</h1>
+    <p class="page-subtitle">Tra cuu theo ma thu cung hoac so dien thoai khach hang.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Ma thu cung</label>
+                <input name="petId" value="@Model.PetId" />
+            </div>
+            <div>
+                <label>So dien thoai</label>
+                <input name="phone" value="@Model.Phone" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Tra cuu</button>
+    </form>
+</section>
+
+@if (Model.Pet == null && !string.IsNullOrWhiteSpace(Model.PetId))
+{
+    <div class="alert" style="margin-top: 16px;">Khong tim thay thu cung.</div>
+}
+
+@if (Model.Customer == null && !string.IsNullOrWhiteSpace(Model.Phone))
+{
+    <div class="alert" style="margin-top: 16px;">Khong tim thay khach hang.</div>
+}
+
+@if (Model.Pet != null)
+{
+    <section class="grid two" style="margin-top: 20px;">
+        <div class="card">
+            <h3>Thong tin thu cung</h3>
+            <p><strong>Ma:</strong> @Model.Pet.mathucung</p>
+            <p><strong>Ten:</strong> @Model.Pet.tenthucung</p>
+            <p><strong>Loai:</strong> @Model.Pet.loai</p>
+            <p><strong>Giong:</strong> @Model.Pet.giong</p>
+        </div>
+        <div class="card">
+            <h3>Thong tin khach hang</h3>
+            <p><strong>Ma KH:</strong> @Model.Customer?.makh</p>
+            <p><strong>Ho ten:</strong> @Model.Customer?.hoten</p>
+            <p><strong>SDT:</strong> @Model.Customer?.sdt</p>
+        </div>
+    </section>
+}
+
+@if (Model.PetsByCustomer.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Thu cung cua khach</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ma</th>
+                    <th>Ten</th>
+                    <th>Loai</th>
+                    <th>Giong</th>
+                    <th>Ngay sinh</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pet in Model.PetsByCustomer)
+                {
+                    <tr>
+                        <td>@pet.mathucung</td>
+                        <td>@pet.tenthucung</td>
+                        <td>@pet.loai</td>
+                        <td>@pet.giong</td>
+                        <td>@(pet.ngaysinh?.ToString("dd/MM/yyyy") ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
