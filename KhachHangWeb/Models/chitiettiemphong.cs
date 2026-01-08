@@ -15,7 +15,7 @@ public partial class chitiettiemphong
 
     public string mabs { get; set; } = null!;
 
-    public DateOnly ngaytiem { get; set; }
+    public DateTime ngaytiem { get; set; }
 
     public string? trangthai { get; set; }
 

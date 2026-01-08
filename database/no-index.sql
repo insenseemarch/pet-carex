@@ -469,9 +469,9 @@ go
 create table hoadon 
 (
     mahd varchar(10) primary key,
-    mathucung varchar(10) not null,
-    manvlap varchar(10) not null,
-    macn varchar(10) not null,
+    mathucung varchar(10) ,
+    manvlap varchar(10) ,
+    macn varchar(10) ,
     makh varchar(10) not null,
     makham varchar(10),
     matiem varchar(10),
@@ -1388,3 +1388,7 @@ begin
            or max(hd.ngaylap) is null;
 end
 go
+
+use master
+go
+drop database petcarx

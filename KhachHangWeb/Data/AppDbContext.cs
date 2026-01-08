@@ -386,8 +386,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.email)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.gioitinh).HasMaxLength(10);
-            entity.Property(e => e.hoten).HasMaxLength(100);
             entity.Property(e => e.sdt)
                 .HasMaxLength(10)
                 .IsUnicode(false)

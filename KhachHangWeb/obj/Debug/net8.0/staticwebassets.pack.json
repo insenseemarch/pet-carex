@@ -13,6 +13,18 @@
       "PackagePath": "staticwebassets\\favicon.ico"
     },
     {
+      "Id": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\images\\phukien.png",
+      "PackagePath": "staticwebassets\\images\\phukien.png"
+    },
+    {
+      "Id": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\images\\thucan.png",
+      "PackagePath": "staticwebassets\\images\\thucan.png"
+    },
+    {
+      "Id": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\images\\thuoc.png",
+      "PackagePath": "staticwebassets\\images\\thuoc.png"
+    },
+    {
       "Id": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\js\\site.js",
       "PackagePath": "staticwebassets\\js\\site.js"
     },

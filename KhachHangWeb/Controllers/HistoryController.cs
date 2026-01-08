@@ -1,7 +1,9 @@
+﻿using System.Data;
 using KhachHangWeb.Data;
 using KhachHangWeb.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace KhachHangWeb.Controllers;
@@ -13,34 +15,27 @@ public class HistoryController : Controller
     public HistoryController(AppDbContext db) => _db = db;
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? makh, string? petId)
+    public async Task<IActionResult> Index(string? orderId, string? petId)
     {
-        var claimMakh = User.FindFirst("MaKhachHang")?.Value;
-        if (!string.IsNullOrWhiteSpace(claimMakh))
-        {
-            if (!string.IsNullOrWhiteSpace(makh) && makh != claimMakh)
-            {
-                return Forbid();
-            }
-            makh = claimMakh;
-        }
+        var makh = User.FindFirst("MaKhachHang")?.Value;
+        if (string.IsNullOrWhiteSpace(makh)) return RedirectToAction("Login", "Account");
 
-        var vm = new PetHistoryViewModel { CustomerId = makh, PetId = petId };
+        _db.Database.SetCommandTimeout(60);
 
-        if (string.IsNullOrWhiteSpace(makh))
+        var vm = new PetHistoryViewModel
         {
-            vm.Message = "Vui lòng nhập mã khách hàng.";
+            CustomerId = makh,
+            PetId = petId,
+            OrderId = orderId
+        };
+
+        var customerName = await LoadCustomerNameAsync(makh);
+        if (customerName == null)
+        {
+            vm.Message = "Khong tim thay khach hang.";
             return View(vm);
         }
-
-        var kh = await _db.khachhangs.AsNoTracking()
-            .FirstOrDefaultAsync(k => k.makh == makh);
-        if (kh == null)
-        {
-            vm.Message = "Không tìm thấy khách hàng.";
-            return View(vm);
-        }
-        vm.CustomerName = kh.hoten;
+        vm.CustomerName = string.IsNullOrWhiteSpace(customerName) ? "Khach hang" : customerName;
 
         vm.Pets = await _db.thucungs.AsNoTracking()
             .Where(t => t.makh == makh)
@@ -49,39 +44,50 @@ public class HistoryController : Controller
             .ToListAsync();
 
         if (string.IsNullOrWhiteSpace(petId))
-            vm.PetId = vm.Pets.FirstOrDefault()?.Id;
-
-        if (string.IsNullOrWhiteSpace(vm.PetId))
         {
-            vm.Message = "Khách hàng chưa có thú cưng.";
-            return View(vm);
+            vm.PetId = "";
+        }
+        else
+        {
+            var pet = await _db.thucungs.AsNoTracking()
+                .FirstOrDefaultAsync(t => t.mathucung == petId);
+            vm.PetName = pet?.tenthucung;
         }
 
-        var pet = await _db.thucungs.AsNoTracking()
-            .FirstOrDefaultAsync(t => t.mathucung == vm.PetId);
-        vm.PetName = pet?.tenthucung;
-
-        vm.Purchases = await _db.hoadons.AsNoTracking()
-            .Where(h => h.makh == makh && h.mathucung == vm.PetId)
-            .Include(h => h.chitietmuasanphams)
-            .ThenInclude(ct => ct.maspNavigation)
-            .Include(h => h.macnNavigation)
-            .SelectMany(h => h.chitietmuasanphams.Select(ct => new PurchaseHistoryItem
+        var purchasesQuery =
+            from h in _db.hoadons.AsNoTracking()
+            join c in _db.chinhanhs.AsNoTracking() on h.macn equals c.macn into cb
+            from c in cb.DefaultIfEmpty()
+            join ct in _db.chitietmuasanphams.AsNoTracking() on h.mahd equals ct.mahd
+            join sp in _db.sanphams.AsNoTracking() on ct.masp equals sp.masp
+            where h.makh == makh
+            select new PurchaseHistoryItem
             {
                 OrderId = h.mahd,
                 OrderDate = h.ngaylap,
-                BranchName = h.macnNavigation.tencn,
-                ProductName = ct.maspNavigation.tensp,
+                BranchName = c != null ? c.tencn : "",
+                ProductName = sp.tensp,
                 Quantity = ct.soluong,
                 Amount = ct.thanhtien,
                 Status = h.trangthai,
                 PaymentMethod = h.hinhthucthanhtoan
-            }))
+            };
+
+        if (!string.IsNullOrWhiteSpace(orderId))
+            purchasesQuery = purchasesQuery.Where(p => p.OrderId == orderId);
+
+        vm.Purchases = await purchasesQuery
             .OrderByDescending(x => x.OrderDate)
             .ToListAsync();
 
-        vm.Exams = await _db.chitietkhambenhs.AsNoTracking()
-            .Where(k => k.mathucung == vm.PetId)
+        var petIds = vm.Pets.Select(p => p.Id).ToList();
+        var examQuery = _db.chitietkhambenhs.AsNoTracking()
+            .Where(k => petIds.Contains(k.mathucung));
+
+        if (!string.IsNullOrWhiteSpace(vm.PetId))
+            examQuery = examQuery.Where(k => k.mathucung == vm.PetId);
+
+        vm.Exams = await examQuery
             .Include(k => k.mabsNavigation)
             .Include(k => k.madvNavigation)
             .OrderByDescending(k => k.ngaysudung)
@@ -97,23 +103,46 @@ public class HistoryController : Controller
             })
             .ToListAsync();
 
-        vm.Vaccines = await _db.chitiettiemphongs.AsNoTracking()
-            .Where(t => t.mathucung == vm.PetId)
-            .Include(t => t.mavacxinNavigation)
-            .Include(t => t.mabsNavigation)
-            .OrderByDescending(t => t.ngaytiem)
-            .Select(t => new VaccineHistoryItem
+        var vaccineBase = _db.chitiettiemphongs.AsNoTracking()
+            .Where(t => petIds.Contains(t.mathucung));
+
+        if (!string.IsNullOrWhiteSpace(vm.PetId))
+            vaccineBase = vaccineBase.Where(t => t.mathucung == vm.PetId);
+
+        vm.Vaccines = await (
+            from c in vaccineBase
+            join v in _db.vacxins.AsNoTracking() on c.mavacxin equals v.mavacxin
+            join n in _db.nhanviens.AsNoTracking() on c.mabs equals n.manv
+            orderby c.ngaytiem descending
+            select new VaccineHistoryItem
             {
-                Stt = t.stt,
-                VaccineId = t.mavacxin,
-                VaccineName = t.mavacxinNavigation.tenvacxin,
-                DoctorId = t.mabs,
-                DoctorName = t.mabsNavigation.hoten,
-                Date = t.ngaytiem,
-                Status = t.trangthai
+                Stt = c.stt,
+                VaccineId = c.mavacxin,
+                VaccineName = v.tenvacxin,
+                DoctorId = c.mabs,
+                DoctorName = n.hoten,
+                Date = c.ngaytiem,
+                Status = c.trangthai
             })
             .ToListAsync();
 
         return View(vm);
+    }
+
+    private async Task<string?> LoadCustomerNameAsync(string makh)
+    {
+        await using var conn = new SqlConnection(_db.Database.GetDbConnection().ConnectionString);
+        await conn.OpenAsync();
+
+        await using var cmd = new SqlCommand(
+            "SELECT kh.makh, tt.hoten FROM khachhang kh LEFT JOIN thongtin tt ON kh.cccd = tt.cccd WHERE kh.makh = @makh",
+            conn
+        );
+        cmd.CommandType = CommandType.Text;
+        cmd.Parameters.Add(new SqlParameter("@makh", makh));
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync()) return null;
+        return reader.IsDBNull(1) ? "" : reader.GetString(1);
     }
 }

@@ -7,6 +7,7 @@ public class PetHistoryViewModel
 {
     public string? CustomerId { get; set; }
     public string? CustomerName { get; set; }
+    public string? OrderId { get; set; }
     public string? PetId { get; set; }
     public string? PetName { get; set; }
     public string? Message { get; set; }
@@ -47,6 +48,6 @@ public class VaccineHistoryItem
     public string? VaccineName { get; set; }
     public string? DoctorId { get; set; }
     public string? DoctorName { get; set; }
-    public DateOnly Date { get; set; }
+    public DateTime Date { get; set; }
     public string? Status { get; set; }
 }

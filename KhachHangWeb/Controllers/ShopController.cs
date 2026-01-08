@@ -11,7 +11,8 @@ public class ShopController : Controller
 
     public async Task<IActionResult> Index(string? q, string? loai, string? gia)
     {
-        var query = _db.sanphams.AsQueryable();
+        _db.Database.SetCommandTimeout(60);
+        var query = _db.sanphams.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(q))
             query = query.Where(p => p.tensp.Contains(q) || p.loaisp.Contains(q));
@@ -32,6 +33,7 @@ public class ShopController : Controller
         }
 
         ViewBag.Categories = await _db.sanphams
+            .AsNoTracking()
             .Select(p => p.loaisp)
             .Distinct()
             .OrderBy(x => x)
@@ -45,7 +47,7 @@ public class ShopController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddToCart(string id, int qty = 1)
+    public async Task<IActionResult> AddToCart(string id, int qty = 1, string? q = null, string? loai = null, string? gia = null)
     {
         var product = await _db.sanphams.FindAsync(id);
         if (product == null) return NotFound();
@@ -56,7 +58,7 @@ public class ShopController : Controller
         else
             item.Quantity += qty;
         HttpContext.Session.SetObject("CART", cart);
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { q, loai, gia });
     }
 
 }

@@ -1,6 +1,6 @@
-@model KhachHangWeb.Models.ProfileViewModel
+﻿@model KhachHangWeb.Models.ProfileViewModel
 @{
-    ViewData["Title"] = "Trang cá nhân";
+    ViewData["Title"] = "Trang ca nhan";
 }
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;500;700&display=swap">
 <style>
@@ -14,46 +14,59 @@
 </style>
 
 <div class="profile-shell">
-  <div class="profile-title">TRANG THÔNG TIN CÁ NHÂN</div>
+  <div class="profile-title">TRANG THONG TIN CA NHAN</div>
 
   <div class="profile-card mb-4">
     <div class="row g-3">
       <div class="col-md-4">
-        <label class="form-label profile-label">Họ và tên</label>
-        <input class="form-control" value="@Model.Customer.hoten" readonly />
+        <label class="form-label profile-label">Ho va ten</label>
+        <input class="form-control" value="@Model.Customer.HoTen" readonly />
       </div>
       <div class="col-md-4">
         <label class="form-label profile-label">Email</label>
-        <input class="form-control" value="@Model.Customer.email" readonly />
+        <input class="form-control" value="@Model.Customer.Email" readonly />
       </div>
       <div class="col-md-4">
-        <label class="form-label profile-label">Giới tính</label>
-        <input class="form-control" value="@Model.Customer.gioitinh" readonly />
+        <label class="form-label profile-label">Gioi tinh</label>
+        <input class="form-control" value="@Model.Customer.GioiTinh" readonly />
       </div>
 
       <div class="col-md-4">
-        <label class="form-label profile-label">SĐT</label>
-        <input class="form-control" value="@Model.Customer.sdt" readonly />
+        <label class="form-label profile-label">SDT</label>
+        <input class="form-control" value="@Model.Customer.Sdt" readonly />
       </div>
       <div class="col-md-4">
         <label class="form-label profile-label">CCCD</label>
-        <input class="form-control" value="@Model.Customer.cccd" readonly />
+        <input class="form-control" value="@Model.Customer.Cccd" readonly />
       </div>
       <div class="col-md-4">
-        <label class="form-label profile-label">Ngày sinh</label>
-        <input class="form-control" value="@(Model.Customer.ngaysinh.HasValue ? Model.Customer.ngaysinh.Value.ToString("dd/MM/yyyy") : "")" readonly />
+        <label class="form-label profile-label">Ngay sinh</label>
+        <input class="form-control" value="@(Model.Customer.NgaySinh.HasValue ? Model.Customer.NgaySinh.Value.ToString("dd/MM/yyyy") : "")" readonly />
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label profile-label">Ten dang nhap</label>
+        <input class="form-control" value="@Model.Customer.TenDangNhap" readonly />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label profile-label">Cap bac</label>
+        <input class="form-control" value="@Model.Customer.CapBac" readonly />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label profile-label">Diem tich luy</label>
+        <input class="form-control" value="@Model.Customer.DiemTichLuy" readonly />
       </div>
     </div>
   </div>
 
   <div class="profile-card">
     <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="profile-label">THÚ CƯNG ĐANG SỞ HỮU</div>
-      <div class="badge-soft">Tổng: @Model.Pets.Count</div>
+      <div class="profile-label">THU CUNG DANG SO HUU</div>
+      <div class="badge-soft">Tong: @Model.Pets.Count</div>
     </div>
     @if (!Model.Pets.Any())
     {
-      <p>Chưa có thú cưng.</p>
+      <p>Chua co thu cung.</p>
     }
     else
     {
@@ -61,13 +74,13 @@
         <table class="table pet-table">
           <thead>
             <tr>
-              <th>Mã thú cưng</th>
-              <th>Tên</th>
-              <th>Loài</th>
-              <th>Giống</th>
-              <th>Ngày sinh</th>
-              <th>Giới tính</th>
-              <th>Tình trạng</th>
+              <th>Ma thu cung</th>
+              <th>Ten</th>
+              <th>Loai</th>
+              <th>Giong</th>
+              <th>Ngay sinh</th>
+              <th>Gioi tinh</th>
+              <th>Tinh trang</th>
             </tr>
           </thead>
           <tbody>
