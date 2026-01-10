@@ -102,8 +102,8 @@ on vacxin (tenvacxin, loaivacxin)
 create nonclustered index ix_vx_ngaysanxuat
 on vacxin (ngaysanxuat)
 
-create nonclustered index ix_dvcn_macn
-on dichvutaichinhanh (macn)
+create nonclustered index ix_dvcn_macn_madv
+on dichvutaichinhanh (macn, madv)
 
-create nonclustered index ix_dvcn_madv
-on dichvutaichinhanh (madv)
+create nonclustered index ix_spcn_macn_masp
+on sanphamtaichinhanh (macn, madv)
