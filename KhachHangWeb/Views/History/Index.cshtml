@@ -1,6 +1,6 @@
 ﻿@model KhachHangWeb.Models.PetHistoryViewModel
 @{
-    ViewData["Title"] = "Lich su thu cung";
+    ViewData["Title"] = "Lịch sử thú cưng";
 }
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700&display=swap">
 <style>
@@ -19,30 +19,30 @@
 
 <div class="history-shell">
   <div class="history-header">
-    <div class="history-card">
-      <div class="history-title">Thong tin khach hang</div>
-      <div class="history-sub">He thong tu dong lay theo tai khoan dang nhap.</div>
+    <div class="history-card ui-fade">
+      <div class="history-title">Thông tin khách hàng</div>
+      <div class="history-sub">Hệ thống tự động lấy theo tài khoản đăng nhập.</div>
       <div class="mt-3">
         <div class="tag">@Model.CustomerName (@Model.CustomerId)</div>
       </div>
       <form class="row g-2 mt-3" method="get">
         <div class="col-md-7">
-          <input class="form-control" name="orderId" value="@Model.OrderId" placeholder="Ma hoa don" />
+          <input class="form-control" name="orderId" value="@Model.OrderId" placeholder="Mã hóa đơn" />
         </div>
         <div class="col-md-5">
-          <button class="btn btn-primary w-100" type="submit">Tra cuu</button>
+          <button class="btn btn-primary w-100" type="submit">Tra cứu</button>
         </div>
       </form>
     </div>
 
-    <div class="history-card">
-      <div class="history-title">Thong tin thu cung</div>
-      <div class="history-sub">Chon thu cung de loc lich su kham/tiem. De trong de xem tat ca.</div>
+    <div class="history-card ui-fade">
+      <div class="history-title">Thông tin thú cưng</div>
+      <div class="history-sub">Chọn thú cưng để lọc lịch sử khám/tiêm. Để trống để xem tất cả.</div>
       <form class="row g-2 mt-3" method="get">
         <input type="hidden" name="orderId" value="@Model.OrderId" />
         <div class="col-md-7">
           <select class="form-select" name="petId">
-            <option value="" selected="@(string.IsNullOrWhiteSpace(Model.PetId) ? "selected" : null)">Tat ca thu cung</option>
+            <option value="" selected="@(string.IsNullOrWhiteSpace(Model.PetId) ? "selected" : null)">Tất cả thú cưng</option>
             @foreach (var p in Model.Pets)
             {
               <option value="@p.Id" selected="@(Model.PetId == p.Id ? "selected" : null)">@p.Id - @p.Name</option>
@@ -50,11 +50,11 @@
           </select>
         </div>
         <div class="col-md-5">
-          <button class="btn btn-success w-100" type="submit">Tra cuu</button>
+          <button class="btn btn-success w-100" type="submit">Tra cứu</button>
         </div>
       </form>
       <div class="mt-3">
-        <span class="tag">@(!string.IsNullOrWhiteSpace(Model.PetName) ? Model.PetName : "Tat ca")</span>
+        <span class="tag">@(!string.IsNullOrWhiteSpace(Model.PetName) ? Model.PetName : "Tất cả")</span>
       </div>
     </div>
   </div>
@@ -66,10 +66,10 @@
 
   <div class="history-grid">
     <div class="history-card">
-      <div class="section-title">Lich su mua san pham</div>
+      <div class="section-title">Lịch sử mua sản phẩm</div>
       @if (!Model.Purchases.Any())
       {
-        <p class="muted">Chua co du lieu mua hang.</p>
+        <p class="muted">Chưa có dữ liệu mua hàng.</p>
       }
       else
       {
@@ -83,7 +83,7 @@
                 <th>San pham</th>
                 <th>SL</th>
                 <th>Thanh tien</th>
-                <th>Thanh toan</th>
+                <th>Thanh toán</th>
                 <th>Trang thai</th>
               </tr>
             </thead>
@@ -108,10 +108,10 @@
     </div>
 
     <div class="history-card">
-      <div class="section-title">Lich su kham benh</div>
+      <div class="section-title">Lịch sử khám bệnh</div>
       @if (!Model.Exams.Any())
       {
-        <p class="muted">Chua co lich su kham.</p>
+        <p class="muted">Chưa có lịch sử khám.</p>
       }
       else
       {
@@ -146,10 +146,10 @@
     </div>
 
     <div class="history-card">
-      <div class="section-title">Lich su tiem phong</div>
+      <div class="section-title">Lịch sử tiêm phòng</div>
       @if (!Model.Vaccines.Any())
       {
-        <p class="muted">Chua co lich su tiem phong.</p>
+        <p class="muted">Chưa có lịch sử tiêm phòng.</p>
       }
       else
       {

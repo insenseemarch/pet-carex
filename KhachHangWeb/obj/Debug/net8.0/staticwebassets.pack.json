@@ -9,6 +9,10 @@
       "PackagePath": "staticwebassets\\css\\site.css"
     },
     {
+      "Id": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\css\\site.ui.css",
+      "PackagePath": "staticwebassets\\css\\site.ui.css"
+    },
+    {
       "Id": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\favicon.ico",
       "PackagePath": "staticwebassets\\favicon.ico"
     },

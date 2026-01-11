@@ -1,12 +1,12 @@
 ﻿@model KhachHangWeb.Models.CheckoutViewModel
 @{
-    ViewData["Title"] = "Thanh toan";
+    ViewData["Title"] = "Thanh toán";
 }
-<h3>Thanh toan</h3>
+<h3>Thanh toán</h3>
 
 @if (!Model.Items.Any())
 {
-    <p>Gio hang trong. <a href="/shop">Mua tiep</a></p>
+    <p>Giỏ hàng trống. <a href="/shop">Mua tiếp</a></p>
 }
 else
 {
@@ -15,10 +15,10 @@ else
     <table class="table">
       <thead>
         <tr>
-          <th>Ten san pham</th>
-          <th>Don gia</th>
-          <th>So luong</th>
-          <th>Thanh tien</th>
+          <th>Tên sản phẩm</th>
+          <th>Đơn giá</th>
+          <th>Số lượng</th>
+          <th>Thành tiền</th>
         </tr>
       </thead>
       <tbody>
@@ -36,63 +36,63 @@ else
   </div>
 
   <div class="col-md-5">
-    <div class="card">
+    <div class="card ui-fade">
       <div class="card-body">
         @Html.ValidationSummary()
-        <p class="fw-bold">Tong tien: @String.Format("{0:N0} d", Model.Total)</p>
-        <p class="mb-1">Hang thanh vien: <strong>@Model.MemberTier</strong></p>
-        <p class="mb-1">Giam theo hang: @String.Format("{0:N0} d", Model.MemberDiscountAmount)</p>
+        <p class="fw-bold">Tổng tiền: @String.Format("{0:N0} d", Model.Total)</p>
+        <p class="mb-1">Hạng thành viên: <strong>@Model.MemberTier</strong></p>
+        <p class="mb-1">Giảm theo hạng: @String.Format("{0:N0} d", Model.MemberDiscountAmount)</p>
 
         <form method="post" action="/checkout/placeorder">
           <input type="hidden" name="branchId" value="@Model.SelectedBranch" />
           <input type="hidden" name="recalc" value="false" />
 
           <div class="mb-3">
-            <label class="form-label">Chi nhanh / thu cung</label>
+            <label class="form-label">Chi nhánh / thú cưng</label>
             <div class="text-muted small">
-              He thong tu dong chon chi nhanh phu hop va thu cung mac dinh.
+              Hệ thống tự động chọn chi nhánh phù hợp và thú cưng mặc định.
             </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Diem tich luy</label>
-            <div class="text-muted small">Hien co: @Model.PointsAvailable diem (1 diem = 1.000 d khi su dung)</div>
+            <label class="form-label">Điểm tích lũy</label>
+            <div class="text-muted small">Hiện có: @Model.PointsAvailable điểm (1 điểm = 1.000 d khi sử dụng)</div>
             <div class="form-check mt-2">
               <input class="form-check-input" type="checkbox" name="usePoints" value="true" @(Model.UsePoints ? "checked" : "") onchange="this.form.recalc.value='true'; this.form.submit();" />
-              <label class="form-check-label">Dung diem tich luy</label>
+              <label class="form-check-label">Dùng điểm tích lũy</label>
             </div>
-            <div class="text-muted small mt-1">Da giam: @String.Format("{0:N0} d", Model.PointsDiscountAmount)</div>
+            <div class="text-muted small mt-1">Đã giảm: @String.Format("{0:N0} d", Model.PointsDiscountAmount)</div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Hinh thuc thanh toan</label>
+            <label class="form-label">Hình thức thanh toán</label>
             <div class="form-check">
               <input class="form-check-input" type="radio" name="paymentMethod" value="The" @(Model.PaymentMethod == "The" ? "checked" : "") />
-              <label class="form-check-label">The</label>
+              <label class="form-check-label">Thẻ</label>
             </div>
             <div class="form-check">
               <input class="form-check-input" type="radio" name="paymentMethod" value="Tien mat" @(Model.PaymentMethod == "Tien mat" ? "checked" : "") />
-              <label class="form-check-label">Tien mat</label>
+              <label class="form-check-label">Tiền mặt</label>
             </div>
             <div class="form-check">
               <input class="form-check-input" type="radio" name="paymentMethod" value="Chuyen khoan" @(Model.PaymentMethod == "Chuyen khoan" ? "checked" : "") />
-              <label class="form-check-label">Chuyen khoan</label>
+              <label class="form-check-label">Chuyển khoản</label>
             </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">So tien phai tra</label>
+            <label class="form-label">Số tiền phải trả</label>
             <div class="fw-bold">@String.Format("{0:N0} d", Model.Payable)</div>
           </div>
 
           <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" name="payNow" value="true" checked />
-            <label class="form-check-label">Thanh toan ngay</label>
+            <label class="form-check-label">Thanh toán ngay</label>
           </div>
 
           <div class="d-flex gap-2">
-            <a class="btn btn-outline-secondary" href="/cart">Quay lai</a>
-            <button class="btn btn-success">Xac nhan</button>
+            <a class="btn btn-outline-secondary" href="/cart">Quay lại</a>
+            <button class="btn btn-success">Xác nhận</button>
           </div>
         </form>
       </div>

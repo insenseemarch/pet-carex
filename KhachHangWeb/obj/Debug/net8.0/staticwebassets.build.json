@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "y2J1HWVoxTsuEeREFmMu9cW9qrBHIx/opHTIDLcGV8g=",
+  "Hash": "zZrMnQIIcxyWzmSshkw8ElC2NbzD+0ARLQR3pJLw8Z8=",
   "Source": "KhachHangWeb",
   "BasePath": "_content/KhachHangWeb",
   "Mode": "Default",
@@ -72,6 +72,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\css\\site.css"
+    },
+    {
+      "Identity": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\css\\site.ui.css",
+      "SourceId": "KhachHangWeb",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\",
+      "BasePath": "_content/KhachHangWeb",
+      "RelativePath": "css/site.ui.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\site.ui.css"
     },
     {
       "Identity": "D:\\PetCareXWeb\\KhachHangWeb\\wwwroot\\favicon.ico",

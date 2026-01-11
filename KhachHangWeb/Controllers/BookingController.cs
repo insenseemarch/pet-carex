@@ -55,7 +55,7 @@ public class BookingController : Controller
         var serviceOk = await _db.chinhanhs
             .Where(c => c.macn == filled.BranchId)
             .SelectMany(c => c.madvs)
-            .AnyAsync(d => d.madv == filled.ServiceId);
+            .AnyAsync(d => d.madv == filled.ServiceId && EF.Functions.Collate(d.loai, "Latin1_General_CI_AI") == "Khám bệnh");
 
         if (!serviceOk)
         {
@@ -181,6 +181,7 @@ public class BookingController : Controller
             vm.Services = await _db.chinhanhs
                 .Where(c => c.macn == vm.BranchId)
                 .SelectMany(c => c.madvs)
+                .Where(d => EF.Functions.Collate(d.loai, "Latin1_General_CI_AI") == "Khám bệnh")
                 .OrderBy(d => d.tendv)
                 .Select(d => new SelectOption { Id = d.madv, Name = d.tendv })
                 .ToListAsync();

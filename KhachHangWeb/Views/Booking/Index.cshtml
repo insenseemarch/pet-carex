@@ -18,6 +18,7 @@
     <div>
       <div class="booking-title">Đặt lịch khám</div>
       <div class="booking-sub">Chọn chi nhánh, thú cưng, bác sĩ và khung giờ phù hợp.</div>
+      <div class="text-muted small mt-1">Lưu ý: Hiện chỉ hỗ trợ đặt lịch khám; không hỗ trợ đặt lịch tiêm.</div>
     </div>
     <a class="btn btn-outline-success" href="/booking/schedule">Tra cứu lịch bác sĩ</a>
   </div>
@@ -31,7 +32,7 @@
     <div class="alert alert-danger">Vui lòng kiểm tra lại thông tin.</div>
   }
 
-  <div class="booking-card">
+  <div class="booking-card ui-fade">
     <form method="post" action="/booking/create">
       <div class="row g-3">
         <div class="col-md-4">
@@ -69,7 +70,7 @@
         <div class="col-md-4">
           <label class="form-label booking-label">Khung giờ</label>
           <select class="form-select" id="slotSelect" name="Slot">
-            <option value="">Ch?n khung gi?</option>
+            <option value="">Chọn khung giờ</option>
             @foreach (var s in Model.Slots)
             {
               <option value="@s.Id" selected="@(Model.Slot == s.Id ? "selected" : null)">@s.Name</option>
@@ -79,7 +80,7 @@
         <div class="col-md-4">
           <label class="form-label booking-label">Bác sĩ trực</label>
           <select class="form-select" id="doctorSelect" name="DoctorId">
-            <option value="">Ch?n b?c s?</option>
+            <option value="">Chọn bác sĩ</option>
             @foreach (var d in Model.Doctors)
             {
               <option value="@d.Id" selected="@(Model.DoctorId == d.Id ? "selected" : null)">@d.Name</option>
@@ -89,7 +90,7 @@
         @if ((Model.Doctors?.Count ?? 0) == 0)
         {
           <div class="col-12">
-            <div class="text-danger small booking-no-doctor">Kh?ng c? b?c s? ph? h?p cho khung gi? ?? ch?n.</div>
+            <div class="text-danger small booking-no-doctor">Không có bác sĩ phù hợp cho khung giờ đã chọn.</div>
           </div>
         }
 
