@@ -1,25 +1,75 @@
 @model StaffWeb.Models.DirectorBranchCompareViewModel
 @{
-    ViewData["Title"] = "So sanh chi nhanh";
+    ViewData["Title"] = "So sánh chi nhánh";
 }
 
+<style>
+    .multi-check {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 8px;
+    }
+    .multi-check-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .multi-check-item:hover {
+        background: #e9ecef;
+        transform: translateX(2px);
+    }
+    .multi-check-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    .multi-check-item span {
+        font-size: 14px;
+        user-select: none;
+    }
+    .compare-charts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        margin-top: 20px;
+    }
+    .chart-section {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .chart-section h4 {
+        margin: 0 0 16px 0;
+        font-size: 16px;
+        color: #333;
+        text-align: center;
+    }
+</style>
+
 <section class="card">
-    <h1 class="page-title">So sanh chi nhanh</h1>
-    <p class="page-subtitle">Chon nhieu chi nhanh va khoang thoi gian de so sanh.</p>
+    <h1 class="page-title">So sánh chi nhánh</h1>
+    <p class="page-subtitle">Chọn nhiều chi nhánh và khoảng thời gian để so sánh.</p>
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Tu ngay</label>
+                <label>Từ ngày</label>
                 <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Den ngay</label>
+                <label>Đến ngày</label>
                 <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
             </div>
         </div>
         <div class="form-row" style="margin-top: 16px;">
-            <div class="compare-branches">
-                <label>Chi nhanh</label>
+            <div style="width: 100%;">
+                <label>Chi nhánh</label>
                 <div class="multi-check">
                     @foreach (var branch in Model.Branches)
                     {
@@ -32,38 +82,93 @@
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn">So sanh</button>
+        <button type="submit" class="btn" style="margin-top: 16px;">So sánh</button>
     </form>
 </section>
 
 @if (Model.Revenue.Count > 0)
 {
-    var maxRevenue = Model.Revenue.Max(x => x.tongdoanhthu);
-    var safeMax = maxRevenue <= 0 ? 1 : maxRevenue;
+    var maxTotalRevenue = Model.Revenue.Max(x => x.tongdoanhthu);
+    var safeMaxTotal = maxTotalRevenue <= 0 ? 1 : maxTotalRevenue;
+    
+    var maxServiceRevenue = Model.ServiceRevenue.Count > 0 ? Model.ServiceRevenue.Max(x => x.TotalRevenue) : 1;
+    var safeMaxService = maxServiceRevenue <= 0 ? 1 : maxServiceRevenue;
+    
+    var maxProductRevenue = Model.ProductRevenue.Count > 0 ? Model.ProductRevenue.Max(x => x.TotalRevenue) : 1;
+    var safeMaxProduct = maxProductRevenue <= 0 ? 1 : maxProductRevenue;
+
     <section class="card" style="margin-top: 20px;">
-        <h3>So sanh tong doanh thu</h3>
-        <div class="manager-chart" style="margin-top: 16px;">
-            @foreach (var row in Model.Revenue)
+        <h3>Biểu đồ so sánh doanh thu</h3>
+        <div class="compare-charts">
+            <!-- Total Revenue Chart -->
+            <div class="chart-section">
+                <h4>Tổng doanh thu</h4>
+                <div class="manager-chart">
+                    @foreach (var row in Model.Revenue)
+                    {
+                        var height = (double)row.tongdoanhthu / (double)safeMaxTotal * 100.0;
+                        <div class="manager-bar">
+                            <div class="manager-bar-track">
+                                <div class="manager-bar-fill" style="height:@height%; background: linear-gradient(to top, #2563eb, #60a5fa);"></div>
+                            </div>
+                            <div style="font-size: 12px; font-weight: 500;">@row.tencn</div>
+                            <div style="font-size: 13px; color: #2563eb;">@row.tongdoanhthu.ToString("N0")</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Service Revenue Chart -->
+            @if (Model.ServiceRevenue.Count > 0)
             {
-                var height = (double)row.tongdoanhthu / (double)safeMax * 100.0;
-                <div class="manager-bar">
-                    <div class="manager-bar-track">
-                        <div class="manager-bar-fill" style="height:@height%"></div>
+                <div class="chart-section">
+                    <h4>Doanh thu dịch vụ</h4>
+                    <div class="manager-chart">
+                        @foreach (var row in Model.ServiceRevenue)
+                        {
+                            var height = (double)row.TotalRevenue / (double)safeMaxService * 100.0;
+                            <div class="manager-bar">
+                                <div class="manager-bar-track">
+                                    <div class="manager-bar-fill" style="height:@height%; background: linear-gradient(to top, #10b981, #34d399);"></div>
+                                </div>
+                                <div style="font-size: 12px; font-weight: 500;">@row.BranchName</div>
+                                <div style="font-size: 13px; color: #10b981;">@row.TotalRevenue.ToString("N0")</div>
+                            </div>
+                        }
                     </div>
-                    <div>@row.tencn</div>
-                    <div>@row.tongdoanhthu.ToString("N0")</div>
+                </div>
+            }
+
+            <!-- Product Revenue Chart -->
+            @if (Model.ProductRevenue.Count > 0)
+            {
+                <div class="chart-section">
+                    <h4>Doanh thu sản phẩm</h4>
+                    <div class="manager-chart">
+                        @foreach (var row in Model.ProductRevenue)
+                        {
+                            var height = (double)row.TotalRevenue / (double)safeMaxProduct * 100.0;
+                            <div class="manager-bar">
+                                <div class="manager-bar-track">
+                                    <div class="manager-bar-fill" style="height:@height%; background: linear-gradient(to top, #f59e0b, #fbbf24);"></div>
+                                </div>
+                                <div style="font-size: 12px; font-weight: 500;">@row.BranchName</div>
+                                <div style="font-size: 13px; color: #f59e0b;">@row.TotalRevenue.ToString("N0")</div>
+                            </div>
+                        }
+                    </div>
                 </div>
             }
         </div>
     </section>
 
     <section class="card" style="margin-top: 20px;">
-        <h3>Doanh thu theo chi nhanh</h3>
+        <h3>Doanh thu theo chi nhánh</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Chi nhanh</th>
-                    <th>So hoa don</th>
+                    <th>Chi nhánh</th>
+                    <th>Số hóa đơn</th>
                     <th>Doanh thu</th>
                 </tr>
             </thead>
@@ -81,15 +186,43 @@
     </section>
 }
 
-@if (Model.ProductRevenue.Count > 0)
+@if (Model.ServiceRevenue.Count > 0)
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Doanh thu san pham theo chi nhanh</h3>
+        <h3>Doanh thu dịch vụ theo chi nhánh</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Chi nhanh</th>
-                    <th>So luong</th>
+                    <th>Chi nhánh</th>
+                    <th>Doanh thu khám bệnh</th>
+                    <th>Doanh thu tiêm phòng</th>
+                    <th>Tổng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.ServiceRevenue)
+                {
+                    <tr>
+                        <td>@row.BranchName</td>
+                        <td>@row.ExamRevenue.ToString("N0")</td>
+                        <td>@row.VaccinationRevenue.ToString("N0")</td>
+                        <td>@row.TotalRevenue.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@if (Model.ProductRevenue.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu sản phẩm theo chi nhánh</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Chi nhánh</th>
+                    <th>Số lượng</th>
                     <th>Doanh thu</th>
                 </tr>
             </thead>
@@ -109,5 +242,5 @@
 
 @if (Model.FromDate.HasValue && Model.ToDate.HasValue && Model.SelectedBranchIds.Count > 0 && Model.Revenue.Count == 0 && Model.ProductRevenue.Count == 0)
 {
-    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+    <div class="alert" style="margin-top: 16px;">Không có dữ liệu trong khoảng ngày này.</div>
 }

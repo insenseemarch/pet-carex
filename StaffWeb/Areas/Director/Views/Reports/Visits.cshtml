@@ -1,25 +1,86 @@
 @model StaffWeb.Models.DirectorVisitViewModel
 @{
-    ViewData["Title"] = "Luot kham/tiem";
+    ViewData["Title"] = "Lượt khám/tiêm";
+    
+    // Format period-based date labels
+    string FormatDate(DateTime date) {
+        return Model.Period switch {
+            "week" => $"Tuần {date:dd/MM/yyyy}",
+            "month" => date.ToString("MM/yyyy"),
+            "year" => date.ToString("yyyy"),
+            _ => date.ToString("dd/MM/yyyy")
+        };
+    }
 }
 
+<style>
+    .chart-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1000;
+        display: none;
+        white-space: nowrap;
+    }
+    .line-chart-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        padding: 20px;
+    }
+    .line-chart {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+    }
+    .line-chart svg {
+        width: 100%;
+        height: 100%;
+    }
+    .chart-point {
+        cursor: pointer;
+        transition: r 0.2s ease, fill 0.2s ease;
+    }
+    .chart-point:hover {
+        r: 8;
+        fill: #d45f00;
+    }
+    .table tbody tr {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+
 <section class="card">
-    <h1 class="page-title">Luot kham va tiem phong</h1>
-    <p class="page-subtitle">Thong ke theo khoang thoi gian.</p>
+    <h1 class="page-title">Lượt khám và tiêm phòng</h1>
+    <p class="page-subtitle">Thống kê theo khoảng thời gian.</p>
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Tu ngay</label>
+                <label>Từ ngày</label>
                 <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Den ngay</label>
+                <label>Đến ngày</label>
                 <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Chi nhanh</label>
+                <label>Chi nhánh</label>
                 <select name="branchId">
-                    <option value="">Tat ca chi nhanh</option>
+                    <option value="">Tất cả chi nhánh</option>
                     @foreach (var branch in Model.Branches)
                     {
                         if (branch.Id == Model.BranchId)
@@ -33,28 +94,82 @@
                     }
                 </select>
             </div>
+            <div>
+                <label>Thống kê theo</label>
+                <select name="period">
+                    <option value="day" selected="@(Model.Period == "day" ? "selected" : null)">Ngày</option>
+                    <option value="week" selected="@(Model.Period == "week" ? "selected" : null)">Tuần</option>
+                    <option value="month" selected="@(Model.Period == "month" ? "selected" : null)">Tháng</option>
+                    <option value="year" selected="@(Model.Period == "year" ? "selected" : null)">Năm</option>
+                </select>
+            </div>
         </div>
-        <button type="submit" class="btn">Xem bao cao</button>
+        <button type="submit" class="btn">Xem báo cáo</button>
     </form>
 </section>
 
 @if (Model.Items.Count > 0)
 {
+    var maxTotal = Model.Items.Max(x => x.Total);
+    <section class="card" style="margin-top: 20px;">
+        <h3>Biểu đồ lượt khám và tiêm</h3>
+        <div class="line-chart-container">
+            <svg class="line-chart" viewBox="0 0 @((Model.Items.Count * 100)) 300" preserveAspectRatio="none">
+                @{
+                    var points = new List<string>();
+                    for (var i = 0; i < Model.Items.Count; i++)
+                    {
+                        var item = Model.Items[i];
+                        var x = i * 100 + 50;
+                        var y = 300 - (item.Total * 250.0 / maxTotal);
+                        points.Add($"{x},{y}");
+                    }
+                    var polylinePoints = string.Join(" ", points);
+                }
+                
+                <!-- Line -->
+                <polyline points="@polylinePoints" 
+                          fill="none" 
+                          stroke="#2d7f7e" 
+                          stroke-width="3" 
+                          vector-effect="non-scaling-stroke"/>
+                
+                <!-- Points with hover -->
+                @for (var i = 0; i < Model.Items.Count; i++)
+                {
+                    var item = Model.Items[i];
+                    var x = i * 100 + 50;
+                    var y = 300 - (item.Total * 250.0 / maxTotal);
+                    var label = FormatDate(item.Date);
+                    
+                    <circle class="chart-point" 
+                            cx="@x" 
+                            cy="@y" 
+                            r="5" 
+                            fill="#2d7f7e"
+                            data-value="@item.Total"
+                            data-label="@label"/>
+                }
+            </svg>
+        </div>
+    </section>
+
     <section class="card" style="margin-top: 20px;">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Ngay</th>
-                    <th>Luot kham</th>
-                    <th>Luot tiem</th>
-                    <th>Tong</th>
+                    <th>@(Model.Period == "week" ? "Tuần" : Model.Period == "month" ? "Tháng" : Model.Period == "year" ? "Năm" : "Ngày")</th>
+                    <th>Lượt khám</th>
+                    <th>Lượt tiêm</th>
+                    <th>Tổng</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var row in Model.Items)
                 {
-                    <tr>
-                        <td>@row.Date.ToString("dd/MM/yyyy")</td>
+                    var dateLabel = FormatDate(row.Date);
+                    <tr data-value="@row.Total" data-label="@dateLabel">
+                        <td>@dateLabel</td>
                         <td>@row.ExamCount</td>
                         <td>@row.VaccinationCount</td>
                         <td>@row.Total</td>
@@ -66,5 +181,30 @@
 }
 else if (Model.FromDate.HasValue && Model.ToDate.HasValue)
 {
-    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+    <div class="alert" style="margin-top: 16px;">Không có dữ liệu trong khoảng ngày này.</div>
 }
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chartTooltip');
+        const elements = document.querySelectorAll('[data-value][data-label]');
+        
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const value = this.getAttribute('data-value');
+                const label = this.getAttribute('data-label');
+                tooltip.textContent = label + ': ' + value + ' lượt';
+                tooltip.style.display = 'block';
+            });
+            
+            el.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+        });
+    });
+</script>

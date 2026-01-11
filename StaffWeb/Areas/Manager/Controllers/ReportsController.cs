@@ -24,52 +24,59 @@ public class ReportsController : Controller
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    public async Task<IActionResult> Revenue(DateTime? fromDate, DateTime? toDate)
+    public async Task<IActionResult> Revenue(DateTime? fromDate, DateTime? toDate, string? period)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var vm = await BuildRevenueViewModel(fromDate, toDate, macn);
+        var vm = await BuildRevenueViewModel(fromDate, toDate, macn, period);
         return View(vm);
     }
 
-    public async Task<IActionResult> Doctors()
+    public async Task<IActionResult> Doctors(DateTime? fromDate, DateTime? toDate)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
         var vm = new ManagerDoctorViewModel
         {
-            Items = await BuildDoctorStats(macn)
+            FromDate = fromDate,
+            ToDate = toDate,
+            Items = await BuildDoctorStats(macn, fromDate, toDate)
         };
 
         return View(vm);
     }
 
-    public async Task<IActionResult> Products(int top = 10)
+    public async Task<IActionResult> Products(DateTime? fromDate, DateTime? toDate, int top = 10)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
         var vm = new ManagerProductViewModel
         {
+            FromDate = fromDate,
+            ToDate = toDate,
             Top = top,
-            Items = await BuildProductStats(macn, top)
+            Items = await BuildProductStats(macn, fromDate, toDate, top),
+            Categories = await BuildProductCategories(macn, fromDate, toDate)
         };
         return View(vm);
     }
 
-    public async Task<IActionResult> Visits(DateTime? fromDate, DateTime? toDate)
+    public async Task<IActionResult> Visits(DateTime? fromDate, DateTime? toDate, string? period)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
+        var normalized = NormalizePeriod(period);
         var vm = new ManagerVisitViewModel
         {
             FromDate = fromDate,
             ToDate = toDate,
-            Items = await BuildVisitStats(macn, fromDate, toDate)
+            Period = normalized,
+            Items = await BuildVisitStats(macn, fromDate, toDate, normalized)
         };
 
         return View(vm);
     }
 
-    public async Task<IActionResult> RevenueExcel(DateTime? fromDate, DateTime? toDate)
+    public async Task<IActionResult> RevenueExcel(DateTime? fromDate, DateTime? toDate, string? period)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var vm = await BuildRevenueViewModel(fromDate, toDate, macn);
+        var vm = await BuildRevenueViewModel(fromDate, toDate, macn, period);
         if (vm.Items.Count == 0)
         {
             return BadRequest("Khong co du lieu.");
@@ -100,10 +107,10 @@ public class ReportsController : Controller
             "doanh-thu.xlsx");
     }
 
-    public async Task<IActionResult> RevenuePdf(DateTime? fromDate, DateTime? toDate)
+    public async Task<IActionResult> RevenuePdf(DateTime? fromDate, DateTime? toDate, string? period)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var vm = await BuildRevenueViewModel(fromDate, toDate, macn);
+        var vm = await BuildRevenueViewModel(fromDate, toDate, macn, period);
         if (vm.Items.Count == 0)
         {
             return BadRequest("Khong co du lieu.");
@@ -153,10 +160,10 @@ public class ReportsController : Controller
         return File(pdf, "application/pdf", "doanh-thu.pdf");
     }
 
-    public async Task<IActionResult> DoctorsExcel()
+    public async Task<IActionResult> DoctorsExcel(DateTime? fromDate, DateTime? toDate)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var items = await BuildDoctorStats(macn);
+        var items = await BuildDoctorStats(macn, fromDate, toDate);
         if (items.Count == 0)
         {
             return BadRequest("Khong co du lieu.");
@@ -189,10 +196,10 @@ public class ReportsController : Controller
             "bac-si.xlsx");
     }
 
-    public async Task<IActionResult> DoctorsPdf()
+    public async Task<IActionResult> DoctorsPdf(DateTime? fromDate, DateTime? toDate)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var items = await BuildDoctorStats(macn);
+        var items = await BuildDoctorStats(macn, fromDate, toDate);
         if (items.Count == 0)
         {
             return BadRequest("Khong co du lieu.");
@@ -241,10 +248,11 @@ public class ReportsController : Controller
         return File(pdf, "application/pdf", "bac-si.pdf");
     }
 
-    public async Task<IActionResult> VisitsExcel(DateTime? fromDate, DateTime? toDate)
+    public async Task<IActionResult> VisitsExcel(DateTime? fromDate, DateTime? toDate, string? period)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var items = await BuildVisitStats(macn, fromDate, toDate);
+        var normalized = NormalizePeriod(period);
+        var items = await BuildVisitStats(macn, fromDate, toDate, normalized);
         if (items.Count == 0)
         {
             return BadRequest("Khong co du lieu.");
@@ -271,10 +279,11 @@ public class ReportsController : Controller
             "luot-kham.xlsx");
     }
 
-    public async Task<IActionResult> VisitsPdf(DateTime? fromDate, DateTime? toDate)
+    public async Task<IActionResult> VisitsPdf(DateTime? fromDate, DateTime? toDate, string? period)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var items = await BuildVisitStats(macn, fromDate, toDate);
+        var normalized = NormalizePeriod(period);
+        var items = await BuildVisitStats(macn, fromDate, toDate, normalized);
         if (items.Count == 0)
         {
             return BadRequest("Khong co du lieu.");
@@ -318,10 +327,10 @@ public class ReportsController : Controller
         return File(pdf, "application/pdf", "luot-kham.pdf");
     }
 
-    public async Task<IActionResult> ProductsExcel(int top = 10)
+    public async Task<IActionResult> ProductsExcel(DateTime? fromDate, DateTime? toDate, int top = 10)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var items = await BuildProductStats(macn, top);
+        var items = await BuildProductStats(macn, fromDate, toDate, top);
         if (items.Count == 0)
         {
             return BadRequest("Khong co du lieu.");
@@ -352,10 +361,10 @@ public class ReportsController : Controller
             "san-pham.xlsx");
     }
 
-    public async Task<IActionResult> ProductsPdf(int top = 10)
+    public async Task<IActionResult> ProductsPdf(DateTime? fromDate, DateTime? toDate, int top = 10)
     {
         var macn = User.FindFirstValue("MaChiNhanh");
-        var items = await BuildProductStats(macn, top);
+        var items = await BuildProductStats(macn, fromDate, toDate, top);
         if (items.Count == 0)
         {
             return BadRequest("Khong co du lieu.");
@@ -406,13 +415,14 @@ public class ReportsController : Controller
         return container.Border(1).BorderColor(Colors.Grey.Lighten2).Padding(4);
     }
 
-    private async Task<ManagerRevenueViewModel> BuildRevenueViewModel(DateTime? fromDate, DateTime? toDate, string? macn)
+    private async Task<ManagerRevenueViewModel> BuildRevenueViewModel(DateTime? fromDate, DateTime? toDate, string? macn, string? period)
     {
         var vm = new ManagerRevenueViewModel
         {
             FromDate = fromDate,
             ToDate = toDate,
-            BranchId = macn
+            BranchId = macn,
+            Period = NormalizePeriod(period)
         };
 
         if (string.IsNullOrWhiteSpace(macn))
@@ -425,17 +435,17 @@ public class ReportsController : Controller
             return vm;
         }
 
-        var branch = await _db.chinhanhs
-            .AsNoTracking()
+        var branch = await _db.chinhanhs.AsNoTracking()
             .Where(x => x.macn == macn)
             .Select(x => new { x.macn, x.tencn })
             .FirstOrDefaultAsync();
 
         var from = fromDate.Value.Date;
         var to = toDate.Value.Date.AddDays(1).AddSeconds(-1);
+        var paidStatus = "Đã thanh toán";
 
         var query = _db.hoadons.AsNoTracking()
-            .Where(x => x.macn == macn && x.trangthai == "\u0110\u00e3 thanh to\u00e1n" && x.ngaylap >= from && x.ngaylap <= to);
+            .Where(x => x.macn == macn && x.trangthai == paidStatus && x.ngaylap >= from && x.ngaylap <= to);
 
         var total = await query.SumAsync(x => x.thanhtien ?? (x.tongtien - x.khuyenmai));
         var count = await query.CountAsync();
@@ -450,105 +460,213 @@ public class ReportsController : Controller
             tongdoanhthu = total
         });
 
-        vm.Trend = await query
-            .GroupBy(x => x.ngaylap.Date)
+        // Trend data grouped by period
+        var trendRaw = await query
+            .Select(x => new
+            {
+                ngay = x.ngaylap,
+                tong = x.thanhtien ?? (x.tongtien - x.khuyenmai)
+            })
+            .ToListAsync();
+
+        vm.Trend = trendRaw
+            .GroupBy(x => GetPeriodStart(x.ngay, vm.Period))
             .Select(g => new ManagerRevenueTrendRow
             {
                 ngay = g.Key,
-                tongdoanhthu = g.Sum(x => x.thanhtien ?? (x.tongtien - x.khuyenmai))
+                tongdoanhthu = g.Sum(x => x.tong)
             })
             .OrderBy(x => x.ngay)
-            .ToListAsync();
+            .ToList();
+
+        // Revenue sources (exam, vaccination, products)
+        vm.Sources = await BuildRevenueSources(macn, from, to);
 
         return vm;
     }
 
-    private async Task<List<DoctorStat>> BuildDoctorStats(string? macn)
+    private async Task<List<RevenueSourceSlice>> BuildRevenueSources(string? branchId, DateTime from, DateTime to)
+    {
+        var paidStatus = "Đã thanh toán";
+
+        var examQuery = _db.chitietkhambenhs.AsNoTracking()
+            .Where(x => x.ngaysudung >= from && x.ngaysudung <= to)
+            .Join(_db.nhanviens.AsNoTracking(),
+                kb => kb.mabs,
+                nv => nv.manv,
+                (kb, nv) => new { kb, nv });
+
+        var vaccQuery = _db.chitiettiemphongs.AsNoTracking()
+            .Where(x => x.ngaytiem >= from && x.ngaytiem <= to)
+            .Join(_db.nhanviens.AsNoTracking(),
+                tp => tp.mabs,
+                nv => nv.manv,
+                (tp, nv) => new { tp, nv });
+
+        if (!string.IsNullOrWhiteSpace(branchId))
+        {
+            examQuery = examQuery.Where(x => x.nv.macn == branchId);
+            vaccQuery = vaccQuery.Where(x => x.nv.macn == branchId);
+        }
+
+        var examRevenue = await examQuery
+            .Join(_db.dichvus.AsNoTracking(),
+                kb => kb.kb.madv,
+                dv => dv.madv,
+                (kb, dv) => dv.gia)
+            .SumAsync();
+
+        var vaccRevenue = await vaccQuery
+            .Join(_db.dichvus.AsNoTracking(),
+                tp => tp.tp.madv,
+                dv => dv.madv,
+                (tp, dv) => dv.gia)
+            .SumAsync();
+
+        var productRevenue = await _db.chitietmuasanphams.AsNoTracking()
+            .Join(_db.hoadons.AsNoTracking(),
+                ct => ct.mahd,
+                hd => hd.mahd,
+                (ct, hd) => new { ct, hd })
+            .Where(x => x.hd.trangthai == paidStatus && x.hd.ngaylap >= from && x.hd.ngaylap <= to)
+            .Where(x => string.IsNullOrWhiteSpace(branchId)
+                ? x.hd.macn != null
+                : x.hd.macn == branchId)
+            .SumAsync(x => x.ct.thanhtien);
+
+        return new List<RevenueSourceSlice>
+        {
+            new() { Name = "Kham benh", Value = examRevenue },
+            new() { Name = "Tiem phong", Value = vaccRevenue },
+            new() { Name = "Ban san pham", Value = productRevenue }
+        };
+    }
+
+    private async Task<List<DoctorStat>> BuildDoctorStats(string? macn, DateTime? fromDate, DateTime? toDate)
     {
         if (string.IsNullOrWhiteSpace(macn))
         {
             return new List<DoctorStat>();
         }
 
-        var allStaff = await _db.nhanviens.AsNoTracking()
-            .Where(x => x.macn == macn)
-            .ToListAsync();
-        var doctors = allStaff
-            .Where(x => StaffWeb.Utils.TextUtil.Normalize(x.loainv).Contains("bac si"))
-            .ToList();
-        var doctorIds = doctors.Select(x => x.manv).ToList();
-        if (doctorIds.Count == 0)
+        if (!fromDate.HasValue || !toDate.HasValue || fromDate > toDate)
         {
             return new List<DoctorStat>();
         }
 
-        var examCounts = await _db.chitietkhambenhs
-            .AsNoTracking()
-            .Where(x => doctorIds.Contains(x.mabs))
-            .GroupBy(x => x.mabs)
-            .Select(g => new { manv = g.Key, count = g.Count() })
-            .ToListAsync();
-
-        var vaccCounts = await _db.chitiettiemphongs
-            .AsNoTracking()
-            .Where(x => doctorIds.Contains(x.mabs))
-            .GroupBy(x => x.mabs)
-            .Select(g => new { manv = g.Key, count = g.Count() })
-            .ToListAsync();
-
-        var examRevenue = await _db.chitietkhambenhs
-            .AsNoTracking()
-            .Where(x => doctorIds.Contains(x.mabs))
-            .Join(_db.dichvus.AsNoTracking(),
-                kb => kb.madv,
-                dv => dv.madv,
-                (kb, dv) => new { kb.mabs, dv.gia })
-            .GroupBy(x => x.mabs)
-            .Select(g => new { manv = g.Key, total = g.Sum(x => x.gia) })
-            .ToListAsync();
-
-        var vaccRevenue = await _db.chitiettiemphongs
-            .AsNoTracking()
-            .Where(x => doctorIds.Contains(x.mabs))
-            .Join(_db.dichvus.AsNoTracking(),
-                tp => tp.madv,
-                dv => dv.madv,
-                (tp, dv) => new { tp.mabs, dv.gia })
-            .GroupBy(x => x.mabs)
-            .Select(g => new { manv = g.Key, total = g.Sum(x => x.gia) })
-            .ToListAsync();
-
-        return doctors.Select(d =>
+        var previousTimeout = _db.Database.GetCommandTimeout();
+        _db.Database.SetCommandTimeout(120);
+        try
         {
-            var exam = examCounts.FirstOrDefault(x => x.manv == d.manv)?.count ?? 0;
-            var vacc = vaccCounts.FirstOrDefault(x => x.manv == d.manv)?.count ?? 0;
-            var examTotal = examRevenue.FirstOrDefault(x => x.manv == d.manv)?.total ?? 0;
-            var vaccTotal = vaccRevenue.FirstOrDefault(x => x.manv == d.manv)?.total ?? 0;
-            return new DoctorStat
+            var doctors = await _db.nhanviens.AsNoTracking()
+                .Where(x => x.macn == macn && x.loainv == "Bác sĩ thú y")
+                .Select(x => new { x.manv, x.hoten })
+                .ToListAsync();
+
+            var doctorIds = doctors.Select(x => x.manv).ToList();
+            if (doctorIds.Count == 0)
             {
-                manv = d.manv,
-                hoten = d.hoten,
-                solankham = exam,
-                solantiem = vacc,
-                doanhthu = examTotal + vaccTotal
-            };
-        }).OrderByDescending(x => x.doanhthu).ToList();
+                return new List<DoctorStat>();
+            }
+
+            var from = fromDate.Value.Date;
+            var to = toDate.Value.Date.AddDays(1).AddSeconds(-1);
+
+            var doctorsQuery = _db.nhanviens.AsNoTracking()
+                .Where(x => doctorIds.Contains(x.manv));
+
+            var examCounts = await _db.chitietkhambenhs.AsNoTracking()
+                .Where(x => x.ngaysudung >= from && x.ngaysudung <= to)
+                .Join(doctorsQuery,
+                    kb => kb.mabs,
+                    nv => nv.manv,
+                    (kb, nv) => kb.mabs)
+                .GroupBy(x => x)
+                .Select(g => new { manv = g.Key, count = g.Count() })
+                .ToListAsync();
+
+            var vaccCounts = await _db.chitiettiemphongs.AsNoTracking()
+                .Where(x => x.ngaytiem >= from && x.ngaytiem <= to)
+                .Join(doctorsQuery,
+                    tp => tp.mabs,
+                    nv => nv.manv,
+                    (tp, nv) => tp.mabs)
+                .GroupBy(x => x)
+                .Select(g => new { manv = g.Key, count = g.Count() })
+                .ToListAsync();
+
+            var examRevenue = await _db.chitietkhambenhs.AsNoTracking()
+                .Where(x => x.ngaysudung >= from && x.ngaysudung <= to)
+                .Join(doctorsQuery,
+                    kb => kb.mabs,
+                    nv => nv.manv,
+                    (kb, nv) => new { kb.mabs, kb.madv })
+                .Join(_db.dichvus.AsNoTracking(),
+                    kb => kb.madv,
+                    dv => dv.madv,
+                    (kb, dv) => new { kb.mabs, dv.gia })
+                .GroupBy(x => x.mabs)
+                .Select(g => new { manv = g.Key, total = g.Sum(x => x.gia) })
+                .ToListAsync();
+
+            var vaccRevenue = await _db.chitiettiemphongs.AsNoTracking()
+                .Where(x => x.ngaytiem >= from && x.ngaytiem <= to)
+                .Join(doctorsQuery,
+                    tp => tp.mabs,
+                    nv => nv.manv,
+                    (tp, nv) => new { tp.mabs, tp.madv })
+                .Join(_db.dichvus.AsNoTracking(),
+                    tp => tp.madv,
+                    dv => dv.madv,
+                    (tp, dv) => new { tp.mabs, dv.gia })
+                .GroupBy(x => x.mabs)
+                .Select(g => new { manv = g.Key, total = g.Sum(x => x.gia) })
+                .ToListAsync();
+
+            return doctors.Select(d =>
+            {
+                var exam = examCounts.FirstOrDefault(x => x.manv == d.manv)?.count ?? 0;
+                var vacc = vaccCounts.FirstOrDefault(x => x.manv == d.manv)?.count ?? 0;
+                var examTotal = examRevenue.FirstOrDefault(x => x.manv == d.manv)?.total ?? 0;
+                var vaccTotal = vaccRevenue.FirstOrDefault(x => x.manv == d.manv)?.total ?? 0;
+                return new DoctorStat
+                {
+                    manv = d.manv,
+                    hoten = d.hoten,
+                    solankham = exam,
+                    solantiem = vacc,
+                    doanhthu = examTotal + vaccTotal
+                };
+            }).OrderByDescending(x => x.doanhthu).ToList();
+        }
+        finally
+        {
+            _db.Database.SetCommandTimeout(previousTimeout);
+        }
     }
 
-    private async Task<List<ProductStat>> BuildProductStats(string? macn, int top)
+    private async Task<List<ProductStat>> BuildProductStats(string? macn, DateTime? fromDate, DateTime? toDate, int top)
     {
         if (string.IsNullOrWhiteSpace(macn))
         {
             return new List<ProductStat>();
         }
 
-        return await _db.chitietmuasanphams
-            .AsNoTracking()
+        if (!fromDate.HasValue || !toDate.HasValue || fromDate > toDate)
+        {
+            return new List<ProductStat>();
+        }
+
+        var from = fromDate.Value.Date;
+        var to = toDate.Value.Date.AddDays(1).AddSeconds(-1);
+        var paidStatus = "Đã thanh toán";
+
+        return await _db.chitietmuasanphams.AsNoTracking()
             .Join(_db.hoadons.AsNoTracking(),
                 ct => ct.mahd,
                 hd => hd.mahd,
                 (ct, hd) => new { ct, hd })
-            .Where(x => x.hd.macn == macn && x.hd.trangthai == "\u0110\u00e3 thanh to\u00e1n")
+            .Where(x => x.hd.macn == macn && x.hd.trangthai == paidStatus && x.hd.ngaylap >= from && x.hd.ngaylap <= to)
             .Join(_db.sanphams.AsNoTracking(),
                 x => x.ct.masp,
                 sp => sp.masp,
@@ -566,7 +684,7 @@ public class ReportsController : Controller
             .ToListAsync();
     }
 
-    private async Task<List<VisitStat>> BuildVisitStats(string? macn, DateTime? fromDate, DateTime? toDate)
+    private async Task<List<VisitStat>> BuildVisitStats(string? macn, DateTime? fromDate, DateTime? toDate, string period = "day")
     {
         if (string.IsNullOrWhiteSpace(macn) ||
             !fromDate.HasValue ||
@@ -585,15 +703,74 @@ public class ReportsController : Controller
             .Where(x => x.nv.macn == macn)
             .Select(x => x.kb);
 
-        return await query
-            .GroupBy(x => x.ngaysudung.Date)
+        var rawData = await query.Select(x => x.ngaysudung).ToListAsync();
+
+        var grouped = rawData
+            .GroupBy(date => GetPeriodStart(date, period))
             .Select(g => new VisitStat
             {
                 ngay = g.Key,
                 soluot = g.Count()
             })
-            .OrderByDescending(x => x.ngay)
+            .OrderBy(x => x.ngay)
+            .ToList();
+
+        return grouped;
+    }
+
+    private async Task<List<ProductCategorySlice>> BuildProductCategories(string? macn, DateTime? fromDate, DateTime? toDate)
+    {
+        if (string.IsNullOrWhiteSpace(macn) || !fromDate.HasValue || !toDate.HasValue || fromDate > toDate)
+        {
+            return new List<ProductCategorySlice>();
+        }
+
+        var from = fromDate.Value.Date;
+        var to = toDate.Value.Date.AddDays(1).AddSeconds(-1);
+        var paidStatus = "Đã thanh toán";
+
+        var categoryRevenue = await _db.chitietmuasanphams.AsNoTracking()
+            .Join(_db.hoadons.AsNoTracking(),
+                ct => ct.mahd,
+                hd => hd.mahd,
+                (ct, hd) => new { ct, hd })
+            .Where(x => x.hd.macn == macn && x.hd.trangthai == paidStatus && x.hd.ngaylap >= from && x.hd.ngaylap <= to)
+            .Join(_db.sanphams.AsNoTracking(),
+                x => x.ct.masp,
+                sp => sp.masp,
+                (x, sp) => new { x.ct, sp })
+            .GroupBy(x => x.sp.loaisp)
+            .Select(g => new ProductCategorySlice
+            {
+                Name = g.Key,
+                Value = g.Sum(x => x.ct.thanhtien)
+            })
             .ToListAsync();
+
+        return categoryRevenue;
+    }
+
+    private static string NormalizePeriod(string? period)
+    {
+        return period?.Trim().ToLowerInvariant() switch
+        {
+            "week" => "week",
+            "month" => "month",
+            "year" => "year",
+            _ => "day"
+        };
+    }
+
+    private static DateTime GetPeriodStart(DateTime date, string period)
+    {
+        var day = date.Date;
+        return period switch
+        {
+            "week" => day.AddDays(-((7 + (int)day.DayOfWeek - (int)DayOfWeek.Monday) % 7)),
+            "month" => new DateTime(day.Year, day.Month, 1),
+            "year" => new DateTime(day.Year, 1, 1),
+            _ => day
+        };
     }
 }
 

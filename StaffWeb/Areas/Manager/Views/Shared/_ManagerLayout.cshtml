@@ -12,27 +12,27 @@
             <a class="manager-logo" asp-area="Manager" asp-controller="Home" asp-action="Index">PetCareX</a>
             <div>
                 <div class="manager-title">Manager Desk</div>
-                <div class="manager-subtitle">Bao cao va thong ke chi nhanh</div>
+                <div class="manager-subtitle">Báo cáo và thống kê chi nhánh</div>
             </div>
         </div>
         <nav class="manager-nav">
-            <a class="manager-tab" asp-area="Manager" asp-controller="Home" asp-action="Index">Tong quan</a>
+            <a class="manager-tab" asp-area="Manager" asp-controller="Home" asp-action="Index">Tổng quan</a>
             <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Revenue">Doanh thu</a>
-            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Doctors">Bac si</a>
-            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Visits">Luot kham</a>
-            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Products">San pham</a>
+            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Doctors">Bác sĩ</a>
+            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Visits">Lượt khám</a>
+            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Products">Sản phẩm</a>
         </nav>
         <div class="manager-user">
             @if (User.Identity?.IsAuthenticated ?? false)
             {
                 <span>@User.Identity?.Name</span>
                 <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-secondary">Dang xuat</button>
+                    <button type="submit" class="btn btn-secondary">Đăng xuất</button>
                 </form>
             }
             else
             {
-                <a class="btn" asp-controller="Account" asp-action="Login">Dang nhap</a>
+                <a class="btn" asp-controller="Account" asp-action="Login">Đăng nhập</a>
             }
         </div>
     </header>

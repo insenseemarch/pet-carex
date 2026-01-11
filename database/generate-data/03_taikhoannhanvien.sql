@@ -1012,3 +1012,6 @@ INSERT INTO taikhoannhanvien (tendangnhap, manv, matkhau, vaitro, trangthai) VAL
     (N'nvnv1500', N'NV1500', N'hashed_password_123', N'Bác sĩ thú y', N'Vô hiệu hóa');
 GO
 
+INSERT INTO taikhoannhanvien (tendangnhap, manv, matkhau, vaitro, trangthai) VALUES
+    (N'nvnv1501', N'NV1501', N'hashed_password_123', N'Giám đốc', N'Đang hoạt động');
+GO

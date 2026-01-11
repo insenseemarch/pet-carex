@@ -1,51 +1,51 @@
 @model StaffWeb.Models.PetLookupViewModel
 @{
-    ViewData["Title"] = "Tra cuu thu cung";
+    ViewData["Title"] = "Tra cứu thú cưng";
 }
 
 <section class="card">
-    <h1 class="page-title">Tra cuu thu cung</h1>
-    <p class="page-subtitle">Tra cuu theo ma thu cung hoac so dien thoai khach hang.</p>
+    <h1 class="page-title">Tra cứu thú cưng</h1>
+    <p class="page-subtitle">Tra cứu theo mã thú cưng hoặc số điện thoại khách hàng.</p>
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Ma thu cung</label>
+                <label>Mã thú cưng</label>
                 <input name="petId" value="@Model.PetId" />
             </div>
             <div>
-                <label>So dien thoai</label>
+                <label>Số điện thoại</label>
                 <input name="phone" value="@Model.Phone" />
             </div>
         </div>
-        <button type="submit" class="btn">Tra cuu</button>
+        <button type="submit" class="btn">Tra cứu</button>
     </form>
 </section>
 
 @if (Model.Pet == null && !string.IsNullOrWhiteSpace(Model.PetId))
 {
-    <div class="alert" style="margin-top: 16px;">Khong tim thay thu cung.</div>
+    <div class="alert" style="margin-top: 16px;">Không tìm thấy thú cưng.</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(Model.Phone) && string.IsNullOrWhiteSpace(Model.CustomerId))
 {
-    <div class="alert" style="margin-top: 16px;">Day la khach hang moi, khach hang chua co thong tin.</div>
+    <div class="alert" style="margin-top: 16px;">Đây là khách hàng mới, khách hàng chưa có thông tin.</div>
 }
 
 @if (Model.Pet != null)
 {
     <section class="grid two" style="margin-top: 20px;">
         <div class="card">
-            <h3>Thong tin thu cung</h3>
-            <p><strong>Ma:</strong> @Model.Pet.mathucung</p>
-            <p><strong>Ten:</strong> @Model.Pet.tenthucung</p>
-            <p><strong>Loai:</strong> @Model.Pet.loai</p>
-            <p><strong>Giong:</strong> @Model.Pet.giong</p>
+            <h3>Thông tin thú cưng</h3>
+            <p><strong>Mã:</strong> @Model.Pet.mathucung</p>
+            <p><strong>Tên:</strong> @Model.Pet.tenthucung</p>
+            <p><strong>Loại:</strong> @Model.Pet.loai</p>
+            <p><strong>Giống:</strong> @Model.Pet.giong</p>
         </div>
         <div class="card">
-            <h3>Thong tin khach hang</h3>
-            <p><strong>Ma KH:</strong> @Model.CustomerId</p>
-            <p><strong>Ho ten:</strong> @Model.CustomerName</p>
-            <p><strong>SDT:</strong> @Model.CustomerPhone</p>
+            <h3>Thông tin khách hàng</h3>
+            <p><strong>Mã KH:</strong> @Model.CustomerId</p>
+            <p><strong>Họ tên:</strong> @Model.CustomerName</p>
+            <p><strong>SĐT:</strong> @Model.CustomerPhone</p>
         </div>
     </section>
 }
@@ -53,25 +53,25 @@
 @if (Model.Pet == null && !string.IsNullOrWhiteSpace(Model.CustomerId))
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Thong tin khach hang</h3>
-        <p><strong>Ma KH:</strong> @Model.CustomerId</p>
-        <p><strong>Ho ten:</strong> @Model.CustomerName</p>
-        <p><strong>SDT:</strong> @Model.CustomerPhone</p>
+        <h3>Thông tin khách hàng</h3>
+        <p><strong>Mã KH:</strong> @Model.CustomerId</p>
+        <p><strong>Họ tên:</strong> @Model.CustomerName</p>
+        <p><strong>SĐT:</strong> @Model.CustomerPhone</p>
     </section>
 }
 
 @if (Model.PetsByCustomer.Count > 0)
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Thu cung cua khach</h3>
+        <h3>Thú cưng của khách</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Ma</th>
-                    <th>Ten</th>
-                    <th>Loai</th>
-                    <th>Giong</th>
-                    <th>Ngay sinh</th>
+                    <th>Mã</th>
+                    <th>Tên</th>
+                    <th>Loại</th>
+                    <th>Giống</th>
+                    <th>Ngày sinh</th>
                 </tr>
             </thead>
             <tbody>

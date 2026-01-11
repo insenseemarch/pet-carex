@@ -1,6 +1,6 @@
 @model StaffWeb.Models.DirectorRevenueViewModel
 @{
-    ViewData["Title"] = "Doanh thu he thong";
+    ViewData["Title"] = "Doanh thu hệ thống";
     var totalSources = Model.Sources.Sum(x => x.Value);
     var colors = new[] { "#2d7f7e", "#b07a34", "#4d6b3a" };
     var segments = new List<string>();
@@ -17,31 +17,67 @@
     var pieStyle = segments.Count == 0 ? "background: #f0f0f0;" : $"background: conic-gradient({string.Join(", ", segments)});";
     var periodLabel = Model.Period switch
     {
-        "week" => "Tuan",
-        "month" => "Thang",
-        "year" => "Nam",
-        _ => "Ngay"
+        "week" => "Tuần",
+        "month" => "Tháng",
+        "year" => "Năm",
+        _ => "Ngày"
     };
 }
 
+<style>
+    .chart-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1000;
+        display: none;
+        white-space: nowrap;
+    }
+    .manager-bar:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s ease;
+    }
+    .director-pie-row {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .director-pie-row:hover {
+        transform: scale(1.05);
+    }
+    .table tbody tr {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+
 <section class="card">
-    <h1 class="page-title">Bao cao doanh thu</h1>
-    <p class="page-subtitle">Thong ke doanh thu theo chi nhanh va nguon thu.</p>
+    <h1 class="page-title">Báo cáo doanh thu</h1>
+    <p class="page-subtitle">Thống kê doanh thu theo chi nhánh và nguồn thu.</p>
 
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Tu ngay</label>
+                <label>Từ ngày</label>
                 <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Den ngay</label>
+                <label>Đến ngày</label>
                 <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Chi nhanh</label>
+                <label>Chi nhánh</label>
                 <select name="branchId">
-                    <option value="">Tat ca chi nhanh</option>
+                    <option value="">Tất cả chi nhánh</option>
                     @foreach (var branch in Model.Branches)
                     {
                         if (branch.Id == Model.BranchId)
@@ -56,67 +92,68 @@
                 </select>
             </div>
             <div>
-                <label>Chu ky</label>
+                <label>Chu kỳ</label>
                 <select name="period">
                     @if (Model.Period == "day")
                     {
-                        <option value="day" selected>Ngay</option>
+                        <option value="day" selected>Ngày</option>
                     }
                     else
                     {
-                        <option value="day">Ngay</option>
+                        <option value="day">Ngày</option>
                     }
                     @if (Model.Period == "week")
                     {
-                        <option value="week" selected>Tuan</option>
+                        <option value="week" selected>Tuần</option>
                     }
                     else
                     {
-                        <option value="week">Tuan</option>
+                        <option value="week">Tuần</option>
                     }
                     @if (Model.Period == "month")
                     {
-                        <option value="month" selected>Thang</option>
+                        <option value="month" selected>Tháng</option>
                     }
                     else
                     {
-                        <option value="month">Thang</option>
+                        <option value="month">Tháng</option>
                     }
                     @if (Model.Period == "year")
                     {
-                        <option value="year" selected>Nam</option>
+                        <option value="year" selected>Năm</option>
                     }
                     else
                     {
-                        <option value="year">Nam</option>
+                        <option value="year">Năm</option>
                     }
                 </select>
             </div>
         </div>
-        <button type="submit" class="btn">Xem bao cao</button>
+        <button type="submit" class="btn">Xem báo cáo</button>
     </form>
 </section>
 
 @if (Model.BranchRevenue.HasValue)
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Doanh thu chi nhanh</h3>
-        <p><strong>Chi nhanh:</strong> @(Model.BranchName ?? Model.BranchId)</p>
-        <p><strong>Tong doanh thu:</strong> @Model.BranchRevenue.Value.ToString("N0")</p>
+        <h3>Doanh thu chi nhánh</h3>
+        <p><strong>Chi nhánh:</strong> @(Model.BranchName ?? Model.BranchId)</p>
+        <p><strong>Tổng doanh thu:</strong> @Model.BranchRevenue.Value.ToString("N0")</p>
     </section>
 }
 
 @if (Model.Sources.Count > 0)
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Co cau doanh thu</h3>
+        <h3>Cơ cấu doanh thu</h3>
         <div class="director-pie-wrap">
             <div class="director-pie" style="@pieStyle"></div>
             <div class="director-pie-legend">
                 @for (var i = 0; i < Model.Sources.Count; i++)
                 {
                     var slice = Model.Sources[i];
-                    <div class="director-pie-row">
+                    var percent = totalSources <= 0 ? 0 : (slice.Value / totalSources) * 100;
+                    <div class="director-pie-row" data-value="@slice.Value.ToString("N0")" data-label="@slice.Name (@percent.ToString("F1")%)">
                         <span class="director-pie-dot" style="background:@colors[i % colors.Length];"></span>
                         <span>@slice.Name</span>
                         <span>@slice.Value.ToString("N0")</span>
@@ -142,12 +179,12 @@
             }
                 var label = Model.Period switch
                 {
-                    "week" => $"Tuan {item.ngay:dd/MM}",
+                    "week" => $"Tuần {item.ngay:dd/MM}",
                     "month" => item.ngay.ToString("MM/yyyy"),
                     "year" => item.ngay.ToString("yyyy"),
                     _ => item.ngay.ToString("dd/MM")
                 };
-                <div class="manager-bar" title="@label: @item.tongdoanhthu.ToString("N0")">
+                <div class="manager-bar" data-value="@item.tongdoanhthu.ToString("N0")" data-label="@label">
                     <div class="manager-bar-track">
                         <div class="manager-bar-fill" style="height:@height%"></div>
                     </div>
@@ -161,20 +198,20 @@
 @if (Model.Items.Count > 0 && string.IsNullOrWhiteSpace(Model.BranchId))
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Doanh thu theo chi nhanh</h3>
+        <h3>Doanh thu theo chi nhánh</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Ma CN</th>
-                    <th>Ten chi nhanh</th>
-                    <th>So hoa don</th>
-                    <th>Tong doanh thu</th>
+                    <th>Mã CN</th>
+                    <th>Tên chi nhánh</th>
+                    <th>Số hóa đơn</th>
+                    <th>Tổng doanh thu</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var row in Model.Items)
                 {
-                    <tr>
+                    <tr data-value="@row.tongdoanhthu.ToString("N0")" data-label="@row.tencn">
                         <td>@row.macn</td>
                         <td>@row.tencn</td>
                         <td>@row.sohoadon</td>
@@ -188,5 +225,30 @@
 
 @if (Model.FromDate.HasValue && Model.ToDate.HasValue && Model.Items.Count == 0 && Model.Sources.Count == 0)
 {
-    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+    <div class="alert" style="margin-top: 16px;">Không có dữ liệu trong khoảng ngày này.</div>
 }
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chartTooltip');
+        const elements = document.querySelectorAll('[data-value][data-label]');
+        
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const value = this.getAttribute('data-value');
+                const label = this.getAttribute('data-label');
+                tooltip.textContent = label + ': ' + value;
+                tooltip.style.display = 'block';
+            });
+            
+            el.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+        });
+    });
+</script>

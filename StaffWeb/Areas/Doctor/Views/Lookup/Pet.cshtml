@@ -1,55 +1,55 @@
 @model StaffWeb.Models.PetHistoryLookupViewModel
 @{
-    ViewData["Title"] = "Tra cuu thu cung";
+    ViewData["Title"] = "Tra cứu thú cưng";
 }
 
 <section class="card">
-    <h1 class="page-title">Tra cuu ho so thu cung</h1>
-    <p class="page-subtitle">Nhap ma thu cung de xem lich su kham va tiem.</p>
+    <h1 class="page-title">Tra cứu hồ sơ thú cưng</h1>
+    <p class="page-subtitle">Nhập mã thú cưng để xem lịch sử khám và tiêm.</p>
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Ma thu cung</label>
+                <label>Mã thú cưng</label>
                 <input name="petId" value="@Model.PetId" />
             </div>
         </div>
-        <button type="submit" class="btn">Tra cuu</button>
+        <button type="submit" class="btn">Tra cứu</button>
     </form>
 </section>
 
 @if (Model.Pet == null && !string.IsNullOrWhiteSpace(Model.PetId))
 {
-    <div class="alert" style="margin-top: 16px;">Khong tim thay thu cung.</div>
+    <div class="alert" style="margin-top: 16px;">Không tìm thấy thú cưng.</div>
 }
 
 @if (Model.Pet != null)
 {
     <section class="grid two" style="margin-top: 20px;">
         <div class="card">
-            <h3>Thu cung</h3>
-            <p><strong>Ma:</strong> @Model.Pet.mathucung</p>
-            <p><strong>Ten:</strong> @Model.Pet.tenthucung</p>
-            <p><strong>Loai:</strong> @Model.Pet.loai</p>
-            <p><strong>Giong:</strong> @Model.Pet.giong</p>
+            <h3>Thú cưng</h3>
+            <p><strong>Mã:</strong> @Model.Pet.mathucung</p>
+            <p><strong>Tên:</strong> @Model.Pet.tenthucung</p>
+            <p><strong>Loại:</strong> @Model.Pet.loai</p>
+            <p><strong>Giống:</strong> @Model.Pet.giong</p>
         </div>
         <div class="card">
-            <h3>Khach hang</h3>
-            <p><strong>Ma KH:</strong> @Model.CustomerId</p>
-            <p><strong>Ho ten:</strong> @Model.CustomerName</p>
-            <p><strong>SDT:</strong> @Model.CustomerPhone</p>
+            <h3>Khách hàng</h3>
+            <p><strong>Mã KH:</strong> @Model.CustomerId</p>
+            <p><strong>Họ tên:</strong> @Model.CustomerName</p>
+            <p><strong>SĐT:</strong> @Model.CustomerPhone</p>
         </div>
     </section>
 
     <section class="card" style="margin-top: 20px;">
-        <h3>Lich su kham</h3>
+        <h3>Lịch sử khám</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Ngay</th>
-                    <th>Dich vu</th>
-                    <th>Bac si</th>
-                    <th>Trieu chung</th>
-                    <th>Chan doan</th>
+                    <th>Ngày</th>
+                    <th>Dịch vụ</th>
+                    <th>Bác sĩ</th>
+                    <th>Triệu chứng</th>
+                    <th>Chẩn đoán</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,19 +67,19 @@
         </table>
         @if (Model.Exams.Count == 0)
         {
-            <p class="page-subtitle">Chua co lich su kham.</p>
+            <p class="page-subtitle">Chưa có lịch sử khám.</p>
         }
     </section>
 
     <section class="card" style="margin-top: 20px;">
-        <h3>Lich su tiem phong</h3>
+        <h3>Lịch sử tiêm phòng</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Ngay tiem</th>
+                    <th>Ngày tiêm</th>
                     <th>Vac xin</th>
-                    <th>Bac si</th>
-                    <th>Trang thai</th>
+                    <th>Bác sĩ</th>
+                    <th>Trạng thái</th>
                 </tr>
             </thead>
             <tbody>
@@ -96,7 +96,7 @@
         </table>
         @if (Model.Vaccines.Count == 0)
         {
-            <p class="page-subtitle">Chua co lich su tiem.</p>
+            <p class="page-subtitle">Chưa có lịch sử tiêm.</p>
         }
     </section>
 }

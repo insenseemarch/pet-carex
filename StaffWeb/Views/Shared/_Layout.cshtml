@@ -28,11 +28,11 @@
             }
             @if (User.IsInRole("Manager"))
             {
-                <a asp-area="Manager" asp-controller="Home" asp-action="Index">Tong quan</a>
-                <a asp-area="Manager" asp-controller="Reports" asp-action="Revenue">Bao cao doanh thu</a>
-                <a asp-area="Manager" asp-controller="Reports" asp-action="Doctors">Thong ke bac si</a>
-                <a asp-area="Manager" asp-controller="Reports" asp-action="Visits">So luot kham</a>
-                <a asp-area="Manager" asp-controller="Reports" asp-action="Products">Doanh thu san pham</a>
+                <a asp-area="Manager" asp-controller="Home" asp-action="Index">Tổng quan</a>
+                <a asp-area="Manager" asp-controller="Reports" asp-action="Revenue">Báo cáo doanh thu</a>
+                <a asp-area="Manager" asp-controller="Reports" asp-action="Doctors">Thống kê bác sĩ</a>
+                <a asp-area="Manager" asp-controller="Reports" asp-action="Visits">Số lượt khám</a>
+                <a asp-area="Manager" asp-controller="Reports" asp-action="Products">Doanh thu sản phẩm</a>
             }
         </nav>
         <div class="user-box">
@@ -40,12 +40,12 @@
             {
                 <span>@User.Identity?.Name</span>
                 <form asp-controller="Account" asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-secondary">Dang xuat</button>
+                    <button type="submit" class="btn btn-secondary">Đăng xuất</button>
                 </form>
             }
             else
             {
-                <a class="btn" asp-controller="Account" asp-action="Login">Dang nhap</a>
+                <a class="btn" asp-controller="Account" asp-action="Login">Đăng nhập</a>
             }
         </div>
     </header>
@@ -53,7 +53,7 @@
         @RenderBody()
     </main>
     <footer class="app-footer">
-        PetCareX Staff Portal - noi bo phong kham thu cung
+        PetCareX Staff Portal - nội bộ phòng khám thú cưng
     </footer>
 </body>
 </html>

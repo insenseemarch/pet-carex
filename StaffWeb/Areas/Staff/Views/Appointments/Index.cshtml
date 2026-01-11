@@ -1,11 +1,11 @@
 @model StaffWeb.Models.StaffAppointmentViewModel
 @{
-    ViewData["Title"] = "Tao lich kham";
+    ViewData["Title"] = "Tạo lịch khám";
 }
 
 <section class="card">
-    <h1 class="page-title">Tao lich kham truc tiep</h1>
-    <p class="page-subtitle">Nhap thong tin co ban de tao lich.</p>
+    <h1 class="page-title">Tạo lịch khám trực tiếp</h1>
+    <p class="page-subtitle">Nhập thông tin cơ bản để tạo lịch.</p>
 
     @if (TempData["Success"] != null)
     {
@@ -13,24 +13,24 @@
     }
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert">Kiem tra lai thong tin bat buoc.</div>
+        <div class="alert">Kiểm tra lại thông tin bắt buộc.</div>
     }
 
     <form method="post" id="appointmentForm">
         <input type="hidden" name="action" id="actionField" value="" />
         <div class="form-row">
             <div>
-                <label>Ngay gio kham</label>
+                <label>Ngày giờ khám</label>
                 <input asp-for="VisitTime" type="datetime-local" id="visitTimeInput" />
             </div>
             <div>
-                <label>Ma thu cung</label>
+                <label>Mã thú cưng</label>
                 <input asp-for="PetId" />
             </div>
             <div>
-                <label>Dich vu</label>
+                <label>Dịch vụ</label>
                 <select asp-for="ServiceId">
-                    <option value="">Chon dich vu</option>
+                    <option value="">Chọn dịch vụ</option>
                     @foreach (var dv in Model.Services)
                     {
                         <option value="@dv.madv">@dv.tendv</option>
@@ -38,9 +38,9 @@
                 </select>
             </div>
             <div>
-                <label>Bac si</label>
+                <label>Bác sĩ</label>
                 <select asp-for="DoctorId">
-                    <option value="">Chon bac si</option>
+                    <option value="">Chọn bác sĩ</option>
                     @foreach (var bs in Model.Doctors)
                     {
                         <option value="@bs.manv">@bs.hoten</option>
@@ -49,11 +49,11 @@
             </div>
         </div>
         <div>
-            <label>Ghi chu / Trieu chung</label>
+            <label>Ghi chú / Triệu chứng</label>
             <textarea asp-for="Notes"></textarea>
         </div>
         <div style="margin-top: 16px;">
-            <button type="submit" class="btn" id="submitAppointment">Tao lich</button>
+            <button type="submit" class="btn" id="submitAppointment">Tạo lịch</button>
         </div>
     </form>
 </section>

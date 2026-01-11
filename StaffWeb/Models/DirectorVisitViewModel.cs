@@ -8,6 +8,7 @@ public class DirectorVisitViewModel
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
     public string? BranchId { get; set; }
+    public string Period { get; set; } = "day";
     public List<BranchOption> Branches { get; set; } = new();
     public List<DirectorVisitRow> Items { get; set; } = new();
 }

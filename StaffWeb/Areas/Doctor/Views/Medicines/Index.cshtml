@@ -1,32 +1,32 @@
 @model StaffWeb.Models.MedicineSearchViewModel
 @{
-    ViewData["Title"] = "Tra cuu thuoc";
+    ViewData["Title"] = "Tra cứu thuốc";
 }
 
 <section class="card">
-    <h1 class="page-title">Tra cuu thuoc</h1>
-    <p class="page-subtitle">Tim san pham loai thuoc trong kho.</p>
+    <h1 class="page-title">Tra cứu thuốc</h1>
+    <p class="page-subtitle">Tìm sản phẩm loại thuốc trong kho.</p>
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Tu khoa</label>
-                <input name="q" value="@Model.Query" placeholder="Ten thuoc hoac loai" />
+                <label>Từ khóa</label>
+                <input name="q" value="@Model.Query" placeholder="Tên thuốc hoặc loại" />
             </div>
         </div>
-        <button type="submit" class="btn">Tim kiem</button>
+        <button type="submit" class="btn">Tìm kiếm</button>
     </form>
 </section>
 
 <section class="card" style="margin-top: 20px;">
-    <h3>Danh sach thuoc</h3>
+    <h3>Danh sách thuốc</h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Ma</th>
-                <th>Ten</th>
-                <th>Loai</th>
-                <th>Gia</th>
-                <th>Ton</th>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Loại</th>
+                <th>Giá</th>
+                <th>Tồn</th>
                 <th>HSD</th>
             </tr>
         </thead>
@@ -46,6 +46,6 @@
     </table>
     @if (Model.Medicines.Count == 0)
     {
-        <p class="page-subtitle">Khong co du lieu.</p>
+        <p class="page-subtitle">Không có dữ liệu.</p>
     }
 </section>

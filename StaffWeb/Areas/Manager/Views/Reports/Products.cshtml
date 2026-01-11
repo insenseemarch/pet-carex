@@ -1,38 +1,122 @@
 @model StaffWeb.Models.ManagerProductViewModel
 @{
-    ViewData["Title"] = "Doanh thu san pham";
+    ViewData["Title"] = "Doanh thu sản phẩm";
+    var totalCategories = Model.Categories.Sum(x => x.Value);
+    var colors = new[] { "#2d7f7e", "#b07a34", "#4d6b3a" };
+    var segments = new List<string>();
+    decimal angle = 0;
+    for (var i = 0; i < Model.Categories.Count; i++)
+    {
+        var slice = Model.Categories[i];
+        var percent = totalCategories <= 0 ? 0 : slice.Value / totalCategories;
+        var start = angle;
+        var end = angle + (percent * 360);
+        segments.Add($"{colors[i % colors.Length]} {start:F2}deg {end:F2}deg");
+        angle = end;
+    }
+    var pieStyle = segments.Count == 0 ? "background: #f0f0f0;" : $"background: conic-gradient({string.Join(", ", segments)});";
 }
 
+<style>
+    .chart-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1000;
+        display: none;
+        white-space: nowrap;
+    }
+    .table tbody tr {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        background-color: #f8f9fa;
+    }
+    .director-pie-row {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .director-pie-row:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+
 <section class="card">
-    <h1 class="page-title">Doanh thu ban san pham</h1>
-    <p class="page-subtitle">Thong ke san pham ban chay.</p>
+    <h1 class="page-title">Doanh thu bán sản phẩm</h1>
+    <p class="page-subtitle">Thống kê sản phẩm bán chạy.</p>
     <form method="get">
         <div class="form-row">
             <div>
+                <label>Từ ngày</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Đến ngày</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
                 <label>Top</label>
-                <input type="number" name="top" value="@Model.Top" min="1" />
+                <input type="number" name="top" value="@Model.Top" min="1" max="50" />
             </div>
         </div>
-        <button type="submit" class="btn">Xem bao cao</button>
-        <a class="btn btn-secondary" asp-action="ProductsExcel" asp-route-top="@Model.Top">Xuat Excel</a>
-        <a class="btn btn-secondary" asp-action="ProductsPdf" asp-route-top="@Model.Top">Xuat PDF</a>
+        <button type="submit" class="btn">Xem báo cáo</button>
+        @if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+        {
+            <a class="btn btn-secondary" asp-action="ProductsExcel" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")" asp-route-top="@Model.Top">Xuất Excel</a>
+            <a class="btn btn-secondary" asp-action="ProductsPdf" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")" asp-route-top="@Model.Top">Xuất PDF</a>
+        }
+        else
+        {
+            <a class="btn btn-secondary" asp-action="ProductsExcel" asp-route-top="@Model.Top">Xuất Excel</a>
+            <a class="btn btn-secondary" asp-action="ProductsPdf" asp-route-top="@Model.Top">Xuất PDF</a>
+        }
     </form>
 </section>
+
+@if (Model.Categories.Count > 0 && Model.FromDate.HasValue && Model.ToDate.HasValue)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Cơ cấu doanh thu theo loại sản phẩm</h3>
+        <div class="director-pie-wrap">
+            <div class="director-pie" style="@pieStyle"></div>
+            <div class="director-pie-legend">
+                @for (var i = 0; i < Model.Categories.Count; i++)
+                {
+                    var slice = Model.Categories[i];
+                    var percent = totalCategories <= 0 ? 0 : (slice.Value / totalCategories) * 100;
+                    <div class="director-pie-row" data-value="@slice.Value.ToString("N0")" data-label="@slice.Name (@percent.ToString("F1")%)">
+                        <span class="director-pie-dot" style="background:@colors[i % colors.Length];"></span>
+                        <span>@slice.Name</span>
+                        <span>@slice.Value.ToString("N0")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
 
 <section class="card" style="margin-top: 20px;">
     <table class="table">
         <thead>
             <tr>
-                <th>Ma SP</th>
-                <th>Ten san pham</th>
-                <th>So luong</th>
+                <th>Mã SP</th>
+                <th>Tên sản phẩm</th>
+                <th>Số lượng</th>
                 <th>Doanh thu</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var row in Model.Items)
             {
-                <tr>
+                <tr data-value="@row.tongdoanhthu.ToString("N0")" data-label="@row.tensp (SL: @row.tongsoluong)">
                     <td>@row.masp</td>
                     <td>@row.tensp</td>
                     <td>@row.tongsoluong</td>
@@ -43,6 +127,31 @@
     </table>
     @if (Model.Items.Count == 0)
     {
-        <p class="page-subtitle">Khong co du lieu.</p>
+        <p class="page-subtitle">Không có dữ liệu.</p>
     }
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chartTooltip');
+        const elements = document.querySelectorAll('[data-value][data-label]');
+        
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const value = this.getAttribute('data-value');
+                const label = this.getAttribute('data-label');
+                tooltip.textContent = label + ': ' + value;
+                tooltip.style.display = 'block';
+            });
+            
+            el.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+        });
+    });
+</script>
