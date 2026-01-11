@@ -105,38 +105,82 @@ public class BookingController : Controller
                 return View("Index", filled);
             }
 
-            // Check if continuing pending package or new booking
+            // Check if user selected a pending package dose to continue
             if (!string.IsNullOrWhiteSpace(filled.SelectedPendingPackageId))
             {
-                // Update pending package appointment using raw SQL
-                var pending = await _db.chitiettiemphongs
-                    .FirstOrDefaultAsync(x => x.madv == filled.SelectedPendingPackageId && 
-                                              x.mathucung == filled.PetId &&
-                                              (x.trangthai == null || x.trangthai == "Chưa tiêm" || x.trangthai == "Cho tiem"));
-                if (pending != null)
+                var parts = filled.SelectedPendingPackageId.Split('|');
+                chitiettiemphong? pendingDose = null;
+                if (parts.Length == 3)
                 {
-                    // Delete old record and create new one since mabs is part of composite key
-                    _db.chitiettiemphongs.Remove(pending);
-                    await _db.SaveChangesAsync();
-                    
-                    // Add new record with updated doctor
-                    _db.chitiettiemphongs.Add(new chitiettiemphong
-                    {
-                        madv = pending.madv,
-                        mathucung = pending.mathucung,
-                        mabs = filled.DoctorId!,
-                        ngaytiem = bookingTime,
-                        trangthai = "Cho tiem",
-                        mavacxin = pending.mavacxin,
-                        stt = pending.stt
-                    });
+                    // ServiceId|VaccineId|DoseNumber (older format)
+                    var pkgServiceId = parts[0];
+                    var pkgVaccineId = parts[1];
+                    if (!int.TryParse(parts[2], out var pkgDoseNumber)) pkgDoseNumber = 0;
+
+                    pendingDose = await _db.chitiettiemphongs.FirstOrDefaultAsync(ct =>
+                        ct.madv == pkgServiceId && ct.mathucung == filled.PetId &&
+                        ct.mavacxin == pkgVaccineId && ct.stt == pkgDoseNumber &&
+                        (ct.trangthai == null || EF.Functions.Collate(ct.trangthai, "Latin1_General_CI_AI") == "Chưa tiêm"));
                 }
+                else if (parts.Length >= 1 && !string.IsNullOrWhiteSpace(parts[0]))
+                {
+                    // ServiceId only (aggregate package) → pick the earliest pending dose across vaccines
+                    var pkgServiceId = parts[0];
+                    pendingDose = await _db.chitiettiemphongs
+                        .Where(ct => ct.madv == pkgServiceId && ct.mathucung == filled.PetId && (ct.trangthai == null || EF.Functions.Collate(ct.trangthai, "Latin1_General_CI_AI") == "Chưa tiêm"))
+                        .OrderBy(ct => ct.stt)
+                        .FirstOrDefaultAsync();
+                }
+
+                if (pendingDose == null)
+                {
+                    ModelState.AddModelError("", "Không tìm thấy liều tiêm đang chờ.");
+                    return View("Index", filled);
+                }
+
+                // Update time for the selected pending dose
+                pendingDose.ngaytiem = bookingTime;
+                _db.chitiettiemphongs.Update(pendingDose);
             }
             else
             {
-                // New single vaccination booking - not allowed, must select from pending or doctor creates
-                ModelState.AddModelError("", "Vui lòng chọn gói tiêm từ danh sách hoặc liên hệ bác sĩ.");
-                return View("Index", filled);
+                // No pending package selected - create new booking
+                var isPackage = await _db.tiemgois.AnyAsync(t => t.madv == filled.ServiceId);
+                if (isPackage)
+                {
+                    try
+                    {
+                        // Call sp_dangky_tiem_goi to create all vaccination doses
+                        await _db.Database.ExecuteSqlRawAsync(
+                            "EXEC sp_dangky_tiem_goi @madv, @mathucung, @macn, @mabs, @mavacxin",
+                            new Microsoft.Data.SqlClient.SqlParameter("@madv", filled.ServiceId),
+                            new Microsoft.Data.SqlClient.SqlParameter("@mathucung", filled.PetId),
+                            new Microsoft.Data.SqlClient.SqlParameter("@macn", filled.BranchId),
+                            new Microsoft.Data.SqlClient.SqlParameter("@mabs", filled.DoctorId),
+                            new Microsoft.Data.SqlClient.SqlParameter("@mavacxin", "VX0001")
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        var errorMsg = ex.InnerException?.Message ?? ex.Message;
+                        ModelState.AddModelError("", $"Không thể tạo gói tiêm: {errorMsg}");
+                        return View("Index", filled);
+                    }
+                }
+                else
+                {
+                    // Single vaccination - add directly with EF
+                    _db.chitiettiemphongs.Add(new chitiettiemphong
+                    {
+                        stt = 1,
+                        madv = filled.ServiceId!,
+                        mathucung = filled.PetId!,
+                        mavacxin = "VX0001",
+                        mabs = filled.DoctorId!,
+                        ngaytiem = bookingTime,
+                        trangthai = "Chưa tiêm"
+                    });
+                }
             }
         }
 
@@ -267,26 +311,45 @@ public class BookingController : Controller
             }
         }
 
-        // Load pending packages for continuation
+        // Load pending vaccination packages for the selected pet (aggregate by package)
         if (!string.IsNullOrWhiteSpace(vm.PetId))
         {
-            vm.PendingPackages = await (
+            var flatRows = await (
                 from ct in _db.chitiettiemphongs.AsNoTracking()
-                join tg in _db.tiemgois.AsNoTracking() on ct.madv equals tg.madv
                 join dv in _db.dichvus.AsNoTracking() on ct.madv equals dv.madv
-                join vx in _db.vacxins.AsNoTracking() on ct.mavacxin equals vx.mavacxin
-                where ct.mathucung == vm.PetId &&
-                      (ct.trangthai == null || ct.trangthai == "Chưa tiêm" || ct.trangthai == "Cho tiem" || ct.trangthai == "Dang tiem")
-                group ct by new { ct.madv, ct.mavacxin, dv.tendv, vx.tenvacxin } into g
-                select new PendingPackageInfo
+                where ct.mathucung == vm.PetId
+                select new { ct.madv, ServiceName = dv.tendv, ct.stt, ct.trangthai }
+            ).ToListAsync();
+
+            vm.PendingPackages = flatRows
+                .GroupBy(r => new { r.madv, r.ServiceName })
+                .Select(g =>
                 {
-                    ServiceId = g.Key.madv,
-                    ServiceName = g.Key.tendv,
-                    VaccineId = g.Key.mavacxin,
-                    VaccineName = g.Key.tenvacxin,
-                    CompletedCount = g.Count(x => x.trangthai == "Đã tiêm"),
-                    TotalCount = g.Count()
-                }).ToListAsync();
+                    var completed = g.Count(x =>
+                        string.Equals(x.trangthai, "Đã tiêm", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(x.trangthai, "Hoàn thành", StringComparison.OrdinalIgnoreCase));
+                    var total = g.Count();
+                    var nextDose = g.Where(x =>
+                                        !(string.Equals(x.trangthai, "Đã tiêm", StringComparison.OrdinalIgnoreCase) ||
+                                          string.Equals(x.trangthai, "Hoàn thành", StringComparison.OrdinalIgnoreCase)))
+                                    .OrderBy(x => x.stt)
+                                    .Select(x => x.stt)
+                                    .FirstOrDefault();
+                    return new PendingPackageInfo
+                    {
+                        ServiceId = g.Key.madv,
+                        ServiceName = g.Key.ServiceName,
+                        VaccineId = string.Empty,
+                        VaccineName = string.Empty,
+                        CompletedDoses = completed,
+                        PendingDoses = total - completed,
+                        NextDoseNumber = nextDose,
+                        CompletedCount = completed,
+                        TotalCount = total
+                    };
+                })
+                .Where(p => p.PendingDoses > 0)
+                .ToList();
         }
 
         var requestedDate = vm.Date.Date;

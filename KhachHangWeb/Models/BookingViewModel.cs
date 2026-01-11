@@ -64,4 +64,7 @@ public class PendingPackageInfo
     public string VaccineName { get; set; } = "";
     public int CompletedCount { get; set; }
     public int TotalCount { get; set; }
+        public int CompletedDoses { get; set; }
+        public int PendingDoses { get; set; }
+        public int NextDoseNumber { get; set; }
 }

@@ -72,11 +72,15 @@
                 @foreach (var pkg in Model.PendingPackages)
                 {
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="SelectedPendingPackageId" id="pkg_@pkg.ServiceId" value="@pkg.ServiceId" 
-                      @(Model.SelectedPendingPackageId == pkg.ServiceId ? "checked" : "") />
-                    <label class="form-check-label" for="pkg_@pkg.ServiceId">
-                      <strong>@pkg.ServiceName</strong> (@pkg.VaccineName) - 
-                      Đã tiêm @pkg.CompletedCount/@pkg.TotalCount đợt
+                    @{
+                      var composite = pkg.ServiceId; // only service id for aggregate package
+                      var inputId = $"pkg_{pkg.ServiceId}";
+                    }
+                    <input class="form-check-input" type="radio" name="SelectedPendingPackageId" id="@inputId" value="@composite" 
+                      @(Model.SelectedPendingPackageId == composite ? "checked" : "") />
+                    <label class="form-check-label" for="@inputId">
+                      <strong>@pkg.ServiceName</strong> - 
+                      Đã tiêm <strong>@pkg.CompletedCount/@pkg.TotalCount</strong> đợt
                     </label>
                   </div>
                 }
@@ -177,7 +181,7 @@
       
       // Preserve selected pending package if any
       const pendingRadios = document.querySelectorAll('input[name="SelectedPendingPackageId"]:checked');
-      if (pendingRadios.length > 0) {
+      if (pendingRadios.length > 0 && pendingRadios[0].value) {
         params.set("selectedPendingPackageId", pendingRadios[0].value);
       }
 
@@ -188,27 +192,25 @@
     // Handle pending package selection
     const pendingPackages = document.querySelectorAll('input[name="SelectedPendingPackageId"]');
     pendingPackages.forEach(radio => {
-      radio.addEventListener("change", (e) => {
-        if (e.target.checked) {
-          // Set service dropdown to the selected package's service ID
-          const selectedServiceId = e.target.value;
-          const selectedPackageId = e.target.value;
-          if (service) {
-            service.value = selectedServiceId;
-            // Build redirect URL with selected pending package ID
-            const params = new URLSearchParams();
-            if (branch && branch.value) params.set("branchId", branch.value);
-            if (service && service.value) params.set("serviceId", service.value);
-            if (doctor && doctor.value) params.set("doctorId", doctor.value);
-            if (pet && pet.value) params.set("petId", pet.value);
-            if (slot && slot.value) params.set("slot", slot.value);
-            if (date && date.value) params.set("date", date.value);
-            params.set("selectedPendingPackageId", selectedPackageId);
-
-            const target = "/booking" + (params.toString() ? "?" + params.toString() : "");
-            window.location.assign(target);
+      let wasChecked = radio.checked;
+      radio.addEventListener("mousedown", () => { wasChecked = radio.checked; });
+      radio.addEventListener("click", () => {
+        setTimeout(() => {
+          const checked = document.querySelector('input[name="SelectedPendingPackageId"]:checked');
+          if (!checked && wasChecked) {
+            // toggled off → redirect without selectedPendingPackageId
+            redirect();
           }
+        }, 0);
+      });
+      radio.addEventListener("change", (e) => {
+        const checked = document.querySelector('input[name="SelectedPendingPackageId"]:checked');
+        if (checked) {
+          const selectedPackageId = checked.value;
+          const selectedServiceId = selectedPackageId.split('|')[0] || selectedPackageId;
+          if (service && selectedServiceId) service.value = selectedServiceId;
         }
+        redirect();
       });
     });
 
