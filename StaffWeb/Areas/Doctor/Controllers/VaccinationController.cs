@@ -83,7 +83,7 @@ public class VaccinationController : Controller
                         return View(await BuildViewModel(vm, manv));
                     }
 
-                    pending.ngaytiem = DateOnly.FromDateTime(vm.Date ?? DateTime.Now);
+                    pending.ngaytiem = vm.Date ?? DateTime.Now;
                     pending.trangthai = "Da tiem";
                     await _db.SaveChangesAsync();
                     TempData["Success"] = "Da ghi nhan dot tiem trong goi.";
@@ -131,7 +131,7 @@ public class VaccinationController : Controller
                         mathucung = vm.PetId,
                         mavacxin = vm.VaccineId,
                         mabs = manv,
-                        ngaytiem = DateOnly.FromDateTime(isFirst ? actualDate : planned),
+                        ngaytiem = isFirst ? actualDate : planned,
                         trangthai = isFirst ? "Da tiem" : "Cho tiem"
                     });
                 }
@@ -167,7 +167,7 @@ public class VaccinationController : Controller
                 mathucung = vm.PetId,
                 mavacxin = vm.VaccineId,
                 mabs = manv,
-                ngaytiem = DateOnly.FromDateTime(vm.Date ?? DateTime.Now),
+                ngaytiem = vm.Date ?? DateTime.Now,
                 trangthai = "Da tiem"
             });
 

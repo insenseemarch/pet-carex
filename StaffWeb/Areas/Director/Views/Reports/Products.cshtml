@@ -1,0 +1,84 @@
+@model StaffWeb.Models.DirectorProductViewModel
+@{
+    ViewData["Title"] = "Doanh thu san pham";
+}
+
+<section class="card">
+    <h1 class="page-title">Doanh thu san pham</h1>
+    <p class="page-subtitle">Thong ke theo chi nhanh va toan he thong.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Tu ngay</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Den ngay</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Chi nhanh</label>
+                <select name="branchId">
+                    <option value="">Tat ca chi nhanh</option>
+                    @foreach (var branch in Model.Branches)
+                    {
+                        if (branch.Id == Model.BranchId)
+                        {
+                            <option value="@branch.Id" selected>@branch.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@branch.Id">@branch.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label>Top</label>
+                <input type="number" name="top" min="1" max="50" value="@Model.Top" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem bao cao</button>
+    </form>
+</section>
+
+@if (Model.SystemRevenue.HasValue)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu san pham toan he thong</h3>
+        <p><strong>Tong doanh thu:</strong> @Model.SystemRevenue.Value.ToString("N0")</p>
+    </section>
+}
+
+@if (Model.Items.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>San pham ban chay</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ma SP</th>
+                    <th>Ten san pham</th>
+                    <th>So luong</th>
+                    <th>Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.masp</td>
+                        <td>@item.tensp</td>
+                        <td>@item.tongsoluong</td>
+                        <td>@item.tongdoanhthu.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@if (Model.FromDate.HasValue && Model.ToDate.HasValue && Model.Items.Count == 0)
+{
+    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+}

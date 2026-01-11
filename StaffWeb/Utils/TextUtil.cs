@@ -23,6 +23,10 @@ public static class TextUtil
             }
         }
 
-        return sb.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
+        var cleaned = sb.ToString()
+            .Replace('đ', 'd')
+            .Replace('Đ', 'D');
+
+        return cleaned.Normalize(NormalizationForm.FormC).ToLowerInvariant();
     }
 }

@@ -8,5 +8,9 @@ public class PetLookupViewModel
     public string? Phone { get; set; }
     public thucung? Pet { get; set; }
     public khachhang? Customer { get; set; }
+    public string? CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public string? CustomerPhone { get; set; }
+    public bool IsNewCustomer { get; set; }
     public List<thucung> PetsByCustomer { get; set; } = new();
 }

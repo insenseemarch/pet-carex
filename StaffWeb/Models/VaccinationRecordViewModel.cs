@@ -36,6 +36,6 @@ public class VaccinationPendingItem
     public string ServiceName { get; set; } = "";
     public string VaccineId { get; set; } = "";
     public string VaccineName { get; set; } = "";
-    public DateOnly? PlannedDate { get; set; }
+    public DateTime? PlannedDate { get; set; }
     public string? Status { get; set; }
 }

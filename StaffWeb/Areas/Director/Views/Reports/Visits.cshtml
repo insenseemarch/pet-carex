@@ -1,0 +1,70 @@
+@model StaffWeb.Models.DirectorVisitViewModel
+@{
+    ViewData["Title"] = "Luot kham/tiem";
+}
+
+<section class="card">
+    <h1 class="page-title">Luot kham va tiem phong</h1>
+    <p class="page-subtitle">Thong ke theo khoang thoi gian.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Tu ngay</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Den ngay</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Chi nhanh</label>
+                <select name="branchId">
+                    <option value="">Tat ca chi nhanh</option>
+                    @foreach (var branch in Model.Branches)
+                    {
+                        if (branch.Id == Model.BranchId)
+                        {
+                            <option value="@branch.Id" selected>@branch.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@branch.Id">@branch.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem bao cao</button>
+    </form>
+</section>
+
+@if (Model.Items.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ngay</th>
+                    <th>Luot kham</th>
+                    <th>Luot tiem</th>
+                    <th>Tong</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Items)
+                {
+                    <tr>
+                        <td>@row.Date.ToString("dd/MM/yyyy")</td>
+                        <td>@row.ExamCount</td>
+                        <td>@row.VaccinationCount</td>
+                        <td>@row.Total</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+else if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+{
+    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+}

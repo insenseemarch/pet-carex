@@ -11,11 +11,13 @@ public class BookingViewModel
     public string? Slot { get; set; }
     public string? DoctorId { get; set; }
     public string? DoctorName { get; set; }
+    public string? ServiceId { get; set; }
     public string? Note { get; set; }
 
     public List<SelectOption> Branches { get; set; } = new();
     public List<SelectOption> Pets { get; set; } = new();
     public List<SelectOption> Doctors { get; set; } = new();
+    public List<SelectOption> Services { get; set; } = new();
     public List<SelectOption> Slots { get; set; } = new();
 }
 

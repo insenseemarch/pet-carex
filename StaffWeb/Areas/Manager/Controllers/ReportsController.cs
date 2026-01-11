@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -435,7 +435,7 @@ public class ReportsController : Controller
         var to = toDate.Value.Date.AddDays(1).AddSeconds(-1);
 
         var query = _db.hoadons.AsNoTracking()
-            .Where(x => x.macn == macn && x.trangthai == "Da thanh toan" && x.ngaylap >= from && x.ngaylap <= to);
+            .Where(x => x.macn == macn && x.trangthai == "\u0110\u00e3 thanh to\u00e1n" && x.ngaylap >= from && x.ngaylap <= to);
 
         var total = await query.SumAsync(x => x.thanhtien ?? (x.tongtien - x.khuyenmai));
         var count = await query.CountAsync();
@@ -548,7 +548,7 @@ public class ReportsController : Controller
                 ct => ct.mahd,
                 hd => hd.mahd,
                 (ct, hd) => new { ct, hd })
-            .Where(x => x.hd.macn == macn && x.hd.trangthai == "Da thanh toan")
+            .Where(x => x.hd.macn == macn && x.hd.trangthai == "\u0110\u00e3 thanh to\u00e1n")
             .Join(_db.sanphams.AsNoTracking(),
                 x => x.ct.masp,
                 sp => sp.masp,
@@ -596,3 +596,5 @@ public class ReportsController : Controller
             .ToListAsync();
     }
 }
+
+

@@ -18,6 +18,46 @@ build_property.GenerateRazorMetadataSourceChecksumAttributes =
 build_property.MSBuildProjectDirectory = D:\PetCareXWeb\StaffWeb
 build_property._RazorSourceGeneratorDebug = 
 
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/Reports/CompareBranches.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcUmVwb3J0c1xDb21wYXJlQnJhbmNoZXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/Reports/Doctors.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcUmVwb3J0c1xEb2N0b3JzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/Reports/Products.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcUmVwb3J0c1xQcm9kdWN0cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/Reports/Revenue.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcUmVwb3J0c1xSZXZlbnVlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/Reports/Visits.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcUmVwb3J0c1xWaXNpdHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/Shared/_DirectorLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcU2hhcmVkXF9EaXJlY3RvckxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Director/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRGlyZWN0b3JcVmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/PetCareXWeb/StaffWeb/Areas/Doctor/Views/Appointments/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRG9jdG9yXFZpZXdzXEFwcG9pbnRtZW50c1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/PetCareXWeb/StaffWeb/Areas/Doctor/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcRG9jdG9yXFZpZXdzXEhvbWVcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

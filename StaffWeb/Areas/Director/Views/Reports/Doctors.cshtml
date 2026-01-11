@@ -1,0 +1,90 @@
+@model StaffWeb.Models.DirectorDoctorViewModel
+@{
+    ViewData["Title"] = "Bao cao bac si";
+}
+
+<section class="card">
+    <h1 class="page-title">Thong ke bac si</h1>
+    <p class="page-subtitle">Xem luot kham/tiem va doanh thu theo bac si.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Tu ngay</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Den ngay</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Chi nhanh</label>
+                <select name="branchId">
+                    <option value="">Tat ca chi nhanh</option>
+                    @foreach (var branch in Model.Branches)
+                    {
+                        if (branch.Id == Model.BranchId)
+                        {
+                            <option value="@branch.Id" selected>@branch.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@branch.Id">@branch.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem bao cao</button>
+    </form>
+</section>
+
+@if (Model.Items.Count > 0)
+{
+    var maxRevenue = Model.Items.Max(x => x.doanhthu);
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu theo bac si</h3>
+        <div class="doctor-chart">
+            @foreach (var item in Model.Items)
+            {
+                var percent = maxRevenue <= 0 ? 0 : (double)(item.doanhthu / maxRevenue) * 100;
+                <div class="doctor-bar-row">
+                    <div class="doctor-bar-label">@item.hoten (@item.manv)</div>
+                    <div class="doctor-bar-track">
+                        <div class="doctor-bar-fill" style="width:@percent%"></div>
+                    </div>
+                    <div class="doctor-bar-value">@item.doanhthu.ToString("N0")</div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 20px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ma NV</th>
+                    <th>Ho ten</th>
+                    <th>Luot kham</th>
+                    <th>Luot tiem</th>
+                    <th>Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.manv</td>
+                        <td>@item.hoten</td>
+                        <td>@item.solankham</td>
+                        <td>@item.solantiem</td>
+                        <td>@item.doanhthu.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+else if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+{
+    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+}

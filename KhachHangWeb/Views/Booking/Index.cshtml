@@ -34,32 +34,42 @@
   <div class="booking-card">
     <form method="post" action="/booking/create">
       <div class="row g-3">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <label class="form-label booking-label">Chi nhánh</label>
-          <select class="form-select" name="BranchId">
+          <select class="form-select" id="branchSelect" name="BranchId">
             @foreach (var b in Model.Branches)
             {
               <option value="@b.Id" selected="@(Model.BranchId == b.Id ? "selected" : null)">@b.Name</option>
             }
           </select>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <label class="form-label booking-label">Mã thú cưng</label>
-          <select class="form-select" name="PetId">
+          <select class="form-select" id="petSelect" name="PetId">
             @foreach (var p in Model.Pets)
             {
               <option value="@p.Id" selected="@(Model.PetId == p.Id ? "selected" : null)">@p.Id - @p.Name</option>
             }
           </select>
         </div>
+        <div class="col-md-4">
+          <label class="form-label booking-label">Dịch vụ</label>
+          <select class="form-select" id="serviceSelect" name="ServiceId">
+            @foreach (var s in Model.Services)
+            {
+              <option value="@s.Id" selected="@(Model.ServiceId == s.Id ? "selected" : null)">@s.Name</option>
+            }
+          </select>
+        </div>
 
         <div class="col-md-4">
           <label class="form-label booking-label">Ngày hẹn</label>
-          <input class="form-control" type="date" name="Date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+          <input class="form-control" id="dateInput" type="date" name="Date" value="@Model.Date.ToString("yyyy-MM-dd")" />
         </div>
         <div class="col-md-4">
           <label class="form-label booking-label">Khung giờ</label>
-          <select class="form-select" name="Slot">
+          <select class="form-select" id="slotSelect" name="Slot">
+            <option value="">Ch?n khung gi?</option>
             @foreach (var s in Model.Slots)
             {
               <option value="@s.Id" selected="@(Model.Slot == s.Id ? "selected" : null)">@s.Name</option>
@@ -68,13 +78,20 @@
         </div>
         <div class="col-md-4">
           <label class="form-label booking-label">Bác sĩ trực</label>
-          <select class="form-select" name="DoctorId">
+          <select class="form-select" id="doctorSelect" name="DoctorId">
+            <option value="">Ch?n b?c s?</option>
             @foreach (var d in Model.Doctors)
             {
               <option value="@d.Id" selected="@(Model.DoctorId == d.Id ? "selected" : null)">@d.Name</option>
             }
           </select>
         </div>
+        @if ((Model.Doctors?.Count ?? 0) == 0)
+        {
+          <div class="col-12">
+            <div class="text-danger small booking-no-doctor">Kh?ng c? b?c s? ph? h?p cho khung gi? ?? ch?n.</div>
+          </div>
+        }
 
         <div class="col-12">
           <label class="form-label booking-label">Ghi chú</label>
@@ -89,3 +106,32 @@
     </form>
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const branch = document.getElementById("branchSelect");
+    const service = document.getElementById("serviceSelect");
+    const doctor = document.getElementById("doctorSelect");
+    const pet = document.getElementById("petSelect");
+    const date = document.getElementById("dateInput");
+    const slot = document.getElementById("slotSelect");
+
+    const redirect = () => {
+      const params = new URLSearchParams();
+      if (branch && branch.value) params.set("branchId", branch.value);
+      if (service && service.value) params.set("serviceId", service.value);
+      if (doctor && doctor.value) params.set("doctorId", doctor.value);
+      if (pet && pet.value) params.set("petId", pet.value);
+      if (slot && slot.value) params.set("slot", slot.value);
+      if (date && date.value) params.set("date", date.value);
+
+      const target = "/booking" + (params.toString() ? "?" + params.toString() : "");
+      window.location.assign(target);
+    };
+
+    if (branch) branch.addEventListener("change", redirect);
+    if (slot) slot.addEventListener("change", redirect);
+    if (doctor) doctor.addEventListener("change", redirect);
+    if (date) date.addEventListener("change", redirect);
+  });
+</script>

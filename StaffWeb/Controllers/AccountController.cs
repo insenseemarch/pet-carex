@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +51,12 @@ public class AccountController : Controller
         }
 
         var role = MapRole(login.vaitro);
+        if (string.IsNullOrWhiteSpace(role) && !string.IsNullOrWhiteSpace(login.manv))
+        {
+            var nv = await _db.nhanviens.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.manv == login.manv);
+            role = MapRole(nv?.loainv) ?? MapRole(nv?.chucvu);
+        }
         if (string.IsNullOrWhiteSpace(role))
         {
             ModelState.AddModelError("", "Khong xac dinh duoc vai tro.");
@@ -79,7 +86,7 @@ public class AccountController : Controller
         return RedirectToAction("Login", "Account", new { area = "" });
     }
 
-    private static string MapRole(string? vaitro)
+    private static string? MapRole(string? vaitro)
     {
         if (string.IsNullOrWhiteSpace(vaitro))
         {
@@ -87,19 +94,25 @@ public class AccountController : Controller
         }
 
         var normalized = Utils.TextUtil.Normalize(vaitro);
-        if (normalized.Contains("bac si"))
+        var compact = new string(normalized.Where(ch => !char.IsWhiteSpace(ch)).ToArray());
+        if (normalized.Contains("bac si") || compact.Contains("bacsi") || compact.Contains("bacsithuy"))
         {
             return "Doctor";
         }
 
-        if (normalized.Contains("tiep tan"))
+        if (normalized.Contains("tiep tan") || compact.Contains("tieptan"))
         {
             return "Staff";
         }
 
-        if (normalized.Contains("quan ly") || normalized.Contains("giam doc"))
+        if (normalized.Contains("quan ly") || compact.Contains("quanly") || compact.Contains("quanlychinhanh"))
         {
             return "Manager";
+        }
+
+        if (normalized.Contains("giam doc") || compact.Contains("giamdoc"))
+        {
+            return "Director";
         }
 
         return "";
@@ -112,6 +125,7 @@ public class AccountController : Controller
             "Doctor" => "Doctor",
             "Staff" => "Staff",
             "Manager" => "Manager",
+            "Director" => "Director",
             _ => ""
         };
 

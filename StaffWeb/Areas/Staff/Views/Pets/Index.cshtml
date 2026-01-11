@@ -26,9 +26,9 @@
     <div class="alert" style="margin-top: 16px;">Khong tim thay thu cung.</div>
 }
 
-@if (Model.Customer == null && !string.IsNullOrWhiteSpace(Model.Phone))
+@if (!string.IsNullOrWhiteSpace(Model.Phone) && string.IsNullOrWhiteSpace(Model.CustomerId))
 {
-    <div class="alert" style="margin-top: 16px;">Khong tim thay khach hang.</div>
+    <div class="alert" style="margin-top: 16px;">Day la khach hang moi, khach hang chua co thong tin.</div>
 }
 
 @if (Model.Pet != null)
@@ -43,10 +43,20 @@
         </div>
         <div class="card">
             <h3>Thong tin khach hang</h3>
-            <p><strong>Ma KH:</strong> @Model.Customer?.makh</p>
-            <p><strong>Ho ten:</strong> @Model.Customer?.hoten</p>
-            <p><strong>SDT:</strong> @Model.Customer?.sdt</p>
+            <p><strong>Ma KH:</strong> @Model.CustomerId</p>
+            <p><strong>Ho ten:</strong> @Model.CustomerName</p>
+            <p><strong>SDT:</strong> @Model.CustomerPhone</p>
         </div>
+    </section>
+}
+
+@if (Model.Pet == null && !string.IsNullOrWhiteSpace(Model.CustomerId))
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Thong tin khach hang</h3>
+        <p><strong>Ma KH:</strong> @Model.CustomerId</p>
+        <p><strong>Ho ten:</strong> @Model.CustomerName</p>
+        <p><strong>SDT:</strong> @Model.CustomerPhone</p>
     </section>
 }
 

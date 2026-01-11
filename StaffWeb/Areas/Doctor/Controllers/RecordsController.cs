@@ -23,6 +23,89 @@ public class RecordsController : Controller
         return View(vm);
     }
 
+    public async Task<IActionResult> FromAppointment(string petId, string serviceId, long visitTicks)
+    {
+        var manv = User.FindFirstValue("MaNhanVien");
+        if (string.IsNullOrWhiteSpace(manv))
+        {
+            return Forbid();
+        }
+
+        var visitTime = new DateTime(visitTicks);
+        var appointment = await _db.chitietkhambenhs
+            .Include(x => x.madvNavigation)
+            .Include(x => x.mathucungNavigation)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x =>
+                x.mabs == manv &&
+                x.madv == serviceId &&
+                x.mathucung == petId &&
+                x.ngaysudung == visitTime);
+
+        if (appointment == null)
+        {
+            return NotFound();
+        }
+
+        var vm = await BuildViewModelAsync(new DoctorRecordViewModel(), manv);
+        vm.IsFromAppointment = true;
+        vm.PetId = appointment.mathucung;
+        vm.ServiceId = appointment.madv;
+        vm.VisitTime = appointment.ngaysudung;
+        vm.OriginalVisitTime = appointment.ngaysudung;
+        vm.AppointmentTicks = visitTicks;
+        vm.Symptoms = appointment.trieuchung;
+        vm.Diagnosis = appointment.chandoan;
+        vm.Notes = appointment.ghichu;
+        vm.RecheckDate = appointment.ngaytaikham.HasValue
+            ? appointment.ngaytaikham.Value.ToDateTime(TimeOnly.MinValue)
+            : null;
+
+        var pet = appointment.mathucungNavigation ?? await _db.thucungs
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.mathucung == appointment.mathucung);
+        if (pet != null)
+        {
+            vm.PetName = pet.tenthucung;
+            vm.PetType = pet.loai;
+            vm.PetBreed = pet.giong;
+            vm.PetGender = pet.gioitinh;
+            vm.PetBirthDate = pet.ngaysinh;
+            vm.PetHealth = pet.tinhtrangsuckhoe;
+        }
+
+        if (!string.IsNullOrWhiteSpace(appointment.matoathuoc))
+        {
+            var toa = await _db.toathuocs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.matoathuoc == appointment.matoathuoc);
+            if (toa != null)
+            {
+                vm.PrescriptionName = toa.tentoathuoc;
+            }
+
+            var details = await _db.thuocsudungs
+                .AsNoTracking()
+                .Where(x => x.matoathuoc == appointment.matoathuoc)
+                .ToListAsync();
+            vm.Items = details
+                .Select(x => new PrescriptionItemViewModel
+                {
+                    MedicineId = x.masp,
+                    Quantity = x.soluong,
+                    Dosage = x.lieuluong,
+                    Note = x.ghichu
+                })
+                .ToList();
+            if (vm.Items.Count == 0)
+            {
+                vm.Items.Add(new PrescriptionItemViewModel());
+            }
+        }
+
+        return View("Create", vm);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(DoctorRecordViewModel vm)
     {
@@ -108,49 +191,145 @@ public class RecordsController : Controller
         var validItems = vm.Items
             .Where(x => !string.IsNullOrWhiteSpace(x.MedicineId) && (x.Quantity ?? 0) > 0)
             .ToList();
-        if (validItems.Count > 0)
-        {
-            toaId = await GenerateToaId();
-            _db.toathuocs.Add(new toathuoc
-            {
-                matoathuoc = toaId,
-                tentoathuoc = string.IsNullOrWhiteSpace(vm.PrescriptionName)
-                    ? $"Toa thuoc {vm.PetId}"
-                    : vm.PrescriptionName
-            });
 
-            foreach (var item in validItems)
+        if (vm.IsFromAppointment)
+        {
+            var appointmentTime = vm.AppointmentTicks.HasValue
+                ? new DateTime(vm.AppointmentTicks.Value)
+                : vm.VisitTime.Value;
+
+            var appointment = await _db.chitietkhambenhs
+                .FirstOrDefaultAsync(x =>
+                    x.mabs == manv &&
+                    x.madv == vm.ServiceId &&
+                    x.mathucung == vm.PetId &&
+                    x.ngaysudung == appointmentTime);
+
+            if (appointment == null)
             {
-                _db.thuocsudungs.Add(new thuocsudung
+                ModelState.AddModelError("", "Khong tim thay lich kham.");
+                return View(await BuildViewModelAsync(vm, manv));
+            }
+
+            if (validItems.Count > 0)
+            {
+                if (!string.IsNullOrWhiteSpace(appointment.matoathuoc))
+                {
+                    toaId = appointment.matoathuoc;
+                    var oldItems = _db.thuocsudungs
+                        .Where(x => x.matoathuoc == appointment.matoathuoc);
+                    _db.thuocsudungs.RemoveRange(oldItems);
+
+                    var toa = await _db.toathuocs
+                        .FirstOrDefaultAsync(x => x.matoathuoc == appointment.matoathuoc);
+                    if (toa != null)
+                    {
+                        toa.tentoathuoc = string.IsNullOrWhiteSpace(vm.PrescriptionName)
+                            ? $"Toa thuoc {vm.PetId}"
+                            : vm.PrescriptionName;
+                    }
+                }
+                else
+                {
+                    toaId = await GenerateToaId();
+                    _db.toathuocs.Add(new toathuoc
+                    {
+                        matoathuoc = toaId,
+                        tentoathuoc = string.IsNullOrWhiteSpace(vm.PrescriptionName)
+                            ? $"Toa thuoc {vm.PetId}"
+                            : vm.PrescriptionName
+                    });
+                }
+
+                foreach (var item in validItems)
+                {
+                    _db.thuocsudungs.Add(new thuocsudung
+                    {
+                        matoathuoc = toaId!,
+                        masp = item.MedicineId!,
+                        soluong = item.Quantity ?? 1,
+                        lieuluong = item.Dosage,
+                        ghichu = item.Note
+                    });
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(appointment.matoathuoc))
+            {
+                var oldItems = _db.thuocsudungs
+                    .Where(x => x.matoathuoc == appointment.matoathuoc);
+                _db.thuocsudungs.RemoveRange(oldItems);
+
+                var toa = await _db.toathuocs
+                    .FirstOrDefaultAsync(x => x.matoathuoc == appointment.matoathuoc);
+                if (toa != null)
+                {
+                    _db.toathuocs.Remove(toa);
+                }
+            }
+
+            appointment.trieuchung = vm.Symptoms;
+            appointment.chandoan = vm.Diagnosis;
+            appointment.matoathuoc = validItems.Count > 0 ? toaId : null;
+            appointment.ngaytaikham = vm.RecheckDate.HasValue
+                ? DateOnly.FromDateTime(vm.RecheckDate.Value)
+                : null;
+            appointment.ghichu = vm.Notes;
+        }
+        else
+        {
+            if (validItems.Count > 0)
+            {
+                toaId = await GenerateToaId();
+                _db.toathuocs.Add(new toathuoc
                 {
                     matoathuoc = toaId,
-                    masp = item.MedicineId!,
-                    soluong = item.Quantity ?? 1,
-                    lieuluong = item.Dosage,
-                    ghichu = item.Note
+                    tentoathuoc = string.IsNullOrWhiteSpace(vm.PrescriptionName)
+                        ? $"Toa thuoc {vm.PetId}"
+                        : vm.PrescriptionName
                 });
-            }
-        }
 
-        _db.chitietkhambenhs.Add(new chitietkhambenh
-        {
-            madv = vm.ServiceId,
-            mathucung = vm.PetId,
-            ngaysudung = vm.VisitTime.Value,
-            mabs = manv,
-            trieuchung = vm.Symptoms,
-            chandoan = vm.Diagnosis,
-            matoathuoc = toaId,
-            ngaytaikham = vm.RecheckDate.HasValue
-                ? DateOnly.FromDateTime(vm.RecheckDate.Value)
-                : null,
-            ghichu = vm.Notes
-        });
+                foreach (var item in validItems)
+                {
+                    _db.thuocsudungs.Add(new thuocsudung
+                    {
+                        matoathuoc = toaId,
+                        masp = item.MedicineId!,
+                        soluong = item.Quantity ?? 1,
+                        lieuluong = item.Dosage,
+                        ghichu = item.Note
+                    });
+                }
+            }
+
+            _db.chitietkhambenhs.Add(new chitietkhambenh
+            {
+                madv = vm.ServiceId,
+                mathucung = vm.PetId,
+                ngaysudung = vm.VisitTime.Value,
+                mabs = manv,
+                trieuchung = vm.Symptoms,
+                chandoan = vm.Diagnosis,
+                matoathuoc = toaId,
+                ngaytaikham = vm.RecheckDate.HasValue
+                    ? DateOnly.FromDateTime(vm.RecheckDate.Value)
+                    : null,
+                ghichu = vm.Notes
+            });
+        }
 
         try
         {
             await _db.SaveChangesAsync();
-            TempData["Success"] = "Da tao benh an.";
+            TempData["Success"] = vm.IsFromAppointment ? "Da cap nhat lich kham." : "Da tao benh an.";
+            if (vm.IsFromAppointment && vm.VisitTime.HasValue)
+            {
+                return RedirectToAction("Index", "Appointments", new
+                {
+                    area = "Doctor",
+                    date = vm.VisitTime.Value.Date
+                });
+            }
+
             return RedirectToAction(nameof(Create));
         }
         catch (DbUpdateException ex)

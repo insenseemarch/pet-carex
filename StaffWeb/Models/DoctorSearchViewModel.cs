@@ -6,6 +6,9 @@ public class DoctorSearchViewModel
 {
     public string? PetId { get; set; }
     public thucung? Pet { get; set; }
+    public string? OwnerId { get; set; }
+    public string? OwnerName { get; set; }
+    public string? OwnerPhone { get; set; }
     public List<chitietkhambenh> Exams { get; set; } = new();
     public List<chitiettiemphong> Vaccines { get; set; } = new();
 }

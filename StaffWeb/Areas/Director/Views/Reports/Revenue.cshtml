@@ -1,0 +1,192 @@
+@model StaffWeb.Models.DirectorRevenueViewModel
+@{
+    ViewData["Title"] = "Doanh thu he thong";
+    var totalSources = Model.Sources.Sum(x => x.Value);
+    var colors = new[] { "#2d7f7e", "#b07a34", "#4d6b3a" };
+    var segments = new List<string>();
+    decimal angle = 0;
+    for (var i = 0; i < Model.Sources.Count; i++)
+    {
+        var slice = Model.Sources[i];
+        var percent = totalSources <= 0 ? 0 : slice.Value / totalSources;
+        var start = angle;
+        var end = angle + (percent * 360);
+        segments.Add($"{colors[i % colors.Length]} {start:F2}deg {end:F2}deg");
+        angle = end;
+    }
+    var pieStyle = segments.Count == 0 ? "background: #f0f0f0;" : $"background: conic-gradient({string.Join(", ", segments)});";
+    var periodLabel = Model.Period switch
+    {
+        "week" => "Tuan",
+        "month" => "Thang",
+        "year" => "Nam",
+        _ => "Ngay"
+    };
+}
+
+<section class="card">
+    <h1 class="page-title">Bao cao doanh thu</h1>
+    <p class="page-subtitle">Thong ke doanh thu theo chi nhanh va nguon thu.</p>
+
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Tu ngay</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Den ngay</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Chi nhanh</label>
+                <select name="branchId">
+                    <option value="">Tat ca chi nhanh</option>
+                    @foreach (var branch in Model.Branches)
+                    {
+                        if (branch.Id == Model.BranchId)
+                        {
+                            <option value="@branch.Id" selected>@branch.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@branch.Id">@branch.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label>Chu ky</label>
+                <select name="period">
+                    @if (Model.Period == "day")
+                    {
+                        <option value="day" selected>Ngay</option>
+                    }
+                    else
+                    {
+                        <option value="day">Ngay</option>
+                    }
+                    @if (Model.Period == "week")
+                    {
+                        <option value="week" selected>Tuan</option>
+                    }
+                    else
+                    {
+                        <option value="week">Tuan</option>
+                    }
+                    @if (Model.Period == "month")
+                    {
+                        <option value="month" selected>Thang</option>
+                    }
+                    else
+                    {
+                        <option value="month">Thang</option>
+                    }
+                    @if (Model.Period == "year")
+                    {
+                        <option value="year" selected>Nam</option>
+                    }
+                    else
+                    {
+                        <option value="year">Nam</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem bao cao</button>
+    </form>
+</section>
+
+@if (Model.BranchRevenue.HasValue)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu chi nhanh</h3>
+        <p><strong>Chi nhanh:</strong> @(Model.BranchName ?? Model.BranchId)</p>
+        <p><strong>Tong doanh thu:</strong> @Model.BranchRevenue.Value.ToString("N0")</p>
+    </section>
+}
+
+@if (Model.Sources.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Co cau doanh thu</h3>
+        <div class="director-pie-wrap">
+            <div class="director-pie" style="@pieStyle"></div>
+            <div class="director-pie-legend">
+                @for (var i = 0; i < Model.Sources.Count; i++)
+                {
+                    var slice = Model.Sources[i];
+                    <div class="director-pie-row">
+                        <span class="director-pie-dot" style="background:@colors[i % colors.Length];"></span>
+                        <span>@slice.Name</span>
+                        <span>@slice.Value.ToString("N0")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (Model.Trend.Count > 0)
+{
+    var max = Model.Trend.Max(x => x.tongdoanhthu);
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu theo @periodLabel</h3>
+        <div class="manager-chart">
+            @foreach (var item in Model.Trend)
+            {
+            var height = max == 0 ? 0 : (int)Math.Round(item.tongdoanhthu / max * 100);
+            if (height > 0 && height < 15)
+            {
+                height = 15;
+            }
+                var label = Model.Period switch
+                {
+                    "week" => $"Tuan {item.ngay:dd/MM}",
+                    "month" => item.ngay.ToString("MM/yyyy"),
+                    "year" => item.ngay.ToString("yyyy"),
+                    _ => item.ngay.ToString("dd/MM")
+                };
+                <div class="manager-bar" title="@label: @item.tongdoanhthu.ToString("N0")">
+                    <div class="manager-bar-track">
+                        <div class="manager-bar-fill" style="height:@height%"></div>
+                    </div>
+                    <span>@label</span>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@if (Model.Items.Count > 0 && string.IsNullOrWhiteSpace(Model.BranchId))
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu theo chi nhanh</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ma CN</th>
+                    <th>Ten chi nhanh</th>
+                    <th>So hoa don</th>
+                    <th>Tong doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Items)
+                {
+                    <tr>
+                        <td>@row.macn</td>
+                        <td>@row.tencn</td>
+                        <td>@row.sohoadon</td>
+                        <td>@row.tongdoanhthu.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@if (Model.FromDate.HasValue && Model.ToDate.HasValue && Model.Items.Count == 0 && Model.Sources.Count == 0)
+{
+    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+}

@@ -9,7 +9,10 @@
 
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert">Kiem tra lai thong tin dang nhap.</div>
+        <div class="alert">
+            <div>Kiem tra lai thong tin dang nhap.</div>
+            <div asp-validation-summary="All"></div>
+        </div>
     }
 
     <form method="post">

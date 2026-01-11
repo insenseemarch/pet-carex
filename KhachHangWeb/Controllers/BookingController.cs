@@ -13,12 +13,12 @@ public class BookingController : Controller
     public BookingController(AppDbContext db) => _db = db;
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? branchId, string? doctorId, DateTime? date)
+    public async Task<IActionResult> Index(string? branchId, string? doctorId, string? serviceId, string? petId, string? slot, DateTime? date)
     {
         var makh = User.FindFirst("MaKhachHang")?.Value;
         if (string.IsNullOrWhiteSpace(makh)) return RedirectToAction("Login", "Account");
 
-        var vm = await BuildBookingViewModel(makh, branchId, doctorId, date);
+        var vm = await BuildBookingViewModel(makh, branchId, doctorId, serviceId, petId, slot, date);
         return View(vm);
     }
 
@@ -28,7 +28,7 @@ public class BookingController : Controller
         var makh = User.FindFirst("MaKhachHang")?.Value;
         if (string.IsNullOrWhiteSpace(makh)) return RedirectToAction("Login", "Account");
 
-        var filled = await BuildBookingViewModel(makh, vm.BranchId, vm.DoctorId, vm.Date);
+        var filled = await BuildBookingViewModel(makh, vm.BranchId, vm.DoctorId, vm.ServiceId, vm.PetId, vm.Slot, vm.Date);
         filled.PetId = vm.PetId;
         filled.Slot = vm.Slot;
         filled.Note = vm.Note;
@@ -38,6 +38,9 @@ public class BookingController : Controller
 
         if (string.IsNullOrWhiteSpace(filled.PetId))
             ModelState.AddModelError("", "Vui lòng chọn thú cưng.");
+
+        if (string.IsNullOrWhiteSpace(filled.ServiceId))
+            ModelState.AddModelError("", "Vui lòng chọn dịch vụ.");
 
         if (string.IsNullOrWhiteSpace(filled.DoctorId))
             ModelState.AddModelError("", "Vui lòng chọn bác sĩ.");
@@ -49,16 +52,14 @@ public class BookingController : Controller
 
         var time = TimeSpan.Parse(filled.Slot);
         var bookingTime = filled.Date.Date.Add(time);
+        var serviceOk = await _db.chinhanhs
+            .Where(c => c.macn == filled.BranchId)
+            .SelectMany(c => c.madvs)
+            .AnyAsync(d => d.madv == filled.ServiceId);
 
-        var madv = await _db.dichvus
-            .Where(d => d.loai == "Khám bệnh")
-            .OrderBy(d => d.madv)
-            .Select(d => d.madv)
-            .FirstOrDefaultAsync();
-
-        if (string.IsNullOrWhiteSpace(madv))
+        if (!serviceOk)
         {
-            ModelState.AddModelError("", "Không tìm thấy dịch vụ khám bệnh.");
+            ModelState.AddModelError("", "D?ch v? kh?ng thu?c chi nh?nh ?? ch?n.");
             return View("Index", filled);
         }
 
@@ -69,9 +70,10 @@ public class BookingController : Controller
             return View("Index", filled);
         }
 
-        var conflict = await _db.chitietkhambenhs.AnyAsync(k =>
-            k.mabs == filled.DoctorId && k.ngaysudung == bookingTime);
-        if (conflict)
+        var conflictCount = await _db.chitietkhambenhs
+            .Where(k => k.mabs == filled.DoctorId && k.ngaysudung == bookingTime)
+            .CountAsync();
+        if (conflictCount >= 3)
         {
             ModelState.AddModelError("", "Khung giờ này đã có lịch khám.");
             return View("Index", filled);
@@ -79,7 +81,7 @@ public class BookingController : Controller
 
         _db.chitietkhambenhs.Add(new chitietkhambenh
         {
-            madv = madv,
+            madv = filled.ServiceId!,
             mathucung = filled.PetId!,
             ngaysudung = bookingTime,
             mabs = filled.DoctorId!,
@@ -98,6 +100,7 @@ public class BookingController : Controller
         {
             branchId = filled.BranchId,
             doctorId = filled.DoctorId,
+            serviceId = filled.ServiceId,
             date = filled.Date.ToString("yyyy-MM-dd")
         });
     }
@@ -111,7 +114,7 @@ public class BookingController : Controller
         };
 
         vm.Doctors = await _db.nhanviens
-            .Where(n => n.loainv == "Bác sĩ thú y")
+            .Where(n => EF.Functions.Collate(n.loainv, "Latin1_General_CI_AI") == "Bac si thu y")
             .OrderBy(n => n.hoten)
             .Select(n => new SelectOption { Id = n.manv, Name = n.hoten })
             .ToListAsync();
@@ -142,6 +145,9 @@ public class BookingController : Controller
         string makh,
         string? branchId,
         string? doctorId,
+        string? serviceId,
+        string? petId,
+        string? slotId,
         DateTime? date)
     {
         var vm = new BookingViewModel
@@ -166,19 +172,97 @@ public class BookingController : Controller
             .ToListAsync();
 
         vm.PetId = vm.Pets.FirstOrDefault()?.Id;
+        if (!string.IsNullOrWhiteSpace(petId) && vm.Pets.Any(p => p.Id == petId))
+            vm.PetId = petId;
+
+        vm.Services = new List<SelectOption>();
+        if (!string.IsNullOrWhiteSpace(vm.BranchId))
+        {
+            vm.Services = await _db.chinhanhs
+                .Where(c => c.macn == vm.BranchId)
+                .SelectMany(c => c.madvs)
+                .OrderBy(d => d.tendv)
+                .Select(d => new SelectOption { Id = d.madv, Name = d.tendv })
+                .ToListAsync();
+        }
+
+        vm.ServiceId = string.IsNullOrWhiteSpace(serviceId)
+            ? vm.Services.FirstOrDefault()?.Id
+            : vm.Services.Any(s => s.Id == serviceId) ? serviceId : vm.Services.FirstOrDefault()?.Id;
+
+        var requestedDate = vm.Date.Date;
+        var dayStart = requestedDate;
+        var dayEnd = requestedDate.AddDays(1);
 
         vm.Doctors = await _db.nhanviens
-            .Where(n => n.macn == vm.BranchId && n.loainv == "Bác sĩ thú y")
+            .Where(n => n.macn == vm.BranchId
+                && EF.Functions.Collate(n.loainv, "Latin1_General_CI_AI") == "Bac si thu y")
             .OrderBy(n => n.hoten)
             .Select(n => new SelectOption { Id = n.manv, Name = n.hoten })
             .ToListAsync();
 
-        vm.DoctorId = string.IsNullOrWhiteSpace(doctorId)
-            ? vm.Doctors.FirstOrDefault()?.Id
-            : doctorId;
+        if (!string.IsNullOrWhiteSpace(doctorId) && vm.Doctors.Any(d => d.Id == doctorId))
+            vm.DoctorId = doctorId;
+        else
+            vm.DoctorId = null;
+
+        vm.Slot = null;
+        if (!string.IsNullOrWhiteSpace(slotId) && vm.Slots.Any(s => s.Id == slotId))
+            vm.Slot = slotId;
+
+        if (!string.IsNullOrWhiteSpace(vm.Slot))
+        {
+            var slotTime = TimeSpan.Parse(vm.Slot);
+            var slotStart = requestedDate.Add(slotTime);
+            var slotEnd = slotStart.AddHours(1);
+
+            if (string.IsNullOrWhiteSpace(vm.DoctorId))
+            {
+                var doctorIds = vm.Doctors.Select(d => d.Id).ToList();
+                var fullDoctorIds = await _db.chitietkhambenhs
+                    .Where(k => doctorIds.Contains(k.mabs) && k.ngaysudung >= slotStart && k.ngaysudung < slotEnd)
+                    .GroupBy(k => k.mabs)
+                    .Select(g => new { DoctorId = g.Key, Count = g.Count() })
+                    .Where(x => x.Count >= 3)
+                    .Select(x => x.DoctorId)
+                    .ToListAsync();
+
+                vm.Doctors = vm.Doctors.Where(d => !fullDoctorIds.Contains(d.Id)).ToList();
+            }
+            else
+            {
+                var slotCount = await _db.chitietkhambenhs
+                    .Where(k => k.mabs == vm.DoctorId && k.ngaysudung >= slotStart && k.ngaysudung < slotEnd)
+                    .CountAsync();
+                if (slotCount >= 3)
+                    vm.Slot = null;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(vm.DoctorId))
+        {
+            var booked = await _db.chitietkhambenhs
+                .Where(k => k.mabs == vm.DoctorId && k.ngaysudung >= dayStart && k.ngaysudung < dayEnd)
+                .Select(k => k.ngaysudung)
+                .ToListAsync();
+
+            var slotCounts = new Dictionary<string, int>();
+            foreach (var slot in vm.Slots)
+            {
+                var slotTime = TimeSpan.Parse(slot.Id);
+                var slotStart = dayStart.Add(slotTime);
+                var slotEnd = slotStart.AddHours(1);
+                var count = booked.Count(t => t >= slotStart && t < slotEnd);
+                if (count > 0) slotCounts[slot.Id] = count;
+            }
+
+            vm.Slots = vm.Slots.Where(s => !slotCounts.ContainsKey(s.Id) || slotCounts[s.Id] < 3).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(vm.Slot) && vm.Slots.All(s => s.Id != vm.Slot))
+            vm.Slot = null;
 
         vm.DoctorName = vm.Doctors.FirstOrDefault(d => d.Id == vm.DoctorId)?.Name;
-        vm.Slot = vm.Slots.FirstOrDefault()?.Id;
 
         return vm;
     }

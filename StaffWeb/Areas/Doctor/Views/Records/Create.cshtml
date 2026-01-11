@@ -26,27 +26,92 @@
         </div>
     }
 
-    <form method="post" id="record-form">
+    <form asp-action="Create" method="post" id="record-form">
+        <input type="hidden" asp-for="IsFromAppointment" />
+        <input type="hidden" asp-for="OriginalVisitTime" />
+        <input type="hidden" asp-for="AppointmentTicks" />
+
+        @if (Model.IsFromAppointment && !string.IsNullOrWhiteSpace(Model.PetName))
+        {
+            var birthText = Model.PetBirthDate?.ToString("dd/MM/yyyy") ?? "-";
+            <div class="card" style="margin-bottom: 16px;">
+                <h3>Thong tin thu cung</h3>
+                <div class="form-row">
+                    <div>
+                        <label>Ten thu cung</label>
+                        <input value="@Model.PetName" readonly />
+                    </div>
+                    <div>
+                        <label>Loai</label>
+                        <input value="@Model.PetType" readonly />
+                    </div>
+                    <div>
+                        <label>Giong</label>
+                        <input value="@Model.PetBreed" readonly />
+                    </div>
+                    <div>
+                        <label>Gioi tinh</label>
+                        <input value="@Model.PetGender" readonly />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Ngay sinh</label>
+                        <input value="@birthText" readonly />
+                    </div>
+                    <div>
+                        <label>Tinh trang suc khoe</label>
+                        <input value="@Model.PetHealth" readonly />
+                    </div>
+                </div>
+            </div>
+        }
+
         <div class="form-row">
             <div>
                 <label>Ma thu cung</label>
-                <input asp-for="PetId" />
+                @if (Model.IsFromAppointment)
+                {
+                    <input value="@Model.PetId" readonly />
+                    <input type="hidden" asp-for="PetId" />
+                }
+                else
+                {
+                    <input asp-for="PetId" />
+                }
                 <span asp-validation-for="PetId"></span>
             </div>
             <div>
                 <label>Dich vu</label>
-                <select asp-for="ServiceId">
-                    <option value="">Chon dich vu</option>
-                    @foreach (var dv in Model.Services)
-                    {
-                        <option value="@dv.madv">@dv.tendv</option>
-                    }
-                </select>
+                @if (Model.IsFromAppointment)
+                {
+                    var serviceName = Model.Services.FirstOrDefault(x => x.madv == Model.ServiceId)?.tendv ?? Model.ServiceId;
+                    <input value="@serviceName" readonly />
+                    <input type="hidden" asp-for="ServiceId" />
+                }
+                else
+                {
+                    <select asp-for="ServiceId">
+                        <option value="">Chon dich vu</option>
+                        @foreach (var dv in Model.Services)
+                        {
+                            <option value="@dv.madv">@dv.tendv</option>
+                        }
+                    </select>
+                }
                 <span asp-validation-for="ServiceId"></span>
             </div>
             <div>
                 <label>Ngay gio kham</label>
-                <input asp-for="VisitTime" type="datetime-local" />
+                @if (Model.IsFromAppointment)
+                {
+                    <input value="@(Model.VisitTime?.ToString("dd/MM/yyyy HH:mm") ?? "")" readonly />
+                    <input type="hidden" name="VisitTime" value="@(Model.VisitTime?.ToString("yyyy-MM-ddTHH:mm"))" />
+                }
+                else
+                {
+                    <input asp-for="VisitTime" type="datetime-local" />
+                }
                 <span asp-validation-for="VisitTime"></span>
             </div>
             <div>

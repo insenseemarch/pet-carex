@@ -1,0 +1,113 @@
+@model StaffWeb.Models.DirectorBranchCompareViewModel
+@{
+    ViewData["Title"] = "So sanh chi nhanh";
+}
+
+<section class="card">
+    <h1 class="page-title">So sanh chi nhanh</h1>
+    <p class="page-subtitle">Chon nhieu chi nhanh va khoang thoi gian de so sanh.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Tu ngay</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Den ngay</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+        </div>
+        <div class="form-row" style="margin-top: 16px;">
+            <div class="compare-branches">
+                <label>Chi nhanh</label>
+                <div class="multi-check">
+                    @foreach (var branch in Model.Branches)
+                    {
+                        var checkedAttr = Model.SelectedBranchIds.Contains(branch.Id);
+                        <label class="multi-check-item">
+                            <input type="checkbox" name="branchIds" value="@branch.Id" @(checkedAttr ? "checked" : "") />
+                            <span>@branch.Name</span>
+                        </label>
+                    }
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn">So sanh</button>
+    </form>
+</section>
+
+@if (Model.Revenue.Count > 0)
+{
+    var maxRevenue = Model.Revenue.Max(x => x.tongdoanhthu);
+    var safeMax = maxRevenue <= 0 ? 1 : maxRevenue;
+    <section class="card" style="margin-top: 20px;">
+        <h3>So sanh tong doanh thu</h3>
+        <div class="manager-chart" style="margin-top: 16px;">
+            @foreach (var row in Model.Revenue)
+            {
+                var height = (double)row.tongdoanhthu / (double)safeMax * 100.0;
+                <div class="manager-bar">
+                    <div class="manager-bar-track">
+                        <div class="manager-bar-fill" style="height:@height%"></div>
+                    </div>
+                    <div>@row.tencn</div>
+                    <div>@row.tongdoanhthu.ToString("N0")</div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu theo chi nhanh</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Chi nhanh</th>
+                    <th>So hoa don</th>
+                    <th>Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Revenue)
+                {
+                    <tr>
+                        <td>@row.tencn</td>
+                        <td>@row.sohoadon</td>
+                        <td>@row.tongdoanhthu.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@if (Model.ProductRevenue.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu san pham theo chi nhanh</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Chi nhanh</th>
+                    <th>So luong</th>
+                    <th>Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.ProductRevenue)
+                {
+                    <tr>
+                        <td>@row.BranchName</td>
+                        <td>@row.TotalQuantity</td>
+                        <td>@row.TotalRevenue.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@if (Model.FromDate.HasValue && Model.ToDate.HasValue && Model.SelectedBranchIds.Count > 0 && Model.Revenue.Count == 0 && Model.ProductRevenue.Count == 0)
+{
+    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+}

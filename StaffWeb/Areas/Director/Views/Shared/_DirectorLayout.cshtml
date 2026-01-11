@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PetCareX Director</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="director-body">
+    <header class="director-header">
+        <div class="director-brand">
+            <a class="director-logo" asp-area="Director" asp-controller="Home" asp-action="Index">PetCareX</a>
+            <div>
+                <div class="director-title">Director Desk</div>
+                <div class="director-subtitle">Bao cao tong quan he thong</div>
+            </div>
+        </div>
+        <nav class="director-nav">
+            <a class="director-tab" asp-area="Director" asp-controller="Home" asp-action="Index">Tong quan</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Revenue">Doanh thu</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Doctors">Bac si</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Visits">Luot kham</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Products">San pham</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="CompareBranches">So sanh</a>
+        </nav>
+        <div class="director-user">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <span>@User.Identity?.Name</span>
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-secondary">Dang xuat</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn" asp-controller="Account" asp-action="Login">Dang nhap</a>
+            }
+        </div>
+    </header>
+    <main class="director-main">
+        @RenderBody()
+    </main>
+</body>
+</html>

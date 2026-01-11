@@ -120,12 +120,22 @@ public class AppointmentsController : Controller
             .ToList();
         if (vm.VisitTime.HasValue)
         {
+            var slotStart = new DateTime(
+                vm.VisitTime.Value.Year,
+                vm.VisitTime.Value.Month,
+                vm.VisitTime.Value.Day,
+                vm.VisitTime.Value.Hour,
+                0,
+                0);
+            var slotEnd = slotStart.AddHours(1);
             var doctorIds = doctors.Select(x => x.manv).ToList();
             var busyDoctorIds = await _db.chitietkhambenhs
                 .AsNoTracking()
-                .Where(x => doctorIds.Contains(x.mabs) && x.ngaysudung == vm.VisitTime.Value)
-                .Select(x => x.mabs)
-                .Distinct()
+                .Where(x => doctorIds.Contains(x.mabs) && x.ngaysudung >= slotStart && x.ngaysudung < slotEnd)
+                .GroupBy(x => x.mabs)
+                .Select(g => new { DoctorId = g.Key, Count = g.Count() })
+                .Where(x => x.Count >= 3)
+                .Select(x => x.DoctorId)
                 .ToListAsync();
             vm.Doctors = doctors
                 .Where(x => !busyDoctorIds.Contains(x.manv))
