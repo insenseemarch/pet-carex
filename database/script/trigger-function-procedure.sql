@@ -914,3 +914,127 @@ begin
            or max(hd.ngaylap) is null;
 end
 go
+
+-- =========================================
+-- procedure: Tự tạo lịch tiêm theo gói
+-- =========================================
+
+create or alter procedure sp_dangky_tiem_goi
+(
+    @madv        varchar(10), 
+    @mathucung   varchar(10),
+    @macn        varchar(10),
+    @mabs        varchar(10),
+    @mavacxin    varchar(10)
+)
+as
+begin
+    set nocount on 
+
+    declare 
+        @sothang int,
+        @somui int,
+        @i int = 1,
+        @ngaybatdau date = cast(getdate() as date) 
+
+    begin try
+        begin tran;
+
+        -- 1. check dịch vụ có phải tiêm gói không
+        if not exists (
+            select 1 from tiemgoi where madv = @madv
+        )
+        begin
+            throw 60001, N'Dịch vụ không phải tiêm gói.', 1;
+        end
+
+        -- 2. check dịch vụ có thuộc chi nhánh
+        if not exists (
+            select 1
+            from dichvutaichinhanh
+            where macn = @macn
+              and madv = @madv
+        )
+        begin
+            throw 60002, N'Dịch vụ không có tại chi nhánh đăng ký.', 1;
+        end
+
+        -- 3. check bác sĩ hợp lệ
+        if not exists (
+            select 1
+            from nhanvien
+            where manv = @mabs
+              and macn = @macn
+              and loainv = N'Bác sĩ thú y'
+        )
+        begin
+            throw 60003, N'Bác sĩ không hợp lệ hoặc không thuộc chi nhánh.', 1;
+        end
+
+        -- 4. lấy số tháng của gói
+        select @sothang = sothang
+        from tiemgoi
+        where madv = @madv;
+
+        -- mỗi 2 tháng tiêm 1 lần
+        set @somui = @sothang / 2;
+
+        -- 5. insert lịch tiêm
+        while @i <= @somui
+        begin
+            insert into chitiettiemphong
+            (
+                stt,
+                madv,
+                mathucung,
+                mavacxin,
+                mabs,
+                ngaytiem,
+                trangthai
+            )
+            values
+            (
+                @i,
+                @madv,
+                @mathucung,
+                @mavacxin,
+                @mabs,
+                dateadd(month, (@i - 1) * 2, @ngaybatdau),
+                N'Chưa tiêm'
+            );
+
+            set @i += 1;
+        end
+
+        commit tran;
+    end try
+    begin catch
+        rollback tran;
+        throw;
+    end catch
+end
+go
+
+-- =========================================
+-- procedure: Xác nhận đã tiêm (mũi tiêm hoàn thành)
+-- =========================================
+
+create or alter procedure sp_xacnhan_da_tiem
+(
+    @madv varchar(10),
+    @mathucung varchar(10),
+    @stt int,
+    @mabs varchar(10)
+)
+as
+begin
+    update chitiettiemphong
+    set 
+        trangthai = N'Đã tiêm',
+        mabs = @mabs
+    where madv = @madv
+      and mathucung = @mathucung
+      and stt = @stt
+      and trangthai = N'Chưa tiêm';
+end
+go
