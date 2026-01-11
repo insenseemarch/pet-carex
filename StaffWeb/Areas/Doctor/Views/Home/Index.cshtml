@@ -1,37 +1,37 @@
 @model StaffWeb.Models.DoctorDashboardViewModel
 @{
-    ViewData["Title"] = "Bac si";
+    ViewData["Title"] = "Bác sĩ";
 }
 
 <section class="doctor-dashboard">
     <div class="doctor-hero">
-        <h1>Chao bac si, bat dau ca truc moi</h1>
-        <p>Tra cuu nhanh ho so, ke toa va quan ly lich kham trong mot giao dien thong nhat.</p>
+        <h1>Chào bác sĩ, bắt đầu ca trực mới</h1>
+        <p>Tra cứu nhanh hồ sơ, kê toa và quản lý lịch khám trong một giao diện thống nhất.</p>
         <div class="doctor-actions">
-            <a class="btn" href="/Doctor/Records/Create">Tao benh an</a>
-            <a class="btn btn-secondary" href="/Doctor/Lookup/Index">Tra cuu</a>
-            <a class="btn btn-secondary" href="/Doctor/Vaccination/Create">Ghi nhan tiem</a>
+            <a class="btn" href="/Doctor/Records/Create">Tạo bệnh án</a>
+            <a class="btn btn-secondary" href="/Doctor/Lookup/Index">Tra cứu</a>
+            <a class="btn btn-secondary" href="/Doctor/Vaccination/Create">Ghi nhận tiêm</a>
         </div>
     </div>
 
     <div class="doctor-info-grid">
         <div class="doctor-info-card">
-            <h3>Thong tin bac si</h3>
-            <p><strong>Ho ten:</strong> @(Model.Doctor?.hoten ?? "Dang cap nhat")</p>
-            <p><strong>Ma NV:</strong> @(Model.Doctor?.manv ?? "-")</p>
-            <p><strong>Loai NV:</strong> @(Model.Doctor?.loainv ?? "-")</p>
+            <h3>Thông tin bác sĩ</h3>
+            <p><strong>Họ tên:</strong> @(Model.Doctor?.hoten ?? "Đang cập nhật")</p>
+            <p><strong>Mã NV:</strong> @(Model.Doctor?.manv ?? "-")</p>
+            <p><strong>Loại NV:</strong> @(Model.Doctor?.loainv ?? "-")</p>
         </div>
         <div class="doctor-info-card">
-            <h3>Chi nhanh</h3>
-            <p><strong>Ten:</strong> @(Model.Branch?.tencn ?? "Dang cap nhat")</p>
-            <p><strong>Dia chi:</strong> @(Model.Branch?.diachi ?? "-")</p>
-            <p><strong>SDT:</strong> @(Model.Branch?.sdt ?? "-")</p>
+            <h3>Chi nhánh</h3>
+            <p><strong>Tên:</strong> @(Model.Branch?.tencn ?? "Đang cập nhật")</p>
+            <p><strong>Địa chỉ:</strong> @(Model.Branch?.diachi ?? "-")</p>
+            <p><strong>SĐT:</strong> @(Model.Branch?.sdt ?? "-")</p>
         </div>
         <div class="doctor-info-card">
-            <h3>Ca truc</h3>
-            <p><strong>Ngay:</strong> @DateTime.Now.ToString("dd/MM/yyyy")</p>
-            <p><strong>Gio:</strong> @DateTime.Now.ToString("HH:mm")</p>
-            <p><strong>Trang thai:</strong> Dang lam viec</p>
+            <h3>Ca trực</h3>
+            <p><strong>Ngày:</strong> @DateTime.Now.ToString("dd/MM/yyyy")</p>
+            <p><strong>Giờ:</strong> @DateTime.Now.ToString("HH:mm")</p>
+            <p><strong>Trạng thái:</strong> Đang làm việc</p>
         </div>
     </div>
 
@@ -39,20 +39,20 @@
     {
         <div class="doctor-cards">
             <a class="doctor-card" href="/Doctor/Lookup/Pet">
-                <h3>Thong tin</h3>
-                <p>Tra cuu ho so thu cung hoac khach hang</p>
+                <h3>Thông tin</h3>
+                <p>Tra cứu hồ sơ thú cưng hoặc khách hàng</p>
             </a>
             <a class="doctor-card" href="/Doctor/Medicines/Index">
-                <h3>Tra cuu thuoc</h3>
-                <p>Danh muc thuoc va lieu luong</p>
+                <h3>Tra cứu thuốc</h3>
+                <p>Danh mục thuốc và liều lượng</p>
             </a>
             <a class="doctor-card" href="/Doctor/Lookup/Vaccines">
-                <h3>Tra cuu vaccine</h3>
-                <p>Lich tiem va cac loai vaccine</p>
+                <h3>Tra cứu vaccine</h3>
+                <p>Lịch tiêm và các loại vaccine</p>
             </a>
             <a class="doctor-card" href="/Doctor/Lookup/WorkSchedule">
-                <h3>Lich lam viec</h3>
-                <p>Xem lich truc bac si</p>
+                <h3>Lịch làm việc</h3>
+                <p>Xem lịch trực bác sĩ</p>
             </a>
         </div>
     }

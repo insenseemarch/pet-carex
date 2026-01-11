@@ -1,11 +1,11 @@
 @model StaffWeb.Models.DoctorRecordViewModel
 @{
-    ViewData["Title"] = "Tao benh an";
+    ViewData["Title"] = "Tạo bệnh án";
 }
 
 <section class="card">
-    <h1 class="page-title">Tao benh an moi</h1>
-    <p class="page-subtitle">Nhap thong tin kham va ke toa.</p>
+    <h1 class="page-title">Tạo bệnh án mới</h1>
+    <p class="page-subtitle">Nhập thông tin khám và kê toa.</p>
 
     @if (TempData["Success"] != null)
     {
@@ -13,7 +13,7 @@
     }
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert">Kiem tra lai thong tin bat buoc.</div>
+        <div class="alert">Kiểm tra lại thông tin bắt buộc.</div>
         <div asp-validation-summary="All"></div>
         <div class="alert" style="margin-top: 10px;">
             @foreach (var entry in ViewData.ModelState)
@@ -35,32 +35,32 @@
         {
             var birthText = Model.PetBirthDate?.ToString("dd/MM/yyyy") ?? "-";
             <div class="card" style="margin-bottom: 16px;">
-                <h3>Thong tin thu cung</h3>
+                <h3>Thông tin thú cưng</h3>
                 <div class="form-row">
                     <div>
-                        <label>Ten thu cung</label>
+                        <label>Tên thú cưng</label>
                         <input value="@Model.PetName" readonly />
                     </div>
                     <div>
-                        <label>Loai</label>
+                        <label>Loại</label>
                         <input value="@Model.PetType" readonly />
                     </div>
                     <div>
-                        <label>Giong</label>
+                        <label>Giống</label>
                         <input value="@Model.PetBreed" readonly />
                     </div>
                     <div>
-                        <label>Gioi tinh</label>
+                        <label>Giới tính</label>
                         <input value="@Model.PetGender" readonly />
                     </div>
                 </div>
                 <div class="form-row">
                     <div>
-                        <label>Ngay sinh</label>
+                        <label>Ngày sinh</label>
                         <input value="@birthText" readonly />
                     </div>
                     <div>
-                        <label>Tinh trang suc khoe</label>
+                        <label>Tình trạng sức khỏe</label>
                         <input value="@Model.PetHealth" readonly />
                     </div>
                 </div>
@@ -69,7 +69,7 @@
 
         <div class="form-row">
             <div>
-                <label>Ma thu cung</label>
+                <label>Mã thú cưng</label>
                 @if (Model.IsFromAppointment)
                 {
                     <input value="@Model.PetId" readonly />
@@ -82,7 +82,7 @@
                 <span asp-validation-for="PetId"></span>
             </div>
             <div>
-                <label>Dich vu</label>
+                <label>Dịch vụ</label>
                 @if (Model.IsFromAppointment)
                 {
                     var serviceName = Model.Services.FirstOrDefault(x => x.madv == Model.ServiceId)?.tendv ?? Model.ServiceId;
@@ -92,7 +92,7 @@
                 else
                 {
                     <select asp-for="ServiceId">
-                        <option value="">Chon dich vu</option>
+                        <option value="">Chọn dịch vụ</option>
                         @foreach (var dv in Model.Services)
                         {
                             <option value="@dv.madv">@dv.tendv</option>
@@ -102,7 +102,7 @@
                 <span asp-validation-for="ServiceId"></span>
             </div>
             <div>
-                <label>Ngay gio kham</label>
+                <label>Ngày giờ khám</label>
                 @if (Model.IsFromAppointment)
                 {
                     <input value="@(Model.VisitTime?.ToString("dd/MM/yyyy HH:mm") ?? "")" readonly />
@@ -115,32 +115,32 @@
                 <span asp-validation-for="VisitTime"></span>
             </div>
             <div>
-                <label>Ngay tai kham</label>
+                <label>Ngày tái khám</label>
                 <input asp-for="RecheckDate" type="date" />
                 <span asp-validation-for="RecheckDate"></span>
             </div>
         </div>
         <div class="form-row">
             <div>
-                <label>Trieu chung</label>
+                <label>Triệu chứng</label>
                 <textarea asp-for="Symptoms"></textarea>
             </div>
             <div>
-                <label>Chan doan</label>
+                <label>Chẩn đoán</label>
                 <textarea asp-for="Diagnosis"></textarea>
             </div>
         </div>
         <div>
-            <label>Ghi chu</label>
+            <label>Ghi chú</label>
             <textarea asp-for="Notes"></textarea>
         </div>
 
         <div class="card" style="margin-top: 16px;">
-            <h3>Ke toa thuoc (tuy chon)</h3>
+            <h3>Kê toa thuốc (tùy chọn)</h3>
             <div class="form-row">
                 <div>
-                    <label>Ten toa</label>
-                    <input asp-for="PrescriptionName" placeholder="Toa thuoc ABC" />
+                    <label>Tên toa</label>
+                    <input asp-for="PrescriptionName" placeholder="Toa thuốc ABC" />
                 </div>
             </div>
             <div id="exam-medicine-rows">
@@ -149,9 +149,9 @@
                     var selectedId = Model.Items[i].MedicineId;
                     <div class="form-row medicine-row">
                         <div>
-                            <label>Thuoc</label>
+                            <label>Thuốc</label>
                             <select name="Items[@i].MedicineId">
-                                <option value="">Chon thuoc</option>
+                                <option value="">Chọn thuốc</option>
                                 @foreach (var sp in Model.Medicines)
                                 {
                                     if (sp.masp == selectedId)
@@ -166,28 +166,28 @@
                             </select>
                         </div>
                         <div>
-                            <label>So luong</label>
+                            <label>Số lượng</label>
                             <input name="Items[@i].Quantity" type="number" min="1" value="@(Model.Items[i].Quantity?.ToString() ?? "")" />
                         </div>
                         <div>
-                            <label>Lieu luong</label>
-                            <input name="Items[@i].Dosage" placeholder="2 lan/ngay" value="@(Model.Items[i].Dosage ?? "")" />
+                            <label>Liều lượng</label>
+                            <input name="Items[@i].Dosage" placeholder="2 lần/ngày" value="@(Model.Items[i].Dosage ?? "")" />
                         </div>
                         <div>
-                            <label>Ghi chu</label>
-                            <input name="Items[@i].Note" placeholder="Uong sau an" value="@(Model.Items[i].Note ?? "")" />
+                            <label>Ghi chú</label>
+                            <input name="Items[@i].Note" placeholder="Uống sau ăn" value="@(Model.Items[i].Note ?? "")" />
                         </div>
                         <div style="align-self:end;">
-                            <button type="button" class="btn btn-secondary remove-row">Xoa</button>
+                            <button type="button" class="btn btn-secondary remove-row">Xóa</button>
                         </div>
                     </div>
                 }
             </div>
-            <button type="button" class="btn btn-secondary" id="add-exam-medicine">Them thuoc</button>
+            <button type="button" class="btn btn-secondary" id="add-exam-medicine">Thêm thuốc</button>
         </div>
 
         <div style="margin-top: 16px;">
-            <button type="submit" class="btn">Luu benh an</button>
+            <button type="submit" class="btn">Lưu bệnh án</button>
         </div>
     </form>
 </section>
@@ -195,9 +195,9 @@
 <template id="exam-medicine-template">
     <div class="form-row medicine-row">
         <div>
-            <label>Thuoc</label>
+            <label>Thuốc</label>
             <select name="Items[__index__].MedicineId">
-                <option value="">Chon thuoc</option>
+                <option value="">Chọn thuốc</option>
                 @foreach (var sp in Model.Medicines)
                 {
                     <option value="@sp.masp">@sp.tensp</option>
@@ -205,19 +205,19 @@
             </select>
         </div>
         <div>
-            <label>So luong</label>
+            <label>Số lượng</label>
             <input name="Items[__index__].Quantity" type="number" min="1" />
         </div>
         <div>
-            <label>Lieu luong</label>
-            <input name="Items[__index__].Dosage" placeholder="2 lan/ngay" />
+            <label>Liều lượng</label>
+            <input name="Items[__index__].Dosage" placeholder="2 lần/ngày" />
         </div>
         <div>
-            <label>Ghi chu</label>
-            <input name="Items[__index__].Note" placeholder="Uong sau an" />
+            <label>Ghi chú</label>
+            <input name="Items[__index__].Note" placeholder="Uống sau ăn" />
         </div>
         <div style="align-self:end;">
-            <button type="button" class="btn btn-secondary remove-row">Xoa</button>
+            <button type="button" class="btn btn-secondary remove-row">Xóa</button>
         </div>
     </div>
 </template>

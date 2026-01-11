@@ -1,55 +1,55 @@
 @model StaffWeb.Models.DoctorHistoryViewModel
 @{
-    ViewData["Title"] = "Lich su kham";
+    ViewData["Title"] = "Lịch sử khám";
 }
 
 <section class="card">
-    <h1 class="page-title">Lich su kham cua bac si</h1>
-    <p class="page-subtitle">Tu dong lay theo tai khoan dang dang nhap.</p>
+    <h1 class="page-title">Lịch sử khám của bác sĩ</h1>
+    <p class="page-subtitle">Tự động lấy theo tài khoản đang đăng nhập.</p>
     <div class="grid two">
         <div>
-            <p><strong>Ho ten:</strong> @Model.Doctor?.hoten</p>
-            <p><strong>Ma NV:</strong> @Model.Doctor?.manv</p>
+            <p><strong>Họ tên:</strong> @Model.Doctor?.hoten</p>
+            <p><strong>Mã NV:</strong> @Model.Doctor?.manv</p>
         </div>
         <div>
-            <p><strong>Chi nhanh:</strong> @Model.Doctor?.macnNavigation?.tencn</p>
-            <p><strong>SDT chi nhanh:</strong> @Model.Doctor?.macnNavigation?.sdt</p>
+            <p><strong>Chi nhánh:</strong> @Model.Doctor?.macnNavigation?.tencn</p>
+            <p><strong>SĐT chi nhánh:</strong> @Model.Doctor?.macnNavigation?.sdt</p>
         </div>
     </div>
 </section>
 
 <section class="card" style="margin-top: 20px;">
-    <h3>Loc du lieu</h3>
+    <h3>Lọc dữ liệu</h3>
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Ma thu cung</label>
+                <label>Mã thú cưng</label>
                 <input name="petId" value="@Model.Filter.PetId" />
             </div>
             <div>
-                <label>Tu ngay</label>
+                <label>Từ ngày</label>
                 <input type="date" name="from" value="@(Model.Filter.From?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Den ngay</label>
+                <label>Đến ngày</label>
                 <input type="date" name="to" value="@(Model.Filter.To?.ToString("yyyy-MM-dd"))" />
             </div>
         </div>
-        <button type="submit" class="btn">Ap dung</button>
+        <button type="submit" class="btn">Áp dụng</button>
         <a class="btn btn-secondary" href="/Doctor/Lookup/DoctorHistory">Reset</a>
     </form>
 </section>
 
 <section class="card" style="margin-top: 20px;">
-    <h3>Lich su kham</h3>
+    <h3>Lịch sử khám</h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Ngay</th>
-                <th>Dich vu</th>
-                <th>Thu cung</th>
-                <th>Trieu chung</th>
-                <th>Chan doan</th>
+                <th>Ngày</th>
+                <th>Dịch vụ</th>
+                <th>Thú cưng</th>
+                <th>Triệu chứng</th>
+                <th>Chẩn đoán</th>
             </tr>
         </thead>
         <tbody>
@@ -67,19 +67,19 @@
     </table>
     @if (Model.Exams.Count == 0)
     {
-        <p class="page-subtitle">Chua co du lieu kham.</p>
+        <p class="page-subtitle">Chưa có dữ liệu khám.</p>
     }
 </section>
 
 <section class="card" style="margin-top: 20px;">
-    <h3>Lich su tiem</h3>
+    <h3>Lịch sử tiêm</h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Ngay tiem</th>
+                <th>Ngày tiêm</th>
                 <th>Vac xin</th>
-                <th>Thu cung</th>
-                <th>Trang thai</th>
+                <th>Thú cưng</th>
+                <th>Trạng thái</th>
             </tr>
         </thead>
         <tbody>
@@ -96,6 +96,6 @@
     </table>
     @if (Model.Vaccines.Count == 0)
     {
-        <p class="page-subtitle">Chua co du lieu tiem.</p>
+        <p class="page-subtitle">Chưa có dữ liệu tiêm.</p>
     }
 </section>

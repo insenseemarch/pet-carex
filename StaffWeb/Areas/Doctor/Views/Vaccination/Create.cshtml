@@ -1,11 +1,11 @@
 @model StaffWeb.Models.VaccinationRecordViewModel
 @{
-    ViewData["Title"] = "Ghi nhan tiem phong";
+    ViewData["Title"] = "Ghi nhận tiêm phòng";
 }
 
 <section class="card">
-    <h1 class="page-title">Ghi nhan tiem phong</h1>
-    <p class="page-subtitle">Nhap thong tin tiem phong cho thu cung.</p>
+    <h1 class="page-title">Ghi nhận tiêm phòng</h1>
+    <p class="page-subtitle">Nhập thông tin tiêm phòng cho thú cưng.</p>
 
     @if (TempData["Success"] != null)
     {
@@ -13,29 +13,29 @@
     }
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert">Kiem tra lai thong tin bat buoc.</div>
+        <div class="alert">Kiểm tra lại thông tin bắt buộc.</div>
     }
 
     <form method="post">
         <div class="form-row">
             <div>
-                <label>Ma thu cung</label>
+                <label>Mã thú cưng</label>
                 <input asp-for="PetId" />
             </div>
             <div class="align-end">
                 <label>&nbsp;</label>
-                <button type="submit" name="action" value="load" class="btn btn-ghost">Tai goi dang cho</button>
+                <button type="submit" name="action" value="load" class="btn btn-ghost">Tải gói đang chờ</button>
             </div>
             <div>
-                <label>Che do tiem</label>
+                <label>Chế độ tiêm</label>
                 <div class="inline-options">
                     <label>
                         <input type="radio" name="Mode" value="Le" @(Model.Mode == "Goi" ? "" : "checked") />
-                        Tiem le
+                        Tiêm lẻ
                     </label>
                     <label>
                         <input type="radio" name="Mode" value="Goi" @(Model.Mode == "Goi" ? "checked" : "") />
-                        Tiem goi
+                        Tiêm gói
                     </label>
                 </div>
             </div>
@@ -43,9 +43,9 @@
 
         <div class="form-row mode-le">
             <div>
-                <label>Dich vu tiem le</label>
+                <label>Dịch vụ tiêm lẻ</label>
                 <select asp-for="ServiceId">
-                    <option value="">Chon dich vu</option>
+                    <option value="">Chọn dịch vụ</option>
                     @foreach (var dv in Model.Services)
                     {
                         <option value="@dv.madv">@dv.madvNavigation?.tendv (@dv.madv)</option>
@@ -56,11 +56,11 @@
 
         <div class="form-row mode-goi">
             <div class="full">
-                <label>Goi dang cho (neu co)</label>
+                <label>Gói đang chờ (nếu có)</label>
                 <input type="hidden" name="SelectedPendingServiceId" value="@Model.SelectedPendingServiceId" />
                 @if (Model.PendingPackages.Count == 0)
                 {
-                    <div class="muted">Thu cung nay chua co goi nao dang cho.</div>
+                    <div class="muted">Thú cưng này chưa có gói nào đang chờ.</div>
                 }
                 else
                 {
@@ -77,7 +77,7 @@
                                     @item.ServiceName (@item.ServiceId) -
                                     @item.VaccineName (@item.VaccineId) -
                                     @item.PlannedDate?.ToString("dd/MM/yyyy") -
-                                    @(string.IsNullOrWhiteSpace(item.Status) ? "Cho tiem" : item.Status)
+                                    @(string.IsNullOrWhiteSpace(item.Status) ? "Chờ tiêm" : item.Status)
                                 </span>
                             </label>
                         }
@@ -88,19 +88,19 @@
 
         <div class="form-row mode-goi">
             <div>
-                <label>Tao goi moi</label>
+                <label>Tạo gói mới</label>
                 <select asp-for="NewPackageServiceId">
-                    <option value="">Chon goi</option>
+                    <option value="">Chọn gói</option>
                     @foreach (var goi in Model.PackageOptions)
                     {
                         <option value="@goi.ServiceId">
-                            @goi.Name (@goi.ServiceId) - @goi.Months thang
+                            @goi.Name (@goi.ServiceId) - @goi.Months tháng
                         </option>
                     }
                 </select>
             </div>
             <div>
-                <label>Ngay bat dau goi</label>
+                <label>Ngày bắt đầu gói</label>
                 <input asp-for="PackageStartDate" type="date" />
             </div>
         </div>
@@ -109,20 +109,20 @@
             <div>
                 <label>Vaccine</label>
                 <select asp-for="VaccineId">
-                    <option value="">Chon vaccine</option>
+                    <option value="">Chọn vaccine</option>
                     @foreach (var vx in Model.Vaccines)
                     {
                         <option value="@vx.mavacxin">@vx.tenvacxin (@vx.mavacxin)</option>
                     }
                 </select>
-                <div class="muted">Neu chon goi dang cho, vaccine se dung theo lich da tao.</div>
+                <div class="muted">Nếu chọn gói đang chờ, vaccine sẽ dùng theo lịch đã tạo.</div>
             </div>
             <div>
-                <label>Ngay tiem</label>
+                <label>Ngày tiêm</label>
                 <input asp-for="Date" type="date" />
             </div>
         </div>
-        <button type="submit" class="btn">Luu</button>
+        <button type="submit" class="btn">Lưu</button>
     </form>
 </section>
 

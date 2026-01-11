@@ -1,36 +1,36 @@
 @model StaffWeb.Models.VaccineLookupViewModel
 @{
-    ViewData["Title"] = "Tra cuu vaccine";
+    ViewData["Title"] = "Tra cứu vaccine";
 }
 
 <section class="card">
-    <h1 class="page-title">Tra cuu vaccine</h1>
-    <p class="page-subtitle">Tim vaccine va xem lich tiem theo thu cung.</p>
+    <h1 class="page-title">Tra cứu vaccine</h1>
+    <p class="page-subtitle">Tìm vaccine và xem lịch tiêm theo thú cưng.</p>
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Tu khoa</label>
-                <input name="q" value="@Model.Query" placeholder="Ten vaccine hoac loai" />
+                <label>Từ khóa</label>
+                <input name="q" value="@Model.Query" placeholder="Tên vaccine hoặc loại" />
             </div>
             <div>
-                <label>Ma thu cung (tuy chon)</label>
-                <input name="petId" value="@Model.PetId" placeholder="Nhap de xem lich tiem" />
+                <label>Mã thú cưng (tùy chọn)</label>
+                <input name="petId" value="@Model.PetId" placeholder="Nhập để xem lịch tiêm" />
             </div>
         </div>
-        <button type="submit" class="btn">Tra cuu</button>
+        <button type="submit" class="btn">Tra cứu</button>
     </form>
 </section>
 
 <section class="card" style="margin-top: 20px;">
-    <h3>Danh sach vaccine</h3>
+    <h3>Danh sách vaccine</h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Ma</th>
-                <th>Ten vaccine</th>
-                <th>Loai</th>
-                <th>Ngay SX</th>
-                <th>Het han</th>
+                <th>Mã</th>
+                <th>Tên vaccine</th>
+                <th>Loại</th>
+                <th>Ngày SX</th>
+                <th>Hết hạn</th>
             </tr>
         </thead>
         <tbody>
@@ -48,22 +48,22 @@
     </table>
     @if (Model.Vaccines.Count == 0)
     {
-        <p class="page-subtitle">Khong co vaccine phu hop.</p>
+        <p class="page-subtitle">Không có vaccine phù hợp.</p>
     }
 </section>
 
 @if (!string.IsNullOrWhiteSpace(Model.PetId))
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Lich tiem cua thu cung @Model.PetId</h3>
+        <h3>Lịch tiêm của thú cưng @Model.PetId</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Ngay tiem</th>
+                    <th>Ngày tiêm</th>
                     <th>Vaccine</th>
-                    <th>Dich vu</th>
-                    <th>Bac si</th>
-                    <th>Trang thai</th>
+                    <th>Dịch vụ</th>
+                    <th>Bác sĩ</th>
+                    <th>Trạng thái</th>
                 </tr>
             </thead>
             <tbody>
@@ -81,7 +81,7 @@
         </table>
         @if (Model.PetVaccines.Count == 0)
         {
-            <p class="page-subtitle">Thu cung nay chua co lich tiem.</p>
+            <p class="page-subtitle">Thú cưng này chưa có lịch tiêm.</p>
         }
     </section>
 }

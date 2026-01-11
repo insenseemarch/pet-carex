@@ -1078,4 +1078,3 @@ begin
       and trangthai = N'Chưa tiêm';
 end
 go
-

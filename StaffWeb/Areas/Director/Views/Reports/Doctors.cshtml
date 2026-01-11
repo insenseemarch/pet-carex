@@ -1,25 +1,57 @@
 @model StaffWeb.Models.DirectorDoctorViewModel
 @{
-    ViewData["Title"] = "Bao cao bac si";
+    ViewData["Title"] = "Báo cáo bác sĩ";
 }
 
+<style>
+    .chart-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1000;
+        display: none;
+        white-space: nowrap;
+    }
+    .doctor-bar-row {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .doctor-bar-row:hover {
+        transform: scale(1.02);
+    }
+    .table tbody tr {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+
 <section class="card">
-    <h1 class="page-title">Thong ke bac si</h1>
-    <p class="page-subtitle">Xem luot kham/tiem va doanh thu theo bac si.</p>
+    <h1 class="page-title">Thống kê bác sĩ</h1>
+    <p class="page-subtitle">Xem lượt khám/tiêm và doanh thu theo bác sĩ.</p>
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Tu ngay</label>
+                <label>Từ ngày</label>
                 <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Den ngay</label>
+                <label>Đến ngày</label>
                 <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Chi nhanh</label>
+                <label>Chi nhánh</label>
                 <select name="branchId">
-                    <option value="">Tat ca chi nhanh</option>
+                    <option value="">Tất cả chi nhánh</option>
                     @foreach (var branch in Model.Branches)
                     {
                         if (branch.Id == Model.BranchId)
@@ -34,7 +66,7 @@
                 </select>
             </div>
         </div>
-        <button type="submit" class="btn">Xem bao cao</button>
+        <button type="submit" class="btn">Xem báo cáo</button>
     </form>
 </section>
 
@@ -42,12 +74,12 @@
 {
     var maxRevenue = Model.Items.Max(x => x.doanhthu);
     <section class="card" style="margin-top: 20px;">
-        <h3>Doanh thu theo bac si</h3>
+        <h3>Doanh thu theo bác sĩ</h3>
         <div class="doctor-chart">
             @foreach (var item in Model.Items)
             {
                 var percent = maxRevenue <= 0 ? 0 : (double)(item.doanhthu / maxRevenue) * 100;
-                <div class="doctor-bar-row">
+                <div class="doctor-bar-row" data-value="@item.doanhthu.ToString("N0")" data-label="@item.hoten (@item.manv)">
                     <div class="doctor-bar-label">@item.hoten (@item.manv)</div>
                     <div class="doctor-bar-track">
                         <div class="doctor-bar-fill" style="width:@percent%"></div>
@@ -62,17 +94,17 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Ma NV</th>
-                    <th>Ho ten</th>
-                    <th>Luot kham</th>
-                    <th>Luot tiem</th>
+                    <th>Mã NV</th>
+                    <th>Họ tên</th>
+                    <th>Lượt khám</th>
+                    <th>Lượt tiêm</th>
                     <th>Doanh thu</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model.Items)
                 {
-                    <tr>
+                    <tr data-value="@item.doanhthu.ToString("N0")" data-label="@item.hoten - Khám: @item.solankham, Tiêm: @item.solantiem">
                         <td>@item.manv</td>
                         <td>@item.hoten</td>
                         <td>@item.solankham</td>
@@ -86,5 +118,30 @@
 }
 else if (Model.FromDate.HasValue && Model.ToDate.HasValue)
 {
-    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+    <div class="alert" style="margin-top: 16px;">Không có dữ liệu trong khoảng ngày này.</div>
 }
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chartTooltip');
+        const elements = document.querySelectorAll('[data-value][data-label]');
+        
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const value = this.getAttribute('data-value');
+                const label = this.getAttribute('data-label');
+                tooltip.textContent = label + ': ' + value;
+                tooltip.style.display = 'block';
+            });
+            
+            el.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+        });
+    });
+</script>

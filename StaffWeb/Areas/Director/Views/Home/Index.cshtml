@@ -1,37 +1,37 @@
 @{
-    ViewData["Title"] = "Giam doc";
+    ViewData["Title"] = "Giám đốc";
 }
 
 <section class="director-dashboard">
     <div class="director-hero">
-        <h1>Bang dieu khien giam doc</h1>
-        <p>Tong hop doanh thu, luot kham/tiem va hieu suat bac si toan he thong.</p>
+        <h1>Bảng điều khiển giám đốc</h1>
+        <p>Tổng hợp doanh thu, lượt khám/tiêm và hiệu suất bác sĩ toàn hệ thống.</p>
         <div class="director-actions">
-            <a class="btn" asp-area="Director" asp-controller="Reports" asp-action="Revenue">Doanh thu tong</a>
-            <a class="btn btn-secondary" asp-area="Director" asp-controller="Reports" asp-action="Products">San pham he thong</a>
-            <a class="btn btn-secondary" asp-area="Director" asp-controller="Reports" asp-action="CompareBranches">So sanh chi nhanh</a>
+            <a class="btn" asp-area="Director" asp-controller="Reports" asp-action="Revenue">Doanh thu tổng</a>
+            <a class="btn btn-secondary" asp-area="Director" asp-controller="Reports" asp-action="Products">Sản phẩm hệ thống</a>
+            <a class="btn btn-secondary" asp-area="Director" asp-controller="Reports" asp-action="CompareBranches">So sánh chi nhánh</a>
         </div>
     </div>
     <div class="director-cards">
         <a class="director-card" asp-area="Director" asp-controller="Reports" asp-action="Revenue">
-            <h3>Doanh thu chi nhanh</h3>
-            <p>Xem doanh thu theo tung chi nhanh.</p>
+            <h3>Doanh thu chi nhánh</h3>
+            <p>Xem doanh thu theo từng chi nhánh.</p>
         </a>
         <a class="director-card" asp-area="Director" asp-controller="Reports" asp-action="Doctors">
-            <h3>Hieu suat bac si</h3>
-            <p>So luot kham/tiem va doanh thu.</p>
+            <h3>Hiệu suất bác sĩ</h3>
+            <p>Số lượt khám/tiêm và doanh thu.</p>
         </a>
         <a class="director-card" asp-area="Director" asp-controller="Reports" asp-action="Visits">
-            <h3>Luot kham / tiem</h3>
-            <p>Theo doi luot dich vu theo ngay.</p>
+            <h3>Lượt khám / tiêm</h3>
+            <p>Theo dõi lượt dịch vụ theo ngày.</p>
         </a>
         <a class="director-card" asp-area="Director" asp-controller="Reports" asp-action="Products">
-            <h3>Ban san pham</h3>
-            <p>So sanh doanh thu san pham.</p>
+            <h3>Bán sản phẩm</h3>
+            <p>So sánh doanh thu sản phẩm.</p>
         </a>
         <a class="director-card" asp-area="Director" asp-controller="Reports" asp-action="CompareBranches">
-            <h3>So sanh chi nhanh</h3>
-            <p>So sanh doanh thu va san pham giua cac chi nhanh.</p>
+            <h3>So sánh chi nhánh</h3>
+            <p>So sánh doanh thu và sản phẩm giữa các chi nhánh.</p>
         </a>
     </div>
 </section>

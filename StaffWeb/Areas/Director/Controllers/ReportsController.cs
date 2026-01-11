@@ -38,15 +38,17 @@ public class ReportsController : Controller
         return View(vm);
     }
 
-    public async Task<IActionResult> Visits(DateTime? fromDate, DateTime? toDate, string? branchId)
+    public async Task<IActionResult> Visits(DateTime? fromDate, DateTime? toDate, string? branchId, string? period)
     {
+        var normalizedPeriod = NormalizePeriod(period);
         var vm = new DirectorVisitViewModel
         {
             FromDate = fromDate,
             ToDate = toDate,
             BranchId = branchId,
+            Period = normalizedPeriod,
             Branches = await LoadBranches(),
-            Items = await BuildVisitStats(branchId, fromDate, toDate)
+            Items = await BuildVisitStats(branchId, fromDate, toDate, normalizedPeriod)
         };
         return View(vm);
     }
@@ -63,7 +65,22 @@ public class ReportsController : Controller
         };
 
         vm.Items = await BuildProductStats(branchId, fromDate, toDate, top);
-        vm.SystemRevenue = await BuildSystemProductRevenue(fromDate, toDate);
+        vm.Categories = await BuildProductCategories(branchId, fromDate, toDate);
+        
+        // If a specific branch is selected, show branch revenue; otherwise show system revenue
+        if (!string.IsNullOrWhiteSpace(branchId))
+        {
+            vm.BranchRevenue = await BuildBranchProductRevenueValue(branchId, fromDate, toDate);
+            var branch = await _db.chinhanhs.AsNoTracking()
+                .Where(x => x.macn == branchId)
+                .FirstOrDefaultAsync();
+            vm.BranchName = branch?.tencn;
+        }
+        else
+        {
+            vm.SystemRevenue = await BuildSystemProductRevenue(fromDate, toDate);
+        }
+        
         return View(vm);
     }
 
@@ -114,6 +131,55 @@ public class ReportsController : Controller
                 tongdoanhthu = g.tongdoanhthu
             })
             .OrderByDescending(x => x.tongdoanhthu)
+            .ToList();
+
+        // Calculate service revenue (exam + vaccination)
+        var examRevenue = await _db.chitietkhambenhs.AsNoTracking()
+            .Join(_db.nhanviens.AsNoTracking(),
+                kb => kb.mabs,
+                nv => nv.manv,
+                (kb, nv) => new { kb, nv })
+            .Join(_db.dichvus.AsNoTracking(),
+                x => x.kb.madv,
+                dv => dv.madv,
+                (x, dv) => new { x.kb, x.nv, dv })
+            .Where(x => x.nv.macn != null
+                && selectedIds.Contains(x.nv.macn)
+                && x.kb.ngaysudung >= from && x.kb.ngaysudung < toExclusive)
+            .GroupBy(x => x.nv.macn)
+            .Select(g => new { BranchId = g.Key!, Revenue = g.Sum(x => x.dv.gia) })
+            .ToListAsync();
+
+        var vaccRevenue = await _db.chitiettiemphongs.AsNoTracking()
+            .Join(_db.nhanviens.AsNoTracking(),
+                tp => tp.mabs,
+                nv => nv.manv,
+                (tp, nv) => new { tp, nv })
+            .Join(_db.dichvus.AsNoTracking(),
+                x => x.tp.madv,
+                dv => dv.madv,
+                (x, dv) => new { x.tp, x.nv, dv })
+            .Where(x => x.nv.macn != null
+                && selectedIds.Contains(x.nv.macn)
+                && x.tp.ngaytiem >= from && x.tp.ngaytiem < toExclusive)
+            .GroupBy(x => x.nv.macn)
+            .Select(g => new { BranchId = g.Key!, Revenue = g.Sum(x => x.dv.gia) })
+            .ToListAsync();
+
+        var allServiceBranches = examRevenue.Select(x => x.BranchId)
+            .Union(vaccRevenue.Select(x => x.BranchId))
+            .Distinct()
+            .ToList();
+
+        vm.ServiceRevenue = allServiceBranches
+            .Select(branchId => new BranchServiceRevenueRow
+            {
+                BranchId = branchId,
+                BranchName = branchMap.TryGetValue(branchId, out var name) ? name : branchId,
+                ExamRevenue = examRevenue.FirstOrDefault(x => x.BranchId == branchId)?.Revenue ?? 0,
+                VaccinationRevenue = vaccRevenue.FirstOrDefault(x => x.BranchId == branchId)?.Revenue ?? 0
+            })
+            .OrderByDescending(x => x.TotalRevenue)
             .ToList();
 
         var productRaw = await _db.chitietmuasanphams.AsNoTracking()
@@ -419,7 +485,7 @@ private async Task<List<DoctorStat>> BuildDoctorStats(string? branchId, DateTime
         }
     }
 
-    private async Task<List<DirectorVisitRow>> BuildVisitStats(string? branchId, DateTime? fromDate, DateTime? toDate)
+    private async Task<List<DirectorVisitRow>> BuildVisitStats(string? branchId, DateTime? fromDate, DateTime? toDate, string period = "day")
     {
         if (!fromDate.HasValue || !toDate.HasValue || fromDate > toDate)
         {
@@ -449,15 +515,19 @@ private async Task<List<DoctorStat>> BuildDoctorStats(string? branchId, DateTime
             vaccQuery = vaccQuery.Where(x => x.nv.macn == branchId);
         }
 
-        var examCounts = await examQuery
-            .GroupBy(x => x.kb.ngaysudung.Date)
-            .Select(g => new { Date = g.Key, Count = g.Count() })
-            .ToListAsync();
+        var examData = await examQuery.Select(x => x.kb.ngaysudung).ToListAsync();
+        var vaccData = await vaccQuery.Select(x => x.tp.ngaytiem).ToListAsync();
 
-        var vaccCounts = await vaccQuery
-            .GroupBy(x => x.tp.ngaytiem.Date)
+        // Group by period
+        var examCounts = examData
+            .GroupBy(d => GetPeriodStart(d, period))
             .Select(g => new { Date = g.Key, Count = g.Count() })
-            .ToListAsync();
+            .ToList();
+
+        var vaccCounts = vaccData
+            .GroupBy(d => GetPeriodStart(d, period))
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .ToList();
 
         var dates = examCounts.Select(x => x.Date)
             .Union(vaccCounts.Select(x => x.Date))
@@ -565,6 +635,65 @@ private async Task<List<DoctorStat>> BuildDoctorStats(string? branchId, DateTime
                     TotalQuantity = g.Sum(x => x.ct.soluong)
                 })
             .OrderByDescending(x => x.TotalRevenue)
+            .ToListAsync();
+    }
+
+    private async Task<decimal> BuildBranchProductRevenueValue(string branchId, DateTime? fromDate, DateTime? toDate)
+    {
+        if (string.IsNullOrWhiteSpace(branchId) || !fromDate.HasValue || !toDate.HasValue || fromDate > toDate)
+        {
+            return 0;
+        }
+
+        var from = fromDate.Value.Date;
+        var to = toDate.Value.Date.AddDays(1).AddSeconds(-1);
+
+        return await _db.chitietmuasanphams.AsNoTracking()
+            .Join(_db.hoadons.AsNoTracking(),
+                ct => ct.mahd,
+                hd => hd.mahd,
+                (ct, hd) => new { ct, hd })
+            .Where(x => x.hd.trangthai == PaidStatus 
+                && x.hd.macn == branchId
+                && x.hd.ngaylap >= from && x.hd.ngaylap <= to)
+            .SumAsync(x => x.ct.thanhtien);
+    }
+
+    private async Task<List<ProductCategorySlice>> BuildProductCategories(string? branchId, DateTime? fromDate, DateTime? toDate)
+    {
+        if (!fromDate.HasValue || !toDate.HasValue || fromDate > toDate)
+        {
+            return new List<ProductCategorySlice>();
+        }
+
+        var from = fromDate.Value.Date;
+        var to = toDate.Value.Date.AddDays(1).AddSeconds(-1);
+
+        var query = _db.chitietmuasanphams.AsNoTracking()
+            .Join(_db.hoadons.AsNoTracking(),
+                ct => ct.mahd,
+                hd => hd.mahd,
+                (ct, hd) => new { ct, hd })
+            .Join(_db.sanphams.AsNoTracking(),
+                x => x.ct.masp,
+                sp => sp.masp,
+                (x, sp) => new { x.ct, x.hd, sp })
+            .Where(x => x.hd.trangthai == PaidStatus 
+                && x.hd.ngaylap >= from && x.hd.ngaylap <= to);
+
+        if (!string.IsNullOrWhiteSpace(branchId))
+        {
+            query = query.Where(x => x.hd.macn == branchId);
+        }
+
+        return await query
+            .GroupBy(x => x.sp.loaisp)
+            .Select(g => new ProductCategorySlice
+            {
+                Name = g.Key ?? "Khác",
+                Value = g.Sum(x => x.ct.thanhtien)
+            })
+            .OrderByDescending(x => x.Value)
             .ToListAsync();
     }
 

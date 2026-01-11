@@ -12,28 +12,28 @@
             <a class="director-logo" asp-area="Director" asp-controller="Home" asp-action="Index">PetCareX</a>
             <div>
                 <div class="director-title">Director Desk</div>
-                <div class="director-subtitle">Bao cao tong quan he thong</div>
+                <div class="director-subtitle">Báo cáo tổng quan hệ thống</div>
             </div>
         </div>
         <nav class="director-nav">
-            <a class="director-tab" asp-area="Director" asp-controller="Home" asp-action="Index">Tong quan</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Home" asp-action="Index">Tổng quan</a>
             <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Revenue">Doanh thu</a>
-            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Doctors">Bac si</a>
-            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Visits">Luot kham</a>
-            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Products">San pham</a>
-            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="CompareBranches">So sanh</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Doctors">Bác sĩ</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Visits">Lượt khám</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="Products">Sản phẩm</a>
+            <a class="director-tab" asp-area="Director" asp-controller="Reports" asp-action="CompareBranches">So sánh</a>
         </nav>
         <div class="director-user">
             @if (User.Identity?.IsAuthenticated ?? false)
             {
                 <span>@User.Identity?.Name</span>
                 <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-secondary">Dang xuat</button>
+                    <button type="submit" class="btn btn-secondary">Đăng xuất</button>
                 </form>
             }
             else
             {
-                <a class="btn" asp-controller="Account" asp-action="Login">Dang nhap</a>
+                <a class="btn" asp-controller="Account" asp-action="Login">Đăng nhập</a>
             }
         </div>
     </header>
