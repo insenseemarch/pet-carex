@@ -1,0 +1,284 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4E4FC299-438D-4D5C-8D70-7F0D775ED688}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>PetCareX</RootNamespace>
+    <AssemblyName>PetCareX</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HoaDonThanhToan.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ucCauHinhTichDiemVaHanMuc.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucCauHinhTichDiemVaHanMuc.Designer.cs">
+      <DependentUpon>ucCauHinhTichDiemVaHanMuc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucConBaoCaoKhachHang.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucConBaoCaoKhachHang.Designer.cs">
+      <DependentUpon>ucConBaoCaoKhachHang.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucPhanTichBaoCaoNhanSuVaLuong.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucPhanTichBaoCaoNhanSuVaLuong.Designer.cs">
+      <DependentUpon>ucPhanTichBaoCaoNhanSuVaLuong.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucPhanTichDVSP.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucPhanTichDVSP.Designer.cs">
+      <DependentUpon>ucPhanTichDVSP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucQuanLyDanhMuc.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQuanLyDanhMuc.Designer.cs">
+      <DependentUpon>ucQuanLyDanhMuc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Session.cs" />
+    <Compile Include="ucBacSi.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucBacSi.Designer.cs">
+      <DependentUpon>ucBacSi.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucConLapHoaDon.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucConLapHoaDon.Designer.cs">
+      <DependentUpon>ucConLapHoaDon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucConQuanLyHoSoKhachHang.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucConQuanLyHoSoKhachHang.Designer.cs">
+      <DependentUpon>ucConQuanLyHoSoKhachHang.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucConTaoLich.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucConTaoLich.Designer.cs">
+      <DependentUpon>ucConTaoLich.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucConTraCuu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucConTraCuu.Designer.cs">
+      <DependentUpon>ucConTraCuu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucConTraCuuTonKho.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucConTraCuuTonKho.Designer.cs">
+      <DependentUpon>ucConTraCuuTonKho.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucConXuLyThanhToan.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucConXuLyThanhToan.Designer.cs">
+      <DependentUpon>ucConXuLyThanhToan.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucLogin.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucLogin.Designer.cs">
+      <DependentUpon>ucLogin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucNhanVien.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucNhanVien.Designer.cs">
+      <DependentUpon>ucNhanVien.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucQuanLy.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQuanLy.Designer.cs">
+      <DependentUpon>ucQuanLy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucConQuanLyHoSoThuCung.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucConQuanLyHoSoThuCung.Designer.cs">
+      <DependentUpon>ucConQuanLyHoSoThuCung.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucQuanLyNhanVien.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQuanLyNhanVien.Designer.cs">
+      <DependentUpon>ucQuanLyNhanVien.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucQuanLyTiem.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQuanLyTiem.Designer.cs">
+      <DependentUpon>ucQuanLyTiem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucTkBacSi.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucTkBacSi.Designer.cs">
+      <DependentUpon>ucTkBacSi.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucTkChiNhanh.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucTkChiNhanh.Designer.cs">
+      <DependentUpon>ucTkChiNhanh.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucTkLuotKham.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucTkLuotKham.Designer.cs">
+      <DependentUpon>ucTkLuotKham.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucTkSanPham.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucTkSanPham.Designer.cs">
+      <DependentUpon>ucTkSanPham.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="ucBacSi.resx">
+      <DependentUpon>ucBacSi.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucCauHinhTichDiemVaHanMuc.resx">
+      <DependentUpon>ucCauHinhTichDiemVaHanMuc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucConBaoCaoKhachHang.resx">
+      <DependentUpon>ucConBaoCaoKhachHang.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucConLapHoaDon.resx">
+      <DependentUpon>ucConLapHoaDon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucConQuanLyHoSoKhachHang.resx">
+      <DependentUpon>ucConQuanLyHoSoKhachHang.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucConQuanLyHoSoThuCung.resx">
+      <DependentUpon>ucConQuanLyHoSoThuCung.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucConTaoLich.resx">
+      <DependentUpon>ucConTaoLich.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucConTraCuu.resx">
+      <DependentUpon>ucConTraCuu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucConTraCuuTonKho.resx">
+      <DependentUpon>ucConTraCuuTonKho.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucConXuLyThanhToan.resx">
+      <DependentUpon>ucConXuLyThanhToan.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucLogin.resx">
+      <DependentUpon>ucLogin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucNhanVien.resx">
+      <DependentUpon>ucNhanVien.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucPhanTichBaoCaoNhanSuVaLuong.resx">
+      <DependentUpon>ucPhanTichBaoCaoNhanSuVaLuong.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucPhanTichDVSP.resx">
+      <DependentUpon>ucPhanTichDVSP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQuanLy.resx">
+      <DependentUpon>ucQuanLy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQuanLyDanhMuc.resx">
+      <DependentUpon>ucQuanLyDanhMuc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQuanLyNhanVien.resx">
+      <DependentUpon>ucQuanLyNhanVien.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQuanLyTiem.resx">
+      <DependentUpon>ucQuanLyTiem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucTkBacSi.resx">
+      <DependentUpon>ucTkBacSi.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucTkChiNhanh.resx">
+      <DependentUpon>ucTkChiNhanh.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucTkLuotKham.resx">
+      <DependentUpon>ucTkLuotKham.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucTkSanPham.resx">
+      <DependentUpon>ucTkSanPham.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
