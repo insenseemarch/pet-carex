@@ -335,13 +335,26 @@ private async Task RefreshUserClaimsAsync(string makh)
                 .FirstOrDefaultAsync(x => x.makh == makh);
             if (acc == null) return;
 
+            string? fullName = null;
+            await using (var conn = new SqlConnection(_db.Database.GetDbConnection().ConnectionString))
+            {
+                await conn.OpenAsync();
+                await using var cmd = new SqlCommand(
+                    "SELECT tt.hoten FROM khachhang kh LEFT JOIN thongtin tt ON kh.cccd = tt.cccd WHERE kh.makh = @makh",
+                    conn);
+                cmd.Parameters.Add(new SqlParameter("@makh", makh));
+                var result = await cmd.ExecuteScalarAsync();
+                fullName = result == null || result == DBNull.Value ? null : result.ToString();
+            }
+
             var claims = new List<Claim>
             {
                 new(ClaimTypes.Name, acc.tendangnhap),
                 new(ClaimTypes.Role, "Customer"),
                 new("MaKhachHang", acc.makh),
                 new("CapBac", acc.capbac ?? ""),
-                new("Diem", acc.diemtichluy.ToString())
+                new("Diem", acc.diemtichluy.ToString()),
+                new("HoTen", fullName ?? "")
             };
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));

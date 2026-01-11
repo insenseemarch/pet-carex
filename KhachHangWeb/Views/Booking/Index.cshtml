@@ -1,6 +1,6 @@
 @model KhachHangWeb.Models.BookingViewModel
 @{
-    ViewData["Title"] = "Đặt lịch khám";
+    ViewData["Title"] = "Đặt lịch";
 }
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;700&display=swap">
 <style>
@@ -16,9 +16,8 @@
 <div class="booking-shell">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
-      <div class="booking-title">Đặt lịch khám</div>
-      <div class="booking-sub">Chọn chi nhánh, thú cưng, bác sĩ và khung giờ phù hợp.</div>
-      <div class="text-muted small mt-1">Lưu ý: Hiện chỉ hỗ trợ đặt lịch khám; không hỗ trợ đặt lịch tiêm.</div>
+      <div class="booking-title">Đặt lịch</div>
+      <div class="booking-sub">Bạn có thể đặt lịch khám hoặc đặt lịch tiêm. Với gói tiêm, hệ thống sẽ tự tạo các đợt tiêm theo lịch gói.</div>
     </div>
     <a class="btn btn-outline-success" href="/booking/schedule">Tra cứu lịch bác sĩ</a>
   </div>
@@ -34,6 +33,7 @@
 
   <div class="booking-card ui-fade">
     <form method="post" action="/booking/create">
+      <input type="hidden" id="selectedServiceType" value="@Model.ServiceType" />
       <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label booking-label">Chi nhánh</label>
@@ -63,6 +63,55 @@
           </select>
         </div>
 
+        @if (Model.ServiceType == "Tiêm phòng" && Model.PendingPackages.Any())
+        {
+          <div class="col-12">
+            <div class="alert alert-warning">
+              <strong>Có gói tiêm đang chờ tiêm tiếp:</strong>
+              <div class="mt-2">
+                @foreach (var pkg in Model.PendingPackages)
+                {
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="SelectedPendingPackageId" id="pkg_@pkg.ServiceId" value="@pkg.ServiceId" 
+                      @(Model.SelectedPendingPackageId == pkg.ServiceId ? "checked" : "") />
+                    <label class="form-check-label" for="pkg_@pkg.ServiceId">
+                      <strong>@pkg.ServiceName</strong> (@pkg.VaccineName) - 
+                      Đã tiêm @pkg.CompletedCount/@pkg.TotalCount đợt
+                    </label>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+        else if (Model.ServiceType == "Tiêm phòng" && !Model.PendingPackages.Any())
+        {
+          <div class="col-12">
+            <div class="alert alert-info small">
+              Để đặt lịch tiêm mới, vui lòng liên hệ bác sĩ hoặc bộ phận tiếp tân.
+            </div>
+          </div>
+        }
+
+        @if (Model.SelectedServiceIsPackage && Model.ServiceType != "Tiêm phòng")
+        {
+          <div class="col-12">
+            <div class="alert alert-info small">
+              <strong>Gói tiêm</strong> - Hệ thống sẽ tự tạo các đợt tiêm (mỗi 2 tháng 1 lần) sau khi xác nhận.
+              @if (Model.PackageDiscountPercent.HasValue && Model.OriginalPrice.HasValue)
+              {
+                var discountAmount = Model.OriginalPrice.Value * Model.PackageDiscountPercent.Value / 100;
+                var finalPrice = Model.OriginalPrice.Value - discountAmount;
+                <br/>
+                <span class="text-success">
+                  <strong>Giảm giá @Model.PackageDiscountPercent.Value%</strong>: 
+                  <span style="text-decoration: line-through;">@Model.OriginalPrice.Value.ToString("N0") đ</span> 
+                  → <strong>@finalPrice.ToString("N0") đ</strong>
+                </span>
+              }
+            </div>
+          </div>
+        }
         <div class="col-md-4">
           <label class="form-label booking-label">Ngày hẹn</label>
           <input class="form-control" id="dateInput" type="date" name="Date" value="@Model.Date.ToString("yyyy-MM-dd")" />
@@ -125,14 +174,49 @@
       if (pet && pet.value) params.set("petId", pet.value);
       if (slot && slot.value) params.set("slot", slot.value);
       if (date && date.value) params.set("date", date.value);
+      
+      // Preserve selected pending package if any
+      const pendingRadios = document.querySelectorAll('input[name="SelectedPendingPackageId"]:checked');
+      if (pendingRadios.length > 0) {
+        params.set("selectedPendingPackageId", pendingRadios[0].value);
+      }
 
       const target = "/booking" + (params.toString() ? "?" + params.toString() : "");
       window.location.assign(target);
     };
 
+    // Handle pending package selection
+    const pendingPackages = document.querySelectorAll('input[name="SelectedPendingPackageId"]');
+    pendingPackages.forEach(radio => {
+      radio.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          // Set service dropdown to the selected package's service ID
+          const selectedServiceId = e.target.value;
+          const selectedPackageId = e.target.value;
+          if (service) {
+            service.value = selectedServiceId;
+            // Build redirect URL with selected pending package ID
+            const params = new URLSearchParams();
+            if (branch && branch.value) params.set("branchId", branch.value);
+            if (service && service.value) params.set("serviceId", service.value);
+            if (doctor && doctor.value) params.set("doctorId", doctor.value);
+            if (pet && pet.value) params.set("petId", pet.value);
+            if (slot && slot.value) params.set("slot", slot.value);
+            if (date && date.value) params.set("date", date.value);
+            params.set("selectedPendingPackageId", selectedPackageId);
+
+            const target = "/booking" + (params.toString() ? "?" + params.toString() : "");
+            window.location.assign(target);
+          }
+        }
+      });
+    });
+
     if (branch) branch.addEventListener("change", redirect);
+    if (service) service.addEventListener("change", redirect);
     if (slot) slot.addEventListener("change", redirect);
     if (doctor) doctor.addEventListener("change", redirect);
     if (date) date.addEventListener("change", redirect);
+    if (pet) pet.addEventListener("change", redirect);
   });
 </script>

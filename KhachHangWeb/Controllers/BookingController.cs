@@ -13,12 +13,13 @@ public class BookingController : Controller
     public BookingController(AppDbContext db) => _db = db;
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? branchId, string? doctorId, string? serviceId, string? petId, string? slot, DateTime? date)
+    public async Task<IActionResult> Index(string? branchId, string? doctorId, string? serviceId, string? petId, string? slot, DateTime? date, string? selectedPendingPackageId)
     {
         var makh = User.FindFirst("MaKhachHang")?.Value;
         if (string.IsNullOrWhiteSpace(makh)) return RedirectToAction("Login", "Account");
 
         var vm = await BuildBookingViewModel(makh, branchId, doctorId, serviceId, petId, slot, date);
+        vm.SelectedPendingPackageId = selectedPendingPackageId;
         return View(vm);
     }
 
@@ -32,6 +33,7 @@ public class BookingController : Controller
         filled.PetId = vm.PetId;
         filled.Slot = vm.Slot;
         filled.Note = vm.Note;
+        filled.SelectedPendingPackageId = vm.SelectedPendingPackageId;
 
         if (string.IsNullOrWhiteSpace(filled.BranchId))
             ModelState.AddModelError("", "Vui lòng chọn chi nhánh.");
@@ -50,16 +52,13 @@ public class BookingController : Controller
 
         if (!ModelState.IsValid) return View("Index", filled);
 
-        var time = TimeSpan.Parse(filled.Slot);
+        var time = TimeSpan.Parse(filled.Slot!);
         var bookingTime = filled.Date.Date.Add(time);
-        var serviceOk = await _db.chinhanhs
-            .Where(c => c.macn == filled.BranchId)
-            .SelectMany(c => c.madvs)
-            .AnyAsync(d => d.madv == filled.ServiceId && EF.Functions.Collate(d.loai, "Latin1_General_CI_AI") == "Khám bệnh");
+        var service = await _db.dichvus.AsNoTracking().FirstOrDefaultAsync(d => d.madv == filled.ServiceId);
 
-        if (!serviceOk)
+        if (service == null)
         {
-            ModelState.AddModelError("", "D?ch v? kh?ng thu?c chi nh?nh ?? ch?n.");
+            ModelState.AddModelError("", "Dịch vụ không tồn tại hoặc không thuộc chi nhánh.");
             return View("Index", filled);
         }
 
@@ -70,28 +69,76 @@ public class BookingController : Controller
             return View("Index", filled);
         }
 
-        var conflictCount = await _db.chitietkhambenhs
-            .Where(k => k.mabs == filled.DoctorId && k.ngaysudung == bookingTime)
-            .CountAsync();
-        if (conflictCount >= 3)
+        if (string.Equals(service.loai, "Khám bệnh", StringComparison.OrdinalIgnoreCase))
         {
-            ModelState.AddModelError("", "Khung giờ này đã có lịch khám.");
-            return View("Index", filled);
-        }
+            var conflictCount = await _db.chitietkhambenhs
+                .Where(k => k.mabs == filled.DoctorId && k.ngaysudung == bookingTime)
+                .CountAsync();
+            if (conflictCount >= 3)
+            {
+                ModelState.AddModelError("", "Khung giờ này đã có lịch khám.");
+                return View("Index", filled);
+            }
 
-        _db.chitietkhambenhs.Add(new chitietkhambenh
+            _db.chitietkhambenhs.Add(new chitietkhambenh
+            {
+                madv = filled.ServiceId!,
+                mathucung = filled.PetId!,
+                ngaysudung = bookingTime,
+                mabs = filled.DoctorId!,
+                trieuchung = filled.Note,
+                chandoan = null,
+                matoathuoc = null,
+                ngaytaikham = null,
+                madanhgia = null,
+                ghichu = null
+            });
+        }
+        else if (string.Equals(service.loai, "Tiêm phòng", StringComparison.OrdinalIgnoreCase))
         {
-            madv = filled.ServiceId!,
-            mathucung = filled.PetId!,
-            ngaysudung = bookingTime,
-            mabs = filled.DoctorId!,
-            trieuchung = filled.Note,
-            chandoan = null,
-            matoathuoc = null,
-            ngaytaikham = null,
-            madanhgia = null,
-            ghichu = null
-        });
+            var vacConflictCount = await _db.chitiettiemphongs
+                .Where(k => k.mabs == filled.DoctorId && k.ngaytiem == bookingTime)
+                .CountAsync();
+            if (vacConflictCount >= 3)
+            {
+                ModelState.AddModelError("", "Khung giờ này đã có lịch tiêm.");
+                return View("Index", filled);
+            }
+
+            // Check if continuing pending package or new booking
+            if (!string.IsNullOrWhiteSpace(filled.SelectedPendingPackageId))
+            {
+                // Update pending package appointment using raw SQL
+                var pending = await _db.chitiettiemphongs
+                    .FirstOrDefaultAsync(x => x.madv == filled.SelectedPendingPackageId && 
+                                              x.mathucung == filled.PetId &&
+                                              (x.trangthai == null || x.trangthai == "Chưa tiêm" || x.trangthai == "Cho tiem"));
+                if (pending != null)
+                {
+                    // Delete old record and create new one since mabs is part of composite key
+                    _db.chitiettiemphongs.Remove(pending);
+                    await _db.SaveChangesAsync();
+                    
+                    // Add new record with updated doctor
+                    _db.chitiettiemphongs.Add(new chitiettiemphong
+                    {
+                        madv = pending.madv,
+                        mathucung = pending.mathucung,
+                        mabs = filled.DoctorId!,
+                        ngaytiem = bookingTime,
+                        trangthai = "Cho tiem",
+                        mavacxin = pending.mavacxin,
+                        stt = pending.stt
+                    });
+                }
+            }
+            else
+            {
+                // New single vaccination booking - not allowed, must select from pending or doctor creates
+                ModelState.AddModelError("", "Vui lòng chọn gói tiêm từ danh sách hoặc liên hệ bác sĩ.");
+                return View("Index", filled);
+            }
+        }
 
         await _db.SaveChangesAsync();
         TempData["Booked"] = true;
@@ -106,15 +153,24 @@ public class BookingController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Schedule(string? doctorId, DateTime? date)
+    public async Task<IActionResult> Schedule(string? branchId, string? doctorId, DateTime? date)
     {
         var vm = new DoctorScheduleViewModel
         {
             Date = (date ?? DateTime.Today).Date
         };
 
+        vm.Branches = await _db.chinhanhs
+            .OrderBy(c => c.tencn)
+            .Select(c => new SelectOption { Id = c.macn, Name = c.tencn })
+            .ToListAsync();
+
+        vm.BranchId = string.IsNullOrWhiteSpace(branchId)
+            ? vm.Branches.FirstOrDefault()?.Id
+            : branchId;
+
         vm.Doctors = await _db.nhanviens
-            .Where(n => EF.Functions.Collate(n.loainv, "Latin1_General_CI_AI") == "Bac si thu y")
+            .Where(n => n.macn == vm.BranchId && EF.Functions.Collate(n.loainv, "Latin1_General_CI_AI") == "Bac si thu y")
             .OrderBy(n => n.hoten)
             .Select(n => new SelectOption { Id = n.manv, Name = n.hoten })
             .ToListAsync();
@@ -178,10 +234,11 @@ public class BookingController : Controller
         vm.Services = new List<SelectOption>();
         if (!string.IsNullOrWhiteSpace(vm.BranchId))
         {
+            // show both khám bệnh and tiêm phòng services
             vm.Services = await _db.chinhanhs
                 .Where(c => c.macn == vm.BranchId)
                 .SelectMany(c => c.madvs)
-                .Where(d => EF.Functions.Collate(d.loai, "Latin1_General_CI_AI") == "Khám bệnh")
+                .Where(d => EF.Functions.Collate(d.loai, "Latin1_General_CI_AI") == "Khám bệnh" || EF.Functions.Collate(d.loai, "Latin1_General_CI_AI") == "Tiêm phòng")
                 .OrderBy(d => d.tendv)
                 .Select(d => new SelectOption { Id = d.madv, Name = d.tendv })
                 .ToListAsync();
@@ -190,6 +247,47 @@ public class BookingController : Controller
         vm.ServiceId = string.IsNullOrWhiteSpace(serviceId)
             ? vm.Services.FirstOrDefault()?.Id
             : vm.Services.Any(s => s.Id == serviceId) ? serviceId : vm.Services.FirstOrDefault()?.Id;
+
+        // set selected service information (type & package)
+        if (!string.IsNullOrWhiteSpace(vm.ServiceId))
+        {
+            var svc = await _db.dichvus.AsNoTracking().FirstOrDefaultAsync(x => x.madv == vm.ServiceId);
+            vm.ServiceType = svc?.loai;
+            vm.SelectedServiceIsPackage = svc != null && await _db.tiemgois.AnyAsync(t => t.madv == vm.ServiceId);
+            
+            // Load package discount if applicable
+            if (vm.SelectedServiceIsPackage && svc != null)
+            {
+                var packageInfo = await _db.tiemgois.AsNoTracking().FirstOrDefaultAsync(t => t.madv == vm.ServiceId);
+                if (packageInfo != null)
+                {
+                    vm.PackageDiscountPercent = packageInfo.phantramgiamgia;
+                    vm.OriginalPrice = svc.gia;
+                }
+            }
+        }
+
+        // Load pending packages for continuation
+        if (!string.IsNullOrWhiteSpace(vm.PetId))
+        {
+            vm.PendingPackages = await (
+                from ct in _db.chitiettiemphongs.AsNoTracking()
+                join tg in _db.tiemgois.AsNoTracking() on ct.madv equals tg.madv
+                join dv in _db.dichvus.AsNoTracking() on ct.madv equals dv.madv
+                join vx in _db.vacxins.AsNoTracking() on ct.mavacxin equals vx.mavacxin
+                where ct.mathucung == vm.PetId &&
+                      (ct.trangthai == null || ct.trangthai == "Chưa tiêm" || ct.trangthai == "Cho tiem" || ct.trangthai == "Dang tiem")
+                group ct by new { ct.madv, ct.mavacxin, dv.tendv, vx.tenvacxin } into g
+                select new PendingPackageInfo
+                {
+                    ServiceId = g.Key.madv,
+                    ServiceName = g.Key.tendv,
+                    VaccineId = g.Key.mavacxin,
+                    VaccineName = g.Key.tenvacxin,
+                    CompletedCount = g.Count(x => x.trangthai == "Đã tiêm"),
+                    TotalCount = g.Count()
+                }).ToListAsync();
+        }
 
         var requestedDate = vm.Date.Date;
         var dayStart = requestedDate;
@@ -220,31 +318,47 @@ public class BookingController : Controller
             if (string.IsNullOrWhiteSpace(vm.DoctorId))
             {
                 var doctorIds = vm.Doctors.Select(d => d.Id).ToList();
-                var fullDoctorIds = await _db.chitietkhambenhs
+                var examCounts = await _db.chitietkhambenhs
                     .Where(k => doctorIds.Contains(k.mabs) && k.ngaysudung >= slotStart && k.ngaysudung < slotEnd)
                     .GroupBy(k => k.mabs)
                     .Select(g => new { DoctorId = g.Key, Count = g.Count() })
-                    .Where(x => x.Count >= 3)
-                    .Select(x => x.DoctorId)
                     .ToListAsync();
+                var vacCounts = await _db.chitiettiemphongs
+                    .Where(k => doctorIds.Contains(k.mabs) && k.ngaytiem >= slotStart && k.ngaytiem < slotEnd)
+                    .GroupBy(k => k.mabs)
+                    .Select(g => new { DoctorId = g.Key, Count = g.Count() })
+                    .ToListAsync();
+                var totalCounts = examCounts.Concat(vacCounts)
+                    .GroupBy(x => x.DoctorId)
+                    .Select(g => new { DoctorId = g.Key, Total = g.Sum(x => x.Count) })
+                    .Where(x => x.Total >= 3)
+                    .Select(x => x.DoctorId)
+                    .ToList();
 
-                vm.Doctors = vm.Doctors.Where(d => !fullDoctorIds.Contains(d.Id)).ToList();
+                vm.Doctors = vm.Doctors.Where(d => !totalCounts.Contains(d.Id)).ToList();
             }
             else
             {
-                var slotCount = await _db.chitietkhambenhs
+                var examCount = await _db.chitietkhambenhs
                     .Where(k => k.mabs == vm.DoctorId && k.ngaysudung >= slotStart && k.ngaysudung < slotEnd)
                     .CountAsync();
-                if (slotCount >= 3)
+                var vacCount = await _db.chitiettiemphongs
+                    .Where(k => k.mabs == vm.DoctorId && k.ngaytiem >= slotStart && k.ngaytiem < slotEnd)
+                    .CountAsync();
+                if (examCount + vacCount >= 3)
                     vm.Slot = null;
             }
         }
 
         if (!string.IsNullOrWhiteSpace(vm.DoctorId))
         {
-            var booked = await _db.chitietkhambenhs
+            var bookedExams = await _db.chitietkhambenhs
                 .Where(k => k.mabs == vm.DoctorId && k.ngaysudung >= dayStart && k.ngaysudung < dayEnd)
                 .Select(k => k.ngaysudung)
+                .ToListAsync();
+            var bookedVacs = await _db.chitiettiemphongs
+                .Where(k => k.mabs == vm.DoctorId && k.ngaytiem >= dayStart && k.ngaytiem < dayEnd)
+                .Select(k => k.ngaytiem)
                 .ToListAsync();
 
             var slotCounts = new Dictionary<string, int>();
@@ -253,8 +367,10 @@ public class BookingController : Controller
                 var slotTime = TimeSpan.Parse(slot.Id);
                 var slotStart = dayStart.Add(slotTime);
                 var slotEnd = slotStart.AddHours(1);
-                var count = booked.Count(t => t >= slotStart && t < slotEnd);
-                if (count > 0) slotCounts[slot.Id] = count;
+                var examCount = bookedExams.Count(t => t >= slotStart && t < slotEnd);
+                var vacCount = bookedVacs.Count(t => t >= slotStart && t < slotEnd);
+                var total = examCount + vacCount;
+                if (total > 0) slotCounts[slot.Id] = total;
             }
 
             vm.Slots = vm.Slots.Where(s => !slotCounts.ContainsKey(s.Id) || slotCounts[s.Id] < 3).ToList();

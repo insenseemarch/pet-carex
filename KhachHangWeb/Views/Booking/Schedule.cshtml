@@ -20,7 +20,15 @@
   </div>
 
   <form method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
+    <div class="col-md-3">
+      <select class="form-select" name="branchId" id="branchSelect">
+        @foreach (var b in Model.Branches)
+        {
+          <option value="@b.Id" selected="@(Model.BranchId == b.Id ? "selected" : null)">@b.Name</option>
+        }
+      </select>
+    </div>
+    <div class="col-md-3">
       <select class="form-select" name="doctorId">
         @foreach (var d in Model.Doctors)
         {
@@ -67,3 +75,16 @@
     }
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const branchSelect = document.getElementById("branchSelect");
+    if (branchSelect) {
+      branchSelect.addEventListener("change", () => {
+        const params = new URLSearchParams();
+        params.set("branchId", branchSelect.value);
+        window.location.assign("/booking/schedule?" + params.toString());
+      });
+    }
+  });
+</script>
