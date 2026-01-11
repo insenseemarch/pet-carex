@@ -9,79 +9,85 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = KhachHangWeb
 build_property.RootNamespace = KhachHangWeb
-build_property.ProjectDir = D:\PetCareXWeb\KhachHangWeb\
+build_property.ProjectDir = D:\HCMUS\CSDL NC\pet-carx\KhachHangWeb\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\PetCareXWeb\KhachHangWeb
+build_property.MSBuildProjectDirectory = D:\HCMUS\CSDL NC\pet-carx\KhachHangWeb
 build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Account/Login.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Account/Profile.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Account/Profile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxQcm9maWxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Account/Register.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Account/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Booking/Index.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Booking/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQm9va2luZ1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Booking/Schedule.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Booking/Schedule.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQm9va2luZ1xTY2hlZHVsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Cart/Index.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Booking/Vaccination.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQm9va2luZ1xWYWNjaW5hdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Cart/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FydFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Checkout/Index.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Checkout/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tvdXRcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Checkout/Success.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Checkout/Success.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tvdXRcU3VjY2Vzcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/History/Index.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/History/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGlzdG9yeVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Home/Index.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Home/Privacy.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Shared/Error.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Shared/_ValidationScriptsPartial.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Shop/Index.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Shop/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/_ViewImports.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/_ViewStart.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/PetCareXWeb/KhachHangWeb/Views/Shared/_Layout.cshtml]
+[D:/HCMUS/CSDL NC/pet-carx/KhachHangWeb/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-9xp1pmkma9
