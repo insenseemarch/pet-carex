@@ -1,138 +1,171 @@
 @model StaffWeb.Models.VaccinationRecordViewModel
 @{
-    ViewData["Title"] = "Ghi nhận tiêm phòng";
+    ViewData["Title"] = "Cập nhật tiêm phòng";
 }
 
 <section class="card">
-    <h1 class="page-title">Ghi nhận tiêm phòng</h1>
-    <p class="page-subtitle">Nhập thông tin tiêm phòng cho thú cưng.</p>
+    <h1 class="page-title">Cập nhật tiêm phòng</h1>
+    <p class="page-subtitle">Xác nhận hoàn thành các đợt tiêm phòng đã đặt lịch.</p>
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert">@TempData["Success"]</div>
+        <div class="alert alert-success">@TempData["Success"]</div>
     }
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert">Kiểm tra lại thông tin bắt buộc.</div>
+        <div class="alert alert-danger">@string.Join(", ", ViewData.ModelState.Values.SelectMany(x => x.Errors.Select(e => e.ErrorMessage)))</div>
     }
 
     <form method="post">
         <div class="form-row">
             <div>
                 <label>Mã thú cưng</label>
-                <input asp-for="PetId" />
+                <input asp-for="PetId" placeholder="VD: TC001" />
             </div>
             <div class="align-end">
                 <label>&nbsp;</label>
-                <button type="submit" name="action" value="load" class="btn btn-ghost">Tải gói đang chờ</button>
+                <button type="submit" name="action" value="load" class="btn btn-primary">Tải lịch tiêm</button>
             </div>
-            <div>
-                <label>Chế độ tiêm</label>
-                <div class="inline-options">
-                    <label>
-                        <input type="radio" name="Mode" value="Le" @(Model.Mode == "Goi" ? "" : "checked") />
-                        Tiêm lẻ
-                    </label>
-                    <label>
-                        <input type="radio" name="Mode" value="Goi" @(Model.Mode == "Goi" ? "checked" : "") />
-                        Tiêm gói
-                    </label>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.PetId))
+        {
+            <div class="form-row">
+                <div class="full">
+                    <label>Đợt tiêm đang chờ</label>
+                    <input type="hidden" name="SelectedPendingServiceId" value="@Model.SelectedPendingServiceId" />
+                    
+                    @if (Model.PendingPackages.Count == 0)
+                    {
+                        <div class="alert alert-info">Thú cưng này không có đợt tiêm đang chờ.</div>
+                    }
+                    else
+                    {
+                        <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                            @foreach (var item in Model.PendingPackages)
+                            {
+                                <label style="display: block; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; margin: 0;">
+                                    <input type="radio"
+                                           name="SelectedPendingStt"
+                                           value="@item.Stt"
+                                           data-serviceid="@item.ServiceId"
+                                           @(Model.SelectedPendingStt == item.Stt ? "checked" : "") />
+                                    <strong>@item.ServiceName</strong> (@item.ServiceId)
+                                    <br/>
+                                    <small>
+                                        Vắc-xin: @item.VaccineName (@item.VaccineId) | 
+                                        Dự kiến: @item.PlannedDate?.ToString("dd/MM/yyyy") |
+                                        Trạng thái: @(string.IsNullOrWhiteSpace(item.Status) ? "Chờ tiêm" : item.Status)
+                                    </small>
+                                </label>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
-        </div>
 
-        <div class="form-row mode-le">
-            <div>
-                <label>Dịch vụ tiêm lẻ</label>
-                <select asp-for="ServiceId">
-                    <option value="">Chọn dịch vụ</option>
-                    @foreach (var dv in Model.Services)
-                    {
-                        <option value="@dv.madv">@dv.madvNavigation?.tendv (@dv.madv)</option>
-                    }
-                </select>
-            </div>
-        </div>
-
-        <div class="form-row mode-goi">
-            <div class="full">
-                <label>Gói đang chờ (nếu có)</label>
-                <input type="hidden" name="SelectedPendingServiceId" value="@Model.SelectedPendingServiceId" />
-                @if (Model.PendingPackages.Count == 0)
-                {
-                    <div class="muted">Thú cưng này chưa có gói nào đang chờ.</div>
-                }
-                else
-                {
-                    <div class="pending-list">
-                        @foreach (var item in Model.PendingPackages)
-                        {
-                            <label class="pending-item">
-                                <input type="radio"
-                                       name="SelectedPendingStt"
-                                       value="@item.Stt"
-                                       data-serviceid="@item.ServiceId"
-                                       @(Model.SelectedPendingStt == item.Stt ? "checked" : "") />
-                                <span>
-                                    @item.ServiceName (@item.ServiceId) -
-                                    @item.VaccineName (@item.VaccineId) -
-                                    @item.PlannedDate?.ToString("dd/MM/yyyy") -
-                                    @(string.IsNullOrWhiteSpace(item.Status) ? "Chờ tiêm" : item.Status)
-                                </span>
-                            </label>
-                        }
+            @if (Model.PendingPackages.Count > 0)
+            {
+                <div class="form-row">
+                    <div class="full">
+                        <button type="submit" class="btn btn-success">Xác nhận tiêm</button>
                     </div>
-                }
-            </div>
-        </div>
-
-        <div class="form-row mode-goi">
-            <div>
-                <label>Tạo gói mới</label>
-                <select asp-for="NewPackageServiceId">
-                    <option value="">Chọn gói</option>
-                    @foreach (var goi in Model.PackageOptions)
-                    {
-                        <option value="@goi.ServiceId">
-                            @goi.Name (@goi.ServiceId) - @goi.Months tháng
-                        </option>
-                    }
-                </select>
-            </div>
-            <div>
-                <label>Ngày bắt đầu gói</label>
-                <input asp-for="PackageStartDate" type="date" />
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div>
-                <label>Vaccine</label>
-                <select asp-for="VaccineId">
-                    <option value="">Chọn vaccine</option>
-                    @foreach (var vx in Model.Vaccines)
-                    {
-                        <option value="@vx.mavacxin">@vx.tenvacxin (@vx.mavacxin)</option>
-                    }
-                </select>
-                <div class="muted">Nếu chọn gói đang chờ, vaccine sẽ dùng theo lịch đã tạo.</div>
-            </div>
-            <div>
-                <label>Ngày tiêm</label>
-                <input asp-for="Date" type="date" />
-            </div>
-        </div>
-        <button type="submit" class="btn">Lưu</button>
+                </div>
+            }
+        }
     </form>
 </section>
 
+<style>
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .form-row.full,
+    .form-row > div.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-row > div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-row > div.align-end {
+        justify-content: flex-end;
+    }
+
+    label:not(.btn) {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    input[type="text"],
+    select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .alert {
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+</style>
+
 <script>
     (function () {
-        const updateMode = () => {
-            const mode = document.querySelector('input[name="Mode"]:checked')?.value || "Le";
-            document.querySelectorAll('.mode-le').forEach(el => el.style.display = mode === "Le" ? "" : "none");
-            document.querySelectorAll('.mode-goi').forEach(el => el.style.display = mode === "Goi" ? "" : "none");
-        };
         const updatePendingService = () => {
             const selected = document.querySelector('input[name="SelectedPendingStt"]:checked');
             const holder = document.querySelector('input[name="SelectedPendingServiceId"]');
@@ -140,13 +173,9 @@
                 holder.value = selected?.dataset?.serviceid || "";
             }
         };
-        document.querySelectorAll('input[name="Mode"]').forEach(el => {
-            el.addEventListener('change', updateMode);
-        });
         document.querySelectorAll('input[name="SelectedPendingStt"]').forEach(el => {
             el.addEventListener('change', updatePendingService);
         });
-        updateMode();
         updatePendingService();
     })();
 </script>

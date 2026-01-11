@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\PetCareX\\pet-carx\\StaffWeb\\StaffWeb.csproj": {}
+    "D:\\PetCareXWeb\\StaffWeb\\StaffWeb.csproj": {}
   },
   "projects": {
-    "D:\\PetCareX\\pet-carx\\StaffWeb\\StaffWeb.csproj": {
+    "D:\\PetCareXWeb\\StaffWeb\\StaffWeb.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\PetCareX\\pet-carx\\StaffWeb\\StaffWeb.csproj",
+        "projectUniqueName": "D:\\PetCareXWeb\\StaffWeb\\StaffWeb.csproj",
         "projectName": "StaffWeb",
-        "projectPath": "D:\\PetCareX\\pet-carx\\StaffWeb\\StaffWeb.csproj",
+        "projectPath": "D:\\PetCareXWeb\\StaffWeb\\StaffWeb.csproj",
         "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
-        "outputPath": "D:\\PetCareX\\pet-carx\\StaffWeb\\obj\\",
+        "outputPath": "D:\\PetCareXWeb\\StaffWeb\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

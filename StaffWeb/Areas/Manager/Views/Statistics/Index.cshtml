@@ -1,0 +1,220 @@
+@using StaffWeb.Models
+@model BranchStatisticsViewModel
+@{
+    ViewData["Title"] = "Thống kê chi nhánh";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4">Thống kê chi nhánh - @Model.BranchName</h2>
+
+    <div class="row">
+        <!-- Top Vaccines -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-heart-pulse"></i> Vắc-xin được dùng nhiều nhất</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.TopVaccines.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã vắc-xin</th>
+                                        <th>Tên vắc-xin</th>
+                                        <th class="text-end">Số lần tiêm</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.TopVaccines)
+                                    {
+                                        <tr>
+                                            <td>@item.MaVacxin</td>
+                                            <td>@item.TenVacxin</td>
+                                            <td class="text-end"><strong>@item.SoLanTiem</strong></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Chưa có dữ liệu tiêm phòng</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Performance -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Hiệu suất nhân viên</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.StaffPerformance.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã NV</th>
+                                        <th>Họ tên</th>
+                                        <th class="text-end">Số hóa đơn</th>
+                                        <th class="text-end">Điểm TB</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.StaffPerformance)
+                                    {
+                                        <tr>
+                                            <td>@item.MaNV</td>
+                                            <td>@item.HoTen</td>
+                                            <td class="text-end">@item.SoHoaDon</td>
+                                            <td class="text-end">
+                                                @if (item.DiemTrungBinh.HasValue)
+                                                {
+                                                    @item.DiemTrungBinh.Value.ToString("F1")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Chưa có dữ liệu nhân viên</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Vaccinated Pets (Last 30 Days) -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clipboard2-check"></i> Thú cưng đã tiêm (30 ngày gần nhất)</h5>
+                    <a href="@Url.Action("VaccinatedPets", "Statistics", new { Area = "Manager" })" class="btn btn-sm btn-light">Xem chi tiết</a>
+                </div>
+                <div class="card-body">
+                    @if (Model.VaccinatedPets.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã TC</th>
+                                        <th>Tên thú cưng</th>
+                                        <th>Loại</th>
+                                        <th>Giống</th>
+                                        <th>Ngày tiêm</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.VaccinatedPets.Take(10))
+                                    {
+                                        <tr>
+                                            <td>@item.MaThucung</td>
+                                            <td>@item.TenThucung</td>
+                                            <td>@item.Loai</td>
+                                            <td>@item.Giong</td>
+                                            <td>@item.NgayTiem?.ToString("dd/MM/yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (Model.VaccinatedPets.Count > 10)
+                        {
+                            <p class="text-muted small mt-2">Hiển thị 10/@Model.VaccinatedPets.Count thú cưng. <a href="@Url.Action("VaccinatedPets", "Statistics", new { Area = "Manager" })">Xem tất cả</a></p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Chưa có dữ liệu tiêm phòng trong 30 ngày gần nhất</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Low Inventory -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-box-seam"></i> Tồn kho sản phẩm (sắp xếp từ thấp đến cao)</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Inventory.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã SP</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Loại</th>
+                                        <th class="text-end">Số lượng tồn</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Inventory.Take(15))
+                                    {
+                                        <tr class="@(item.SoLuongTon < 10 ? "table-danger" : item.SoLuongTon < 50 ? "table-warning" : "")">
+                                            <td>@item.MaSP</td>
+                                            <td>@item.TenSP</td>
+                                            <td>@item.LoaiSP</td>
+                                            <td class="text-end">
+                                                <strong>@item.SoLuongTon</strong>
+                                                @if (item.SoLuongTon < 10)
+                                                {
+                                                    <span class="badge bg-danger ms-2">Cần nhập</span>
+                                                }
+                                                else if (item.SoLuongTon < 50)
+                                                {
+                                                    <span class="badge bg-warning text-dark ms-2">Sắp hết</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (Model.Inventory.Count > 15)
+                        {
+                            <p class="text-muted small mt-2">Hiển thị 15/@Model.Inventory.Count sản phẩm</p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Chưa có dữ liệu tồn kho</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .table-sm td, .table-sm th {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+}

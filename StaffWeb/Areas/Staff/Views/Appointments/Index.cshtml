@@ -5,56 +5,112 @@
 
 <section class="card">
     <h1 class="page-title">Tạo lịch khám trực tiếp</h1>
-    <p class="page-subtitle">Nhập thông tin cơ bản để tạo lịch.</p>
+    <p class="page-subtitle">Nhập số điện thoại khách hàng và thông tin cơ bản để tạo lịch.</p>
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert">@TempData["Success"]</div>
+        <div class="alert alert-success">@TempData["Success"]</div>
     }
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert">Kiểm tra lại thông tin bắt buộc.</div>
+        <div class="alert alert-danger">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <p>@error.ErrorMessage</p>
+            }
+        </div>
     }
 
     <form method="post" id="appointmentForm">
         <input type="hidden" name="action" id="actionField" value="" />
+        
         <div class="form-row">
             <div>
-                <label>Ngày giờ khám</label>
-                <input asp-for="VisitTime" type="datetime-local" id="visitTimeInput" />
-            </div>
-            <div>
-                <label>Mã thú cưng</label>
-                <input asp-for="PetId" />
-            </div>
-            <div>
-                <label>Dịch vụ</label>
-                <select asp-for="ServiceId">
-                    <option value="">Chọn dịch vụ</option>
-                    @foreach (var dv in Model.Services)
-                    {
-                        <option value="@dv.madv">@dv.tendv</option>
-                    }
-                </select>
-            </div>
-            <div>
-                <label>Bác sĩ</label>
-                <select asp-for="DoctorId">
-                    <option value="">Chọn bác sĩ</option>
-                    @foreach (var bs in Model.Doctors)
-                    {
-                        <option value="@bs.manv">@bs.hoten</option>
-                    }
-                </select>
+                <label>Số điện thoại khách hàng <span style="color:red;">*</span></label>
+                <input asp-for="CustomerPhone" type="text" id="customerPhoneInput" placeholder="Nhập SĐT..." />
+                @if (Model.Customer != null)
+                {
+                    <small style="color: green;">✓ Khách hàng: @Model.Customer.Name</small>
+                }
+                else if (!string.IsNullOrWhiteSpace(Model.CustomerPhone))
+                {
+                    <small style="color: orange;">⚠ Không tìm thấy khách hàng với SĐT này</small>
+                }
             </div>
         </div>
-        <div>
-            <label>Ghi chú / Triệu chứng</label>
-            <textarea asp-for="Notes"></textarea>
-        </div>
-        <div style="margin-top: 16px;">
-            <button type="submit" class="btn" id="submitAppointment">Tạo lịch</button>
-        </div>
+
+        @if (Model.Pets.Any())
+        {
+            <div class="form-row">
+                <div>
+                    <label>Thú cưng <span style="color:red;">*</span></label>
+                    <select asp-for="PetId" id="petSelect">
+                        <option value="">-- Chọn thú cưng --</option>
+                        @foreach (var pet in Model.Pets)
+                        {
+                            <option value="@pet.mathucung">@pet.tenthucung - @pet.mathucung (@pet.loai)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.PetId))
+        {
+            if (Model.PendingPackages.Any())
+            {
+                <div class="form-row">
+                    <div>
+                        <label>Gói tiêm đang chờ</label>
+                        <small style="display:block;color:#666;margin-bottom:8px;">Chọn gói để tiếp tục liều kế tiếp (bấm lại để bỏ chọn).</small>
+                        <ul style="list-style:none;padding:8px 12px;margin:0;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;">
+                            @foreach (var pkg in Model.PendingPackages)
+                            {
+                                var label = $"{pkg.ServiceName} - Đã tiêm {pkg.CompletedDoses}/{pkg.TotalCount}";
+                                <li style="padding:6px 0;">
+                                    <input type="radio" name="SelectedPendingPackageId" value="@pkg.ServiceId" @(Model.SelectedPendingPackageId == pkg.ServiceId ? "checked" : null) class="pkg-radio" style="margin-right:8px;" />
+                                    <span>@label</span>
+                                    @* Ẩn hiển thị liều kế tiếp theo yêu cầu *@
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+            <div class="form-row">
+                <div>
+                    <label>Ngày giờ khám <span style="color:red;">*</span></label>
+                    <input asp-for="VisitTime" type="datetime-local" id="visitTimeInput" />
+                </div>
+                <div>
+                    <label>Dịch vụ <span style="color:red;">*</span></label>
+                    <select asp-for="ServiceId" id="serviceSelect">
+                        <option value="">-- Chọn dịch vụ --</option>
+                        @foreach (var dv in Model.Services)
+                        {
+                            <option value="@dv.madv">@dv.tendv</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label>Bác sĩ <span style="color:red;">*</span></label>
+                    <select asp-for="DoctorId">
+                        <option value="">-- Chọn bác sĩ --</option>
+                        @foreach (var bs in Model.Doctors)
+                        {
+                            <option value="@bs.manv">@bs.hoten</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label>Ghi chú / Triệu chứng</label>
+                <textarea asp-for="Notes" placeholder="Nhập triệu chứng hoặc ghi chú..."></textarea>
+            </div>
+            <div style="margin-top: 16px;">
+                <button type="submit" class="btn" id="submitAppointment">Tạo lịch khám</button>
+            </div>
+        }
     </form>
 </section>
 
@@ -62,15 +118,88 @@
     (function () {
         const form = document.getElementById("appointmentForm");
         const actionField = document.getElementById("actionField");
+        const customerPhone = document.getElementById("customerPhoneInput");
+        const petSelect = document.getElementById("petSelect");
         const visitTime = document.getElementById("visitTimeInput");
         const submitBtn = document.getElementById("submitAppointment");
+        const radios = document.querySelectorAll('.pkg-radio');
+        let wasChecked = false;
+
+        if (customerPhone) {
+            customerPhone.addEventListener("blur", () => {
+                if (customerPhone.value && customerPhone.value !== '@Model.CustomerPhone') {
+                    actionField.value = "loadCustomer";
+                    form.submit();
+                }
+            });
+        }
+
+        if (petSelect) {
+            petSelect.addEventListener("change", () => {
+                if (petSelect.value) {
+                    actionField.value = "loadCustomer";
+                    form.submit();
+                }
+            });
+        }
 
         if (visitTime) {
             visitTime.addEventListener("change", () => {
-                actionField.value = "load";
+                actionField.value = "loadTime";
                 form.submit();
             });
         }
+
+        // Click-to-deselect + submit to sync server like customer flow
+        radios.forEach(r => {
+            r.addEventListener('mousedown', () => { wasChecked = r.checked; });
+            r.addEventListener('click', (e) => {
+                const svc = document.getElementById('serviceSelect');
+                if (wasChecked) {
+                    e.preventDefault();
+                    r.checked = false;
+                    // clear selection
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'SelectedPendingPackageId';
+                    hidden.value = '';
+                    form.appendChild(hidden);
+                    // Clear ServiceId
+                    const svcHidden = document.createElement('input');
+                    svcHidden.type = 'hidden';
+                    svcHidden.name = 'ServiceId';
+                    svcHidden.value = '';
+                    form.appendChild(svcHidden);
+                    if (svc) svc.disabled = false;
+                    actionField.value = 'loadPackage';
+                    form.submit();
+                } else if (r.checked) {
+                    // Set the service to the package value - use hidden input to ensure it posts
+                    if (svc) {
+                        svc.value = r.value;
+                        svc.disabled = false;
+                    }
+                    // Add hidden input with ServiceId to ensure it posts correctly
+                    const svcHidden = document.createElement('input');
+                    svcHidden.type = 'hidden';
+                    svcHidden.name = 'ServiceId';
+                    svcHidden.value = r.value;
+                    form.appendChild(svcHidden);
+                    actionField.value = 'loadPackage';
+                    form.submit();
+                }
+            });
+        });
+
+        // On initial load, if a package is selected, set the service (do not disable)
+        (function initLockServiceFromPackage(){
+            const selected = Array.from(radios).find(x => x.checked);
+            const svc = document.getElementById('serviceSelect');
+            if (selected && svc) {
+                svc.value = selected.value;
+                svc.disabled = false;
+            }
+        })();
 
         if (form) {
             form.addEventListener("submit", (e) => {

@@ -16,6 +16,7 @@ public class DoctorAppointmentItem
     public string PetName { get; set; } = "";
     public string ServiceId { get; set; } = "";
     public string ServiceName { get; set; } = "";
+    public string ServiceType { get; set; } = "";
     public DateTime VisitTime { get; set; }
     public string? Notes { get; set; }
     public bool IsPending { get; set; }
