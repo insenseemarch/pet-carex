@@ -1,43 +1,166 @@
 @model StaffWeb.Models.ManagerRevenueViewModel
 @{
-    ViewData["Title"] = "Bao cao doanh thu";
+    ViewData["Title"] = "Báo cáo doanh thu";
+    var totalSources = Model.Sources.Sum(x => x.Value);
+    var colors = new[] { "#2d7f7e", "#b07a34", "#4d6b3a" };
+    var segments = new List<string>();
+    decimal angle = 0;
+    for (var i = 0; i < Model.Sources.Count; i++)
+    {
+        var slice = Model.Sources[i];
+        var percent = totalSources <= 0 ? 0 : slice.Value / totalSources;
+        var start = angle;
+        var end = angle + (percent * 360);
+        segments.Add($"{colors[i % colors.Length]} {start:F2}deg {end:F2}deg");
+        angle = end;
+    }
+    var pieStyle = segments.Count == 0 ? "background: #f0f0f0;" : $"background: conic-gradient({string.Join(", ", segments)});";
+    var periodLabel = Model.Period switch
+    {
+        "week" => "Tuần",
+        "month" => "Tháng",
+        "year" => "Năm",
+        _ => "Ngày"
+    };
 }
 
+<style>
+    .chart-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1000;
+        display: none;
+        white-space: nowrap;
+    }
+    .manager-bar:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s ease;
+    }
+    .director-pie-row {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .director-pie-row:hover {
+        transform: scale(1.05);
+    }
+    .doctor-bar-row {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .doctor-bar-row:hover {
+        transform: scale(1.02);
+    }
+    .table tbody tr {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+
 <section class="card">
-    <h1 class="page-title">Bao cao doanh thu chi nhanh</h1>
-    <p class="page-subtitle">Chon khoang thoi gian de xem doanh thu.</p>
+    <h1 class="page-title">Báo cáo doanh thu chi nhánh</h1>
+    <p class="page-subtitle">Chọn khoảng thời gian để xem doanh thu.</p>
 
     <form method="get">
         <div class="form-row">
             <div>
-                <label>Tu ngay</label>
+                <label>Từ ngày</label>
                 <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
             </div>
             <div>
-                <label>Den ngay</label>
+                <label>Đến ngày</label>
                 <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
             </div>
+            <div>
+                <label>Chu kỳ</label>
+                <select name="period">
+                    @if (Model.Period == "day")
+                    {
+                        <option value="day" selected>Ngày</option>
+                    }
+                    else
+                    {
+                        <option value="day">Ngày</option>
+                    }
+                    @if (Model.Period == "week")
+                    {
+                        <option value="week" selected>Tuần</option>
+                    }
+                    else
+                    {
+                        <option value="week">Tuần</option>
+                    }
+                    @if (Model.Period == "month")
+                    {
+                        <option value="month" selected>Tháng</option>
+                    }
+                    else
+                    {
+                        <option value="month">Tháng</option>
+                    }
+                    @if (Model.Period == "year")
+                    {
+                        <option value="year" selected>Năm</option>
+                    }
+                    else
+                    {
+                        <option value="year">Năm</option>
+                    }
+                </select>
+            </div>
         </div>
-        <button type="submit" class="btn">Xem bao cao</button>
+        <button type="submit" class="btn">Xem báo cáo</button>
         @if (!string.IsNullOrWhiteSpace(Model.BranchId) && Model.FromDate.HasValue && Model.ToDate.HasValue)
         {
-            <a class="btn btn-secondary" asp-action="RevenueExcel" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")">Xuat Excel</a>
-            <a class="btn btn-secondary" asp-action="RevenuePdf" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")">Xuat PDF</a>
+            <a class="btn btn-secondary" asp-action="RevenueExcel" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")" asp-route-period="@Model.Period">Xuất Excel</a>
+            <a class="btn btn-secondary" asp-action="RevenuePdf" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")" asp-route-period="@Model.Period">Xuất PDF</a>
         }
     </form>
 </section>
 
 @if (string.IsNullOrWhiteSpace(Model.BranchId))
 {
-    <div class="alert" style="margin-top: 16px;">Khong xac dinh duoc chi nhanh cua quan ly.</div>
+    <div class="alert" style="margin-top: 16px;">Không xác định được chi nhánh của quản lý.</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(Model.BranchId) && Model.BranchRevenue.HasValue)
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Doanh thu chi nhanh cua ban</h3>
-        <p><strong>Chi nhanh:</strong> @(Model.BranchName ?? Model.BranchId)</p>
-        <p><strong>Tong doanh thu:</strong> @Model.BranchRevenue.Value.ToString("N0")</p>
+        <h3>Doanh thu chi nhánh của bạn</h3>
+        <p><strong>Chi nhánh:</strong> @(Model.BranchName ?? Model.BranchId)</p>
+        <p><strong>Tổng doanh thu:</strong> @Model.BranchRevenue.Value.ToString("N0")</p>
+    </section>
+}
+
+@if (Model.Sources.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Cơ cấu doanh thu</h3>
+        <div class="director-pie-wrap">
+            <div class="director-pie" style="@pieStyle"></div>
+            <div class="director-pie-legend">
+                @for (var i = 0; i < Model.Sources.Count; i++)
+                {
+                    var slice = Model.Sources[i];
+                    var percent = totalSources <= 0 ? 0 : (slice.Value / totalSources) * 100;
+                    <div class="director-pie-row" data-value="@slice.Value.ToString("N0")" data-label="@slice.Name (@percent.ToString("F1")%)">
+                        <span class="director-pie-dot" style="background:@colors[i % colors.Length];"></span>
+                        <span>@slice.Name</span>
+                        <span>@slice.Value.ToString("N0")</span>
+                    </div>
+                }
+            </div>
+        </div>
     </section>
 }
 
@@ -45,16 +168,27 @@
 {
     var max = Model.Trend.Max(x => x.tongdoanhthu);
     <section class="card" style="margin-top: 20px;">
-        <h3>Doanh thu theo ngay</h3>
+        <h3>Doanh thu theo @periodLabel</h3>
         <div class="manager-chart">
             @foreach (var item in Model.Trend)
             {
                 var height = max == 0 ? 0 : (int)Math.Round(item.tongdoanhthu / max * 100);
-                <div class="manager-bar" title="@item.ngay.ToString("dd/MM/yyyy"): @item.tongdoanhthu.ToString("N0")">
+                if (height > 0 && height < 15)
+                {
+                    height = 15;
+                }
+                var label = Model.Period switch
+                {
+                    "week" => $"Tuần {item.ngay:dd/MM}",
+                    "month" => item.ngay.ToString("MM/yyyy"),
+                    "year" => item.ngay.ToString("yyyy"),
+                    _ => item.ngay.ToString("dd/MM")
+                };
+                <div class="manager-bar" data-value="@item.tongdoanhthu.ToString("N0")" data-label="@label">
                     <div class="manager-bar-track">
                         <div class="manager-bar-fill" style="height:@height%"></div>
                     </div>
-                    <span>@item.ngay.ToString("dd/MM")</span>
+                    <span>@label</span>
                 </div>
             }
         </div>
@@ -64,20 +198,20 @@
 @if (Model.Items.Count > 0)
 {
     <section class="card" style="margin-top: 20px;">
-        <h3>Ket qua</h3>
+        <h3>Kết quả</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Ma CN</th>
-                    <th>Ten chi nhanh</th>
-                    <th>So hoa don</th>
-                    <th>Tong doanh thu</th>
+                    <th>Mã CN</th>
+                    <th>Tên chi nhánh</th>
+                    <th>Số hóa đơn</th>
+                    <th>Tổng doanh thu</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var row in Model.Items)
                 {
-                    <tr>
+                    <tr data-value="@row.tongdoanhthu.ToString("N0")" data-label="@row.tencn">
                         <td>@row.macn</td>
                         <td>@row.tencn</td>
                         <td>@row.sohoadon</td>
@@ -88,7 +222,32 @@
         </table>
     </section>
 }
-else if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+else if (Model.FromDate.HasValue && Model.ToDate.HasValue && Model.Sources.Count == 0)
 {
-    <div class="alert" style="margin-top: 16px;">Khong co du lieu trong khoang ngay nay.</div>
+    <div class="alert" style="margin-top: 16px;">Không có dữ liệu trong khoảng ngày này.</div>
 }
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chartTooltip');
+        const elements = document.querySelectorAll('[data-value][data-label]');
+        
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const value = this.getAttribute('data-value');
+                const label = this.getAttribute('data-label');
+                tooltip.textContent = label + ': ' + value;
+                tooltip.style.display = 'block';
+            });
+            
+            el.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+        });
+    });
+</script>

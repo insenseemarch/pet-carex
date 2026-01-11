@@ -371,7 +371,7 @@ create table tiemgoi
 -- =========================================
 create table danhgia 
 (
-    madanhgia varchar(10) primary key,
+    madanhgia varchar(10) not null,
     madv varchar(10) not null,
     manv varchar(10) not null,
     makh varchar(10) not null,
@@ -380,6 +380,9 @@ create table danhgia
     diemthaidonv int not null,
     mucdohailong int not null,
     binhluan nvarchar(255),
+
+    constraint pk_danhgia
+        primary key nonclustered (madanhgia), -- phục vụ cho partition
 
     constraint fk_dg_dv
         foreign key (madv) references dichvu(madv),
@@ -418,7 +421,7 @@ create table chitietkhambenh
     madanhgia varchar(10),
     ghichu nvarchar(255),
 
-    primary key (madv, mathucung, ngaysudung, mabs),
+    primary key nonclustered (madv, mathucung, ngaysudung, mabs),
 
     constraint fk_ckb_dv
         foreign key (madv) references dichvu(madv),
@@ -454,7 +457,7 @@ create table chitiettiemphong
     trangthai nvarchar(50),
     madanhgia varchar(10),
 
-    primary key (stt, madv, mathucung, mavacxin, mabs),
+    primary key nonclustered (stt, madv, mathucung, mavacxin, mabs),
 
     constraint fk_cttp_dv
         foreign key (madv) references tiemphong(madv),
@@ -480,7 +483,7 @@ set quoted_identifier on;
 go
 create table hoadon 
 (
-    mahd varchar(10) primary key,
+    mahd varchar(10) not null,
     mathucung varchar(10),
     manvlap varchar(10),
     macn varchar(10),
@@ -493,6 +496,9 @@ create table hoadon
     thanhtien as (tongtien - khuyenmai) persisted,
     hinhthucthanhtoan nvarchar(50),
     trangthai nvarchar(50) not null,
+
+    constraint pk_hoadon
+        primary key nonclustered (mahd),
 
     constraint fk_hd_tc
         foreign key (mathucung) references thucung(mathucung),

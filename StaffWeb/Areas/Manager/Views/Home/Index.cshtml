@@ -1,32 +1,32 @@
 @{
-    ViewData["Title"] = "Quan ly";
+    ViewData["Title"] = "Quản lý";
 }
 
 <section class="manager-dashboard">
     <div class="manager-hero">
-        <h1>Bang dieu khien quan ly</h1>
-        <p>Theo doi doanh thu, luot kham va hieu suat bac si theo tung chi nhanh.</p>
+        <h1>Bảng điều khiển quản lý</h1>
+        <p>Theo dõi doanh thu, lượt khám và hiệu suất bác sĩ theo từng chi nhánh.</p>
         <div class="manager-actions">
-            <a class="btn" asp-area="Manager" asp-controller="Reports" asp-action="Revenue">Doanh thu chi nhanh</a>
-            <a class="btn btn-secondary" asp-area="Manager" asp-controller="Reports" asp-action="Doctors">Theo bac si</a>
+            <a class="btn" asp-area="Manager" asp-controller="Reports" asp-action="Revenue">Doanh thu chi nhánh</a>
+            <a class="btn btn-secondary" asp-area="Manager" asp-controller="Reports" asp-action="Doctors">Theo bác sĩ</a>
         </div>
     </div>
     <div class="manager-cards">
         <a class="manager-card" asp-area="Manager" asp-controller="Reports" asp-action="Revenue">
-            <h3>Doanh thu tat ca chi nhanh</h3>
-            <p>Tong hop doanh thu theo tung chi nhanh.</p>
+            <h3>Doanh thu chi nhánh</h3>
+            <p>Tổng hợp doanh thu theo từng chi nhánh.</p>
         </a>
         <a class="manager-card" asp-area="Manager" asp-controller="Reports" asp-action="Doctors">
-            <h3>Hieu suat bac si</h3>
-            <p>So luot kham/tiem va doanh thu uoc tinh.</p>
+            <h3>Hiệu suất bác sĩ</h3>
+            <p>Số lượt khám/tiêm và doanh thu ước tính.</p>
         </a>
         <a class="manager-card" asp-area="Manager" asp-controller="Reports" asp-action="Visits">
-            <h3>So luot kham</h3>
-            <p>Theo doi luot kham theo ngay.</p>
+            <h3>Số lượt khám</h3>
+            <p>Theo dõi lượt khám theo ngày.</p>
         </a>
         <a class="manager-card" asp-area="Manager" asp-controller="Reports" asp-action="Products">
-            <h3>Doanh thu san pham</h3>
-            <p>Thong ke san pham ban chay.</p>
+            <h3>Doanh thu sản phẩm</h3>
+            <p>Thống kê sản phẩm bán chạy.</p>
         </a>
     </div>
 </section>

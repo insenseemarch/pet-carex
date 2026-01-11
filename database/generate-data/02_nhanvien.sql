@@ -1517,3 +1517,6 @@ INSERT INTO nhanvien (manv, macn, hoten, ngaysinh, gioitinh, ngayvaolam, chucvu,
     (N'NV1500', N'CN002', N'Bảo Trí Phạm', '1981-03-31', N'Nữ', '2020-07-29', N'Nhân viên', 17271158, N'Bác sĩ thú y');
 GO
 
+INSERT INTO nhanvien (manv, macn, hoten, ngaysinh, gioitinh, ngayvaolam, chucvu, luongcoban, loainv) VALUES
+    (N'NV1501', N'CN001', N'Lý Thanh Hương', '1970-03-31', N'Nữ', '2020-07-29', N'Giám đốc', 50000000, N'Giám đốc');
+GO

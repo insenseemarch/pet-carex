@@ -227,65 +227,40 @@ go
 -- =========================================
 -- procedure: Đăng nhập
 -- =========================================
-create or alter procedure sp_dangnhap
+if object_id('dbo.sp_dangnhap', 'P') is null
+    exec ('create procedure dbo.sp_dangnhap as begin set nocount on; end');
+go
+alter procedure sp_dangnhap
 (
     @tendangnhap varchar(50),
     @matkhau varchar(255)
 )
 as
 begin
-    set nocount on
+    set nocount on;
 
-    -- nhân viên
-    if exists (
-        select 1
-        from taikhoannhanvien
-        where tendangnhap = @tendangnhap
-          and matkhau = @matkhau
-          and trangthai = N'Đang hoạt động'
-    )
-    begin
-        select
-            N'nhanvien' as loai,
-            tknv.tendangnhap,
-            tknv.vaitro,
-            nv.manv,
-            nv.macn
-        from taikhoannhanvien tknv
-        join nhanvien nv on tknv.manv = nv.manv
-        where tknv.tendangnhap = @tendangnhap
-        return;
-    end
-
-    -- khách hàng
-    if exists (
-        select 1
-        from taikhoankhachhang
-        where tendangnhap = @tendangnhap
-          and matkhau = @matkhau
-          and trangthai = N'Đang hoạt động'
-    )
-    begin
-        select
-            N'khachhang' as loai,
-            tendangnhap,
-            makh,
-            capbac,
-            diemtichluy
-        from taikhoankhachhang
-        where tendangnhap = @tendangnhap
-        return;
-    end
-
-    ;throw 51001, N'Tên đăng nhập hoặc mật khẩu không đúng.', 1
+    select
+        'nhanvien' as loai,
+        tknv.tendangnhap,
+        tknv.vaitro,
+        nv.manv,
+        nv.macn
+    from taikhoannhanvien tknv
+    join nhanvien nv on tknv.manv = nv.manv
+    where tknv.tendangnhap = @tendangnhap
+      and tknv.matkhau = @matkhau
+      and tknv.trangthai = N'Đang hoạt động';
 end
 go
-
 
 -- =========================================
 -- procedure: Lễ tân tạo tài khoản khách hàng
 -- =========================================
-create or alter procedure sp_tao_khachhang
+if object_id('dbo.sp_tao_khachhang', 'P') is null
+    exec ('create procedure dbo.sp_tao_khachhang as begin set nocount on; end');
+go
+
+alter procedure dbo.sp_tao_khachhang
 (
     @makh varchar(10),
     @cccd varchar(20),
@@ -297,10 +272,10 @@ create or alter procedure sp_tao_khachhang
 )
 as
 begin
-    set nocount on
+    set nocount on;
 
     begin try
-        begin tran
+        begin tran;
 
         if not exists (select 1 from thongtin where cccd = @cccd)
         begin
@@ -312,20 +287,13 @@ begin
         values (@makh, @cccd, @sdt, @email);
 
         insert into taikhoankhachhang
-        values (
-            @sdt,       -- username
-            @makh,
-            '123456',
-            0,
-            N'Cơ bản',
-            N'Đang hoạt động'
-        );
+        values (@sdt, @makh, '123456', 0, N'Cơ bản', N'Đang hoạt động');
 
-        commit tran
+        commit;
     end try
     begin catch
-        rollback tran
-        throw
+        rollback;
+        throw;
     end catch
 end
 go
@@ -333,8 +301,10 @@ go
 -- =========================================
 -- procedure: Lấy tất cả thông tin của khách hàng
 -- =========================================
-
-create or alter procedure sp_lay_thong_tin_khach_hang
+if object_id('dbo.sp_lay_thong_tin_khach_hang', 'P') is null
+    exec ('create procedure dbo.sp_lay_thong_tin_khach_hang as begin set nocount on; end');
+go
+alter procedure sp_lay_thong_tin_khach_hang
 (
     @makh varchar(10)
 )
@@ -377,7 +347,10 @@ go
 -- =========================================
 -- procedure: Tạo thú cưng
 -- =========================================
-create or alter procedure sp_tao_thucung
+if object_id('dbo.sp_tao_thucung', 'P') is null
+    exec ('create procedure dbo.sp_tao_thucung as begin set nocount on; end');
+go
+alter procedure sp_tao_thucung
 (
     @mathucung varchar(10),
     @makh varchar(10),
@@ -401,6 +374,9 @@ go
 -- =========================================
 -- procedure: Ghi nhận lần khám
 -- =========================================
+if object_id('dbo.sp_ghinhan_khambenh', 'P') is null
+    exec ('create procedure dbo.sp_ghinhan_khambenh as begin set nocount on; end');
+go
 create or alter procedure sp_ghinhan_khambenh
 (
     @madv varchar(10),
@@ -429,6 +405,9 @@ go
 -- =========================================
 -- procedure: Tạo toa thuốc mới
 -- =========================================
+if object_id('dbo.sp_ke_toa_thuoc', 'P') is null
+    exec ('create procedure dbo.sp_ke_toa_thuoc as begin set nocount on; end');
+go
 create or alter procedure sp_ke_toa_thuoc
 (
     @matoathuoc varchar(10),
@@ -444,7 +423,10 @@ go
 -- =========================================
 -- procedure: Ghi nhận lần tiêm
 -- =========================================
-create or alter procedure sp_ghinhan_tiemphong
+if object_id('dbo.sp_ghinhan_tiemphong', 'P') is null
+    exec ('create procedure dbo.sp_ghinhan_tiemphong as begin set nocount on; end');
+go
+alter procedure sp_ghinhan_tiemphong
 (
     @stt int,
     @madv varchar(10),
@@ -507,7 +489,10 @@ go
 -- =========================================
 -- procedure: Lập hóa đơn
 -- =========================================
-create or alter procedure sp_lap_hoadon
+if object_id('dbo.sp_lap_hoadon', 'P') is null
+    exec ('create procedure dbo.sp_lap_hoadon as begin set nocount on; end');
+go
+alter procedure sp_lap_hoadon
 (
     @mahd varchar(10),
     @mathucung varchar(10),
@@ -557,7 +542,10 @@ go
 -- =========================================
 -- procedure: Thanh toán hóa đơn
 -- =========================================
-create or alter procedure sp_thanhtoan_hoadon
+if object_id('dbo.sp_thanhtoan_hoadon', 'P') is null
+    exec ('create procedure dbo.sp_thanhtoan_hoadon as begin set nocount on; end');
+go
+alter procedure sp_thanhtoan_hoadon
 (
     @mahd varchar(10),
     @hinhthucthanhtoan nvarchar(50)
@@ -576,7 +564,10 @@ go
 -- =========================================
 -- procedure: Doanh thu theo chi nhánh & thời gian
 -- =========================================
-create procedure sp_thongke_doanhthu_chinhanh
+if object_id('dbo.sp_thongke_doanhthu_chinhanh', 'P') is null
+    exec ('create procedure dbo.sp_thongke_doanhthu_chinhanh as begin set nocount on; end');
+go
+alter procedure sp_thongke_doanhthu_chinhanh
 (
     @tungay date,
     @denngay date
@@ -600,7 +591,10 @@ go
 -- =========================================
 -- procedure: Thống kê doanh thu theo dịch vụ
 -- =========================================
-create procedure sp_thongke_doanhthu_dichvu
+if object_id('dbo.sp_thongke_doanhthu_dichvu', 'P') is null
+    exec ('create procedure dbo.sp_thongke_doanhthu_dichvu as begin set nocount on; end');
+go
+alter procedure sp_thongke_doanhthu_dichvu
 (
     @tungay date,
     @denngay date
@@ -625,7 +619,10 @@ go
 -- =========================================
 -- procedure: Thống kê sản phẩm bán chạy
 -- =========================================
-create procedure sp_thongke_sanpham_banchay
+if object_id('dbo.sp_thongke_sanpham_banchay', 'P') is null
+    exec ('create procedure dbo.sp_thongke_sanpham_banchay as begin set nocount on; end');
+go
+alter procedure sp_thongke_sanpham_banchay
 (
     @top int
 )
@@ -648,7 +645,10 @@ go
 -- =========================================
 -- procedure: Thống kê khách hàng theo cấp bậc
 -- =========================================
-create procedure sp_thongke_khachhang_capbac
+if object_id('dbo.sp_thongke_khachhang_capbac', 'P') is null
+    exec ('create procedure dbo.sp_thongke_khachhang_capbac as begin set nocount on; end');
+go
+alter procedure sp_thongke_khachhang_capbac
 as
 begin
     select
@@ -664,7 +664,10 @@ go
 -- =========================================
 -- procedure: Thống kê số lần làm việc của bác sĩ
 -- =========================================
-create procedure sp_thongke_bacsi
+if object_id('dbo.sp_thongke_bacsi', 'P') is null
+    exec ('create procedure dbo.sp_thongke_bacsi as begin set nocount on; end');
+go
+alter procedure sp_thongke_bacsi
 as
 begin
     select
@@ -684,7 +687,10 @@ go
 -- =========================================
 -- procedure: Thống kê vắc-xin sắp hết hạn
 -- =========================================
-create procedure sp_thongke_vacxin_saphethan
+if object_id('dbo.sp_thongke_vacxin_saphethan', 'P') is null
+    exec ('create procedure dbo.sp_thongke_vacxin_saphethan as begin set nocount on; end');
+go
+alter procedure sp_thongke_vacxin_saphethan
 (
     @songay int
 )
@@ -704,7 +710,10 @@ go
 -- =========================================
 -- procedure: Danh sách thú cưng đã tiêm trong kỳ
 -- =========================================
-create or alter procedure sp_ds_thucung_da_tiem
+if object_id('dbo.sp_ds_thucung_da_tiem', 'P') is null
+    exec ('create procedure dbo.sp_ds_thucung_da_tiem as begin set nocount on; end');
+go
+alter procedure sp_ds_thucung_da_tiem
 (
     @macn varchar(10),
     @tungay date,
@@ -731,7 +740,10 @@ go
 -- =========================================
 -- procedure: Thống kê vắc-xin được dùng nhiều nhất
 -- =========================================
-create or alter procedure sp_thongke_vacxin
+if object_id('dbo.sp_thongke_vacxin', 'P') is null
+    exec ('create procedure dbo.sp_thongke_vacxin as begin set nocount on; end');
+go
+alter procedure sp_thongke_vacxin
 (
     @macn varchar(10)
 )
@@ -755,7 +767,10 @@ go
 -- =========================================
 -- procedure: Tồn kho sản phẩm tại chi nhánh
 -- =========================================
-create or alter procedure sp_tonkho_chinhanh
+if object_id('dbo.sp_tonkho_chinhanh', 'P') is null
+    exec ('create procedure dbo.sp_tonkho_chinhanh as begin set nocount on; end');
+go
+alter procedure sp_tonkho_chinhanh
 (
     @macn varchar(10)
 )
@@ -778,7 +793,10 @@ go
 -- =========================================
 -- procedure: Hiệu suất nhân viên chi nhánh
 -- =========================================
-create or alter procedure sp_hieusuat_nhanvien
+if object_id('dbo.sp_hieusuat_nhanvien', 'P') is null
+    exec ('create procedure dbo.sp_hieusuat_nhanvien as begin set nocount on; end');
+go
+alter procedure sp_hieusuat_nhanvien
 (
     @macn varchar(10)
 )
@@ -803,7 +821,10 @@ go
 -- =========================================
 -- procedure: Dịch vụ doanh thu cao nhất 6 tháng gần nhất
 -- =========================================
-create or alter procedure sp_top_dichvu_6thang
+if object_id('dbo.sp_top_dichvu_6thang', 'P') is null
+    exec ('create procedure dbo.sp_top_dichvu_6thang as begin set nocount on; end');
+go
+alter procedure sp_top_dichvu_6thang
 as
 begin
     set nocount on;
@@ -824,7 +845,10 @@ go
 -- =========================================
 -- procedure: Thông báo sinh nhật khách hàng / thú cưng
 -- =========================================
-create or alter procedure sp_nhac_sinh_nhat_khach_hang
+if object_id('dbo.sp_nhac_sinh_nhat_khach_hang', 'P') is null
+    exec ('create procedure dbo.sp_nhac_sinh_nhat_khach_hang as begin set nocount on; end');
+go
+alter procedure sp_nhac_sinh_nhat_khach_hang
 as
 begin
     select 
@@ -840,7 +864,10 @@ begin
 end
 go
 
-create or alter procedure sp_nhac_sinh_nhat_thu_cung
+if object_id('dbo.sp_nhac_sinh_nhat_thu_cung', 'P') is null
+    exec ('create procedure dbo.sp_nhac_sinh_nhat_thu_cung as begin set nocount on; end');
+go
+alter procedure sp_nhac_sinh_nhat_thu_cung
 as
 begin
     select 
@@ -860,7 +887,10 @@ go
 -- =========================================
 -- procedure: Thông báo ngày tái khám
 -- =========================================
-create or alter procedure sp_nhac_tai_kham
+if object_id('dbo.sp_nhac_tai_kham', 'P') is null
+    exec ('create procedure dbo.sp_nhac_tai_kham as begin set nocount on; end');
+go
+alter procedure sp_nhac_tai_kham
 as
 begin
     select 
@@ -879,7 +909,10 @@ go
 -- =========================================
 -- procedure: Thông báo ngày tiêm phòng
 -- =========================================
-create or alter procedure sp_nhac_tiem_phong
+if object_id('dbo.sp_nhac_tiem_phong', 'P') is null
+    exec ('create procedure dbo.sp_nhac_tiem_phong as begin set nocount on; end');
+go
+alter procedure sp_nhac_tiem_phong
 as
 begin
     select 
@@ -898,7 +931,10 @@ go
 -- =========================================
 -- procedure: Nhắc khách hàng lâu không quay lại
 -- =========================================
-create or alter procedure sp_nhac_khach_lau_khong_quay_lai
+if object_id('dbo.sp_nhac_khach_lau_khong_quay_lai', 'P') is null
+    exec ('create procedure dbo.sp_nhac_khach_lau_khong_quay_lai as begin set nocount on; end');
+go
+alter procedure sp_nhac_khach_lau_khong_quay_lai
     @songay int = 180
 as
 begin
@@ -915,7 +951,13 @@ begin
 end
 go
 
-create or alter procedure sp_dangky_tiem_goi
+-- =========================================
+-- procedure: Tạo lịch tiêm theo gói
+-- =========================================
+if object_id('dbo.sp_dangky_tiem_goi', 'P') is null
+    exec ('create procedure dbo.sp_dangky_tiem_goi as begin set nocount on; end');
+go
+alter procedure sp_dangky_tiem_goi
 (
     @madv        varchar(10), 
     @mathucung   varchar(10),
@@ -941,7 +983,7 @@ begin
             select 1 from tiemgoi where madv = @madv
         )
         begin
-            throw 60001, N'Dịch vụ không phải tiêm gói.', 1;
+            ;throw 60001, N'Dịch vụ không phải tiêm gói.', 1;
         end
 
         -- 2. check dịch vụ có thuộc chi nhánh
@@ -952,7 +994,7 @@ begin
               and madv = @madv
         )
         begin
-            throw 60002, N'Dịch vụ không có tại chi nhánh đăng ký.', 1;
+            ;throw 60002, N'Dịch vụ không có tại chi nhánh đăng ký.', 1;
         end
 
         -- 3. check bác sĩ hợp lệ
@@ -964,7 +1006,7 @@ begin
               and loainv = N'Bác sĩ thú y'
         )
         begin
-            throw 60003, N'Bác sĩ không hợp lệ hoặc không thuộc chi nhánh.', 1;
+            ;throw 60003, N'Bác sĩ không hợp lệ hoặc không thuộc chi nhánh.', 1;
         end
 
         -- 4. lấy số tháng của gói
@@ -1011,7 +1053,13 @@ begin
 end
 go
 
-create or alter procedure sp_xacnhan_da_tiem
+-- =========================================
+-- procedure: Xác nhận mũi tiêm đã hoàn thành
+-- =========================================
+if object_id('dbo.sp_xacnhan_da_tiem', 'P') is null
+    exec ('create procedure dbo.sp_xacnhan_da_tiem as begin set nocount on; end');
+go
+alter procedure sp_xacnhan_da_tiem
 (
     @madv varchar(10),
     @mathucung varchar(10),
@@ -1030,3 +1078,4 @@ begin
       and trangthai = N'Chưa tiêm';
 end
 go
+
