@@ -21,8 +21,7 @@
         </div>
     }
 
-    <form method="post" id="appointmentForm">
-        <input type="hidden" name="action" id="actionField" value="" />
+    <form method="post" asp-action="Create" id="appointmentForm">
         
         <div class="form-row">
             <div>
@@ -88,7 +87,7 @@
                         <option value="">-- Chọn dịch vụ --</option>
                         @foreach (var dv in Model.Services)
                         {
-                            <option value="@dv.madv">@dv.tendv</option>
+                            <option value="@dv.madv" selected="@(Model.ServiceId == dv.madv)">@dv.tendv</option>
                         }
                     </select>
                 </div>
@@ -115,98 +114,75 @@
 </section>
 
 <script>
-    (function () {
-        const form = document.getElementById("appointmentForm");
-        const actionField = document.getElementById("actionField");
+    document.addEventListener("DOMContentLoaded", () => {
         const customerPhone = document.getElementById("customerPhoneInput");
         const petSelect = document.getElementById("petSelect");
         const visitTime = document.getElementById("visitTimeInput");
-        const submitBtn = document.getElementById("submitAppointment");
-        const radios = document.querySelectorAll('.pkg-radio');
-        let wasChecked = false;
+        const serviceSelect = document.getElementById("serviceSelect");
+        const doctorSelect = document.querySelector('select[name="DoctorId"]');
 
-        if (customerPhone) {
-            customerPhone.addEventListener("blur", () => {
-                if (customerPhone.value && customerPhone.value !== '@Model.CustomerPhone') {
-                    actionField.value = "loadCustomer";
-                    form.submit();
-                }
-            });
-        }
+        // Redirect helper - preserves all current selections
+        const redirect = () => {
+            const params = new URLSearchParams();
+            
+            if (customerPhone && customerPhone.value) params.set("CustomerPhone", customerPhone.value);
+            if (petSelect && petSelect.value) params.set("PetId", petSelect.value);
+            if (visitTime && visitTime.value) params.set("VisitTime", visitTime.value);
+            if (serviceSelect && serviceSelect.value) params.set("ServiceId", serviceSelect.value);
+            if (doctorSelect && doctorSelect.value) params.set("DoctorId", doctorSelect.value);
 
-        if (petSelect) {
-            petSelect.addEventListener("change", () => {
-                if (petSelect.value) {
-                    actionField.value = "loadCustomer";
-                    form.submit();
-                }
-            });
-        }
+            // Preserve selected pending package if any
+            const pendingRadios = document.querySelectorAll('input[name="SelectedPendingPackageId"]:checked');
+            if (pendingRadios.length > 0 && pendingRadios[0].value) {
+                params.set("SelectedPendingPackageId", pendingRadios[0].value);
+            }
 
-        if (visitTime) {
-            visitTime.addEventListener("change", () => {
-                actionField.value = "loadTime";
-                form.submit();
-            });
-        }
+            const target = "/Staff/Appointments" + (params.toString() ? "?" + params.toString() : "");
+            window.location.assign(target);
+        };
 
-        // Click-to-deselect + submit to sync server like customer flow
-        radios.forEach(r => {
-            r.addEventListener('mousedown', () => { wasChecked = r.checked; });
-            r.addEventListener('click', (e) => {
-                const svc = document.getElementById('serviceSelect');
-                if (wasChecked) {
-                    e.preventDefault();
-                    r.checked = false;
-                    // clear selection
-                    const hidden = document.createElement('input');
-                    hidden.type = 'hidden';
-                    hidden.name = 'SelectedPendingPackageId';
-                    hidden.value = '';
-                    form.appendChild(hidden);
-                    // Clear ServiceId
-                    const svcHidden = document.createElement('input');
-                    svcHidden.type = 'hidden';
-                    svcHidden.name = 'ServiceId';
-                    svcHidden.value = '';
-                    form.appendChild(svcHidden);
-                    if (svc) svc.disabled = false;
-                    actionField.value = 'loadPackage';
-                    form.submit();
-                } else if (r.checked) {
-                    // Set the service to the package value - use hidden input to ensure it posts
-                    if (svc) {
-                        svc.value = r.value;
-                        svc.disabled = false;
+        // Handle pending package selection (click-to-deselect)
+        const pendingPackages = document.querySelectorAll('input[name="SelectedPendingPackageId"]');
+        pendingPackages.forEach(radio => {
+            let wasChecked = radio.checked;
+            radio.addEventListener("mousedown", () => { wasChecked = radio.checked; });
+            radio.addEventListener("click", () => {
+                setTimeout(() => {
+                    const checked = document.querySelector('input[name="SelectedPendingPackageId"]:checked');
+                    if (!checked && wasChecked) {
+                        // toggled off → redirect without selectedPendingPackageId
+                        redirect();
                     }
-                    // Add hidden input with ServiceId to ensure it posts correctly
-                    const svcHidden = document.createElement('input');
-                    svcHidden.type = 'hidden';
-                    svcHidden.name = 'ServiceId';
-                    svcHidden.value = r.value;
-                    form.appendChild(svcHidden);
-                    actionField.value = 'loadPackage';
-                    form.submit();
+                }, 0);
+            });
+            radio.addEventListener("change", (e) => {
+                const checked = document.querySelector('input[name="SelectedPendingPackageId"]:checked');
+                if (checked) {
+                    const selectedPackageId = checked.value;
+                    const selectedServiceId = selectedPackageId.split('|')[0] || selectedPackageId;
+                    if (serviceSelect && selectedServiceId) serviceSelect.value = selectedServiceId;
                 }
+                redirect();
             });
         });
 
-        // On initial load, if a package is selected, set the service (do not disable)
-        (function initLockServiceFromPackage(){
-            const selected = Array.from(radios).find(x => x.checked);
-            const svc = document.getElementById('serviceSelect');
-            if (selected && svc) {
-                svc.value = selected.value;
-                svc.disabled = false;
-            }
-        })();
-
-        if (form) {
-            form.addEventListener("submit", (e) => {
-                if (e.submitter === submitBtn) {
-                    actionField.value = "";
+        // Auto-reload when customer phone loses focus
+        if (customerPhone) {
+            customerPhone.addEventListener("blur", () => {
+                if (customerPhone.value) {
+                    redirect();
                 }
             });
         }
-    })();
+
+        // Auto-reload when pet changes
+        if (petSelect) {
+            petSelect.addEventListener("change", redirect);
+        }
+
+        // Auto-reload when visit time changes
+        if (visitTime) {
+            visitTime.addEventListener("change", redirect);
+        }
+    });
 </script>

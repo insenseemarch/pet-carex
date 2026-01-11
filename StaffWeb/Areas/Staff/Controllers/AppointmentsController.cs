@@ -19,78 +19,67 @@ public class AppointmentsController : Controller
     public async Task<IActionResult> Index()
     {
         var manv = User.FindFirstValue("MaNhanVien");
-        var vm = await BuildViewModelAsync(new StaffAppointmentViewModel(), manv);
+        var vm = await BuildViewModelAsync(new StaffAppointmentViewModel
+        {
+            CustomerPhone = Request.Query["CustomerPhone"],
+            PetId = Request.Query["PetId"],
+            ServiceId = Request.Query["ServiceId"],
+            DoctorId = Request.Query["DoctorId"],
+            SelectedPendingPackageId = Request.Query["SelectedPendingPackageId"],
+            VisitTime = DateTime.TryParse(Request.Query["VisitTime"], out var vt) ? vt : null
+        }, manv);
+        
         return View(vm);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Index(StaffAppointmentViewModel vm, string? action)
+    public async Task<IActionResult> Create(StaffAppointmentViewModel vm)
     {
         var manv = User.FindFirstValue("MaNhanVien");
-        
-        // If customer phone changed, load their pets
-        if (string.Equals(action, "loadCustomer", StringComparison.OrdinalIgnoreCase))
-        {
-            return View(await BuildViewModelAsync(vm, manv));
-        }
-        
-        // If visit time changed, reload available doctors
-        if (string.Equals(action, "loadTime", StringComparison.OrdinalIgnoreCase))
-        {
-            return View(await BuildViewModelAsync(vm, manv));
-        }
-
-        // If package selection changed, sync service like customer flow
-        if (string.Equals(action, "loadPackage", StringComparison.OrdinalIgnoreCase))
-        {
-            // Clear ModelState so server-side ServiceId set from package reflects in the View
-            ModelState.Clear();
-            return View(await BuildViewModelAsync(vm, manv));
-        }
 
         // Validate required fields
         if (string.IsNullOrWhiteSpace(vm.CustomerPhone))
         {
             ModelState.AddModelError("", "Vui lòng nhập số điện thoại khách hàng.");
-            return View(await BuildViewModelAsync(vm, manv));
+            return View("Index", await BuildViewModelAsync(vm, manv));
         }
 
         if (string.IsNullOrWhiteSpace(vm.PetId))
         {
             ModelState.AddModelError("", "Vui lòng chọn thú cưng.");
-            return View(await BuildViewModelAsync(vm, manv));
+            return View("Index", await BuildViewModelAsync(vm, manv));
         }
 
         if (string.IsNullOrWhiteSpace(vm.ServiceId))
         {
             ModelState.AddModelError("", "Vui lòng chọn dịch vụ.");
-            return View(await BuildViewModelAsync(vm, manv));
+            return View("Index", await BuildViewModelAsync(vm, manv));
         }
 
         if (string.IsNullOrWhiteSpace(vm.DoctorId))
         {
             ModelState.AddModelError("", "Vui lòng chọn bác sĩ.");
-            return View(await BuildViewModelAsync(vm, manv));
+            return View("Index", await BuildViewModelAsync(vm, manv));
         }
 
         if (vm.VisitTime == null)
         {
             ModelState.AddModelError("", "Vui lòng chọn ngày giờ.");
-            return View(await BuildViewModelAsync(vm, manv));
+            return View("Index", await BuildViewModelAsync(vm, manv));
         }
 
         var petExists = await _db.thucungs.AnyAsync(x => x.mathucung == vm.PetId);
         if (!petExists)
         {
             ModelState.AddModelError("", "Mã thú cưng không tồn tại.");
-            return View(await BuildViewModelAsync(vm, manv));
+            return View("Index", await BuildViewModelAsync(vm, manv));
         }
 
         var service = await _db.dichvus.AsNoTracking().FirstOrDefaultAsync(d => d.madv == vm.ServiceId);
         if (service == null)
         {
             ModelState.AddModelError("", "Dịch vụ không tồn tại.");
-            return View(await BuildViewModelAsync(vm, manv));
+            return View("Index", await BuildViewModelAsync(vm, manv));
         }
 
         // Get staff's branch for vaccination package creation
@@ -108,7 +97,7 @@ public class AppointmentsController : Controller
             if (conflictCount >= 3)
             {
                 ModelState.AddModelError("", "Khung giờ này đã có 3 lịch khám.");
-                return View(await BuildViewModelAsync(vm, manv));
+                return View("Index", await BuildViewModelAsync(vm, manv));
             }
 
             _db.chitietkhambenhs.Add(new chitietkhambenh
@@ -133,43 +122,40 @@ public class AppointmentsController : Controller
             if (vacConflictCount >= 3)
             {
                 ModelState.AddModelError("", "Khung giờ này đã có 3 lịch tiêm.");
-                return View(await BuildViewModelAsync(vm, manv));
+                return View("Index", await BuildViewModelAsync(vm, manv));
             }
 
             // If selecting a pending package dose, update that dose's time instead of creating new
             if (!string.IsNullOrWhiteSpace(vm.SelectedPendingPackageId))
             {
-                var parts = vm.SelectedPendingPackageId.Split('|');
-                chitiettiemphong? pendingDose = null;
-                if (parts.Length == 3)
-                {
-                    var pkgServiceId = parts[0];
-                    var pkgVaccineId = parts[1];
-                    if (!int.TryParse(parts[2], out var pkgDoseNumber)) pkgDoseNumber = 0;
-
-                    pendingDose = await _db.chitiettiemphongs.FirstOrDefaultAsync(ct =>
-                        ct.madv == pkgServiceId && ct.mathucung == vm.PetId &&
-                        ct.mavacxin == pkgVaccineId && ct.stt == pkgDoseNumber &&
-                        (ct.trangthai == null || EF.Functions.Collate(ct.trangthai, "Latin1_General_CI_AI") == "Chưa tiêm"));
-                }
-                else if (parts.Length >= 1 && !string.IsNullOrWhiteSpace(parts[0]))
-                {
-                    var pkgServiceId = parts[0];
-                    pendingDose = await _db.chitiettiemphongs
-                        .Where(ct => ct.madv == pkgServiceId && ct.mathucung == vm.PetId && (ct.trangthai == null || EF.Functions.Collate(ct.trangthai, "Latin1_General_CI_AI") == "Chưa tiêm"))
-                        .OrderBy(ct => ct.stt)
-                        .FirstOrDefaultAsync();
-                }
+                // SelectedPendingPackageId is just the ServiceId (e.g., "806")
+                var pkgServiceId = vm.SelectedPendingPackageId;
+                
+                // Find the next pending dose for this service and pet
+                var pendingDose = await _db.chitiettiemphongs
+                    .Where(ct => ct.madv == pkgServiceId && 
+                                 ct.mathucung == vm.PetId && 
+                                 (ct.trangthai == null || EF.Functions.Collate(ct.trangthai, "Latin1_General_CI_AI") == "Chưa tiêm"))
+                    .OrderBy(ct => ct.stt)
+                    .FirstOrDefaultAsync();
 
                 if (pendingDose == null)
                 {
                     ModelState.AddModelError("", "Không tìm thấy liều tiêm đang chờ.");
-                    return View(await BuildViewModelAsync(vm, manv));
+                    return View("Index", await BuildViewModelAsync(vm, manv));
                 }
 
-                pendingDose.ngaytiem = vm.VisitTime.Value;
-                pendingDose.mabs = vm.DoctorId;
-                _db.chitiettiemphongs.Update(pendingDose);
+                // Use raw SQL UPDATE since mabs is part of composite primary key
+                await _db.Database.ExecuteSqlRawAsync(
+                    "UPDATE chitiettiemphong SET mabs = @mabs, ngaytiem = @ngaytiem " +
+                    "WHERE madv = @madv AND mathucung = @mathucung AND mavacxin = @mavacxin AND stt = @stt",
+                    new Microsoft.Data.SqlClient.SqlParameter("@mabs", vm.DoctorId),
+                    new Microsoft.Data.SqlClient.SqlParameter("@ngaytiem", vm.VisitTime.Value),
+                    new Microsoft.Data.SqlClient.SqlParameter("@madv", pendingDose.madv),
+                    new Microsoft.Data.SqlClient.SqlParameter("@mathucung", pendingDose.mathucung),
+                    new Microsoft.Data.SqlClient.SqlParameter("@mavacxin", pendingDose.mavacxin),
+                    new Microsoft.Data.SqlClient.SqlParameter("@stt", pendingDose.stt)
+                );
             }
             else
             {
@@ -192,7 +178,7 @@ public class AppointmentsController : Controller
                     {
                         var errorMsg = ex.InnerException?.Message ?? ex.Message;
                         ModelState.AddModelError("", $"Không thể tạo gói tiêm: {errorMsg}");
-                        return View(await BuildViewModelAsync(vm, manv));
+                        return View("Index", await BuildViewModelAsync(vm, manv));
                     }
                 }
                 else
@@ -218,10 +204,11 @@ public class AppointmentsController : Controller
             TempData["Success"] = "Đã tạo lịch khám thành công.";
             return RedirectToAction(nameof(Index));
         }
-        catch
+        catch (Exception ex)
         {
-            ModelState.AddModelError("", "Không thể tạo lịch khám. Vui lòng thử lại.");
-            return View(await BuildViewModelAsync(vm, manv));
+            var errorMsg = ex.InnerException?.Message ?? ex.Message;
+            ModelState.AddModelError("", $"Không thể tạo lịch khám: {errorMsg}");
+            return View("Index", await BuildViewModelAsync(vm, manv));
         }
     }
 
