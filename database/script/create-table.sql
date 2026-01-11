@@ -104,33 +104,21 @@ create table taikhoannhanvien
 )
 
 -- =========================================
--- bảng thongtin
--- lưu thông tin xác định một khách hàng dựa theo CCCD
--- =========================================
-create table thongtin 
-(
-    cccd varchar(20) primary key,
-    hoten nvarchar(100) not null,
-    gioitinh nvarchar(10),
-    ngaysinh date,
-
-    constraint ck_kh_gioitinh
-        check (gioitinh in (N'Nam', N'Nữ', N'Khác'))
-) 
-
--- =========================================
 -- bảng khachhang
 -- lưu thông tin khách hàng
 -- =========================================
 create table khachhang 
 (
     makh varchar(10) primary key,
+    hoten nvarchar(100) not null,
     sdt char(10) unique not null,
     email varchar(100) unique,
     cccd varchar(20) unique,
+    gioitinh nvarchar(10),
+    ngaysinh date,
 
-    constraint fk_kh_tt
-        foreign key (cccd) references thongtin(cccd)
+    constraint ck_kh_gioitinh
+        check (gioitinh in (N'Nam', N'Nữ', N'Khác'))
 ) 
 
 -- =========================================
@@ -344,9 +332,9 @@ create table tiemphong
 (
     madv varchar(10) primary key,
     lieuluong varchar(10),
-
     constraint fk_tp_dv
         foreign key (madv) references dichvu(madv)
+
 )
 
 -- =========================================
@@ -371,7 +359,7 @@ create table tiemgoi
 -- =========================================
 create table danhgia 
 (
-    madanhgia varchar(10) primary key,
+    madanhgia varchar(10),
     madv varchar(10) not null,
     manv varchar(10) not null,
     makh varchar(10) not null,
@@ -380,6 +368,9 @@ create table danhgia
     diemthaidonv int not null,
     mucdohailong int not null,
     binhluan nvarchar(255),
+
+    constraint pk_danhgia
+        primary key nonclustered (madanhgia, ngaydanhgia),
 
     constraint fk_dg_dv
         foreign key (madv) references dichvu(madv),
@@ -401,6 +392,9 @@ create table danhgia
         check (ngaydanhgia <= getdate())
 )
 
+create unique nonclustered index ux_dg_madanhgia
+on danhgia (madanhgia)
+
 -- =========================================
 -- bảng chitietkhambenh
 -- lưu thông tin của một lần khám bệnh
@@ -418,7 +412,7 @@ create table chitietkhambenh
     madanhgia varchar(10),
     ghichu nvarchar(255),
 
-    primary key (madv, mathucung, ngaysudung, mabs),
+    primary key nonclustered (madv, mathucung, ngaysudung, mabs),
 
     constraint fk_ckb_dv
         foreign key (madv) references dichvu(madv),
@@ -454,7 +448,7 @@ create table chitiettiemphong
     trangthai nvarchar(50),
     madanhgia varchar(10),
 
-    primary key (stt, madv, mathucung, mavacxin, mabs),
+    primary key nonclustered (stt, madv, mathucung, mavacxin, mabs),
 
     constraint fk_cttp_dv
         foreign key (madv) references tiemphong(madv),
@@ -480,10 +474,10 @@ set quoted_identifier on;
 go
 create table hoadon 
 (
-    mahd varchar(10) primary key,
-    mathucung varchar(10),
-    manvlap varchar(10),
-    macn varchar(10),
+    mahd varchar(10),
+    mathucung varchar(10) not null,
+    manvlap varchar(10) not null,
+    macn varchar(10) not null,
     makh varchar(10) not null,
     makham varchar(10),
     matiem varchar(10),
@@ -493,6 +487,9 @@ create table hoadon
     thanhtien as (tongtien - khuyenmai) persisted,
     hinhthucthanhtoan nvarchar(50),
     trangthai nvarchar(50) not null,
+
+    constraint pk_hoadon
+        primary key nonclustered (mahd, ngaylap),
 
     constraint fk_hd_tc
         foreign key (mathucung) references thucung(mathucung),
@@ -512,6 +509,10 @@ create table hoadon
     constraint fk_hd_matiem
         foreign key (matiem) references dichvu(madv)
 )
+
+create unique nonclustered index ux_hd_mahd
+on hoadon (mahd)
+go
 
 -- =========================================
 -- bảng chitietmuasanpham

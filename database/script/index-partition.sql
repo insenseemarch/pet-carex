@@ -22,34 +22,35 @@ as partition pf_nam
 all to ([primary])
 go
 
+-- hoadon
 create clustered index ix_hd_ngaylap
-on hoadon (ngaylap)
+on hoadon (ngaylap, mahd)
 on ps_nam(ngaylap)
+go
 
+-- chitietkhambenh
 create clustered index ix_ckb_ngaysudung
-on chitietkhambenh (ngaysudung)
+on chitietkhambenh (ngaysudung, madv, mathucung)
 on ps_nam(ngaysudung)
+go
 
+-- chitiettiemphong
 create clustered index ix_cttp_ngaytiem
-on chitiettiemphong (ngaytiem)
+on chitiettiemphong (ngaytiem, madv, mathucung)
 on ps_nam(ngaytiem)
+go
 
+-- danhgia
 create clustered index ix_dg_ngaydanhgia
-on danhgia (ngaydanhgia)
+on danhgia (ngaydanhgia, madanhgia)
 on ps_nam(ngaydanhgia)
+go
 
 -- =========================================
 -- index
 -- =========================================
 create nonclustered index ix_kh_sdt
 on khachhang (sdt)
-
-create unique nonclustered index ix_kh_cccd
-on khachhang (cccd)
-
-create nonclustered index ix_tt_ngaysinh
-on thongtin (ngaysinh)
-include (hoten, gioitinh)
 
 create nonclustered index ix_kh_email
 on khachhang (email)
@@ -102,8 +103,8 @@ on vacxin (tenvacxin, loaivacxin)
 create nonclustered index ix_vx_ngaysanxuat
 on vacxin (ngaysanxuat)
 
-create nonclustered index ix_dvcn_macn_madv
-on dichvutaichinhanh (macn, madv)
+create nonclustered index ix_dvcn_macn
+on dichvutaichinhanh (macn)
 
-create nonclustered index ix_spcn_macn_masp
-on sanphamtaichinhanh (macn, madv)
+create nonclustered index ix_dvcn_madv
+on dichvutaichinhanh (madv)
