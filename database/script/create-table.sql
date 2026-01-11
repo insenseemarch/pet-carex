@@ -104,21 +104,33 @@ create table taikhoannhanvien
 )
 
 -- =========================================
+-- bảng thongtin
+-- lưu thông tin xác định một khách hàng dựa theo CCCD
+-- =========================================
+create table thongtin 
+(
+    cccd varchar(20) primary key,
+    hoten nvarchar(100) not null,
+    gioitinh nvarchar(10),
+    ngaysinh date,
+
+    constraint ck_kh_gioitinh
+        check (gioitinh in (N'Nam', N'Nữ', N'Khác'))
+) 
+
+-- =========================================
 -- bảng khachhang
 -- lưu thông tin khách hàng
 -- =========================================
 create table khachhang 
 (
     makh varchar(10) primary key,
-    hoten nvarchar(100) not null,
     sdt char(10) unique not null,
     email varchar(100) unique,
     cccd varchar(20) unique,
-    gioitinh nvarchar(10),
-    ngaysinh date,
 
-    constraint ck_kh_gioitinh
-        check (gioitinh in (N'Nam', N'Nữ', N'Khác'))
+    constraint fk_kh_tt
+        foreign key (cccd) references thongtin(cccd)
 ) 
 
 -- =========================================
