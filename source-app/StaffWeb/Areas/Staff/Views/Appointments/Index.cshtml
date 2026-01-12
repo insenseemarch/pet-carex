@@ -1,0 +1,188 @@
+@model StaffWeb.Models.StaffAppointmentViewModel
+@{
+    ViewData["Title"] = "Tạo lịch khám";
+}
+
+<section class="card">
+    <h1 class="page-title">Tạo lịch khám trực tiếp</h1>
+    <p class="page-subtitle">Nhập số điện thoại khách hàng và thông tin cơ bản để tạo lịch.</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <p>@error.ErrorMessage</p>
+            }
+        </div>
+    }
+
+    <form method="post" asp-action="Create" id="appointmentForm">
+        
+        <div class="form-row">
+            <div>
+                <label>Số điện thoại khách hàng <span style="color:red;">*</span></label>
+                <input asp-for="CustomerPhone" type="text" id="customerPhoneInput" placeholder="Nhập SĐT..." />
+                @if (Model.Customer != null)
+                {
+                    <small style="color: green;">✓ Khách hàng: @Model.Customer.Name</small>
+                }
+                else if (!string.IsNullOrWhiteSpace(Model.CustomerPhone))
+                {
+                    <small style="color: orange;">⚠ Không tìm thấy khách hàng với SĐT này</small>
+                }
+            </div>
+        </div>
+
+        @if (Model.Pets.Any())
+        {
+            <div class="form-row">
+                <div>
+                    <label>Thú cưng <span style="color:red;">*</span></label>
+                    <select asp-for="PetId" id="petSelect">
+                        <option value="">-- Chọn thú cưng --</option>
+                        @foreach (var pet in Model.Pets)
+                        {
+                            <option value="@pet.mathucung">@pet.tenthucung - @pet.mathucung (@pet.loai)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.PetId))
+        {
+            if (Model.PendingPackages.Any())
+            {
+                <div class="form-row">
+                    <div>
+                        <label>Gói tiêm đang chờ</label>
+                        <small style="display:block;color:#666;margin-bottom:8px;">Chọn gói để tiếp tục liều kế tiếp (bấm lại để bỏ chọn).</small>
+                        <ul style="list-style:none;padding:8px 12px;margin:0;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;">
+                            @foreach (var pkg in Model.PendingPackages)
+                            {
+                                var label = $"{pkg.ServiceName} - Đã tiêm {pkg.CompletedDoses}/{pkg.TotalCount}";
+                                <li style="padding:6px 0;">
+                                    <input type="radio" name="SelectedPendingPackageId" value="@pkg.ServiceId" @(Model.SelectedPendingPackageId == pkg.ServiceId ? "checked" : null) class="pkg-radio" style="margin-right:8px;" />
+                                    <span>@label</span>
+                                    @* Ẩn hiển thị liều kế tiếp theo yêu cầu *@
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+            <div class="form-row">
+                <div>
+                    <label>Ngày giờ khám <span style="color:red;">*</span></label>
+                    <input asp-for="VisitTime" type="datetime-local" id="visitTimeInput" />
+                </div>
+                <div>
+                    <label>Dịch vụ <span style="color:red;">*</span></label>
+                    <select asp-for="ServiceId" id="serviceSelect">
+                        <option value="">-- Chọn dịch vụ --</option>
+                        @foreach (var dv in Model.Services)
+                        {
+                            <option value="@dv.madv" selected="@(Model.ServiceId == dv.madv)">@dv.tendv</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label>Bác sĩ <span style="color:red;">*</span></label>
+                    <select asp-for="DoctorId">
+                        <option value="">-- Chọn bác sĩ --</option>
+                        @foreach (var bs in Model.Doctors)
+                        {
+                            <option value="@bs.manv">@bs.hoten</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label>Ghi chú / Triệu chứng</label>
+                <textarea asp-for="Notes" placeholder="Nhập triệu chứng hoặc ghi chú..."></textarea>
+            </div>
+            <div style="margin-top: 16px;">
+                <button type="submit" class="btn" id="submitAppointment">Tạo lịch khám</button>
+            </div>
+        }
+    </form>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const customerPhone = document.getElementById("customerPhoneInput");
+        const petSelect = document.getElementById("petSelect");
+        const visitTime = document.getElementById("visitTimeInput");
+        const serviceSelect = document.getElementById("serviceSelect");
+        const doctorSelect = document.querySelector('select[name="DoctorId"]');
+
+        // Redirect helper - preserves all current selections
+        const redirect = () => {
+            const params = new URLSearchParams();
+            
+            if (customerPhone && customerPhone.value) params.set("CustomerPhone", customerPhone.value);
+            if (petSelect && petSelect.value) params.set("PetId", petSelect.value);
+            if (visitTime && visitTime.value) params.set("VisitTime", visitTime.value);
+            if (serviceSelect && serviceSelect.value) params.set("ServiceId", serviceSelect.value);
+            if (doctorSelect && doctorSelect.value) params.set("DoctorId", doctorSelect.value);
+
+            // Preserve selected pending package if any
+            const pendingRadios = document.querySelectorAll('input[name="SelectedPendingPackageId"]:checked');
+            if (pendingRadios.length > 0 && pendingRadios[0].value) {
+                params.set("SelectedPendingPackageId", pendingRadios[0].value);
+            }
+
+            const target = "/Staff/Appointments" + (params.toString() ? "?" + params.toString() : "");
+            window.location.assign(target);
+        };
+
+        // Handle pending package selection (click-to-deselect)
+        const pendingPackages = document.querySelectorAll('input[name="SelectedPendingPackageId"]');
+        pendingPackages.forEach(radio => {
+            let wasChecked = radio.checked;
+            radio.addEventListener("mousedown", () => { wasChecked = radio.checked; });
+            radio.addEventListener("click", () => {
+                setTimeout(() => {
+                    const checked = document.querySelector('input[name="SelectedPendingPackageId"]:checked');
+                    if (!checked && wasChecked) {
+                        // toggled off → redirect without selectedPendingPackageId
+                        redirect();
+                    }
+                }, 0);
+            });
+            radio.addEventListener("change", (e) => {
+                const checked = document.querySelector('input[name="SelectedPendingPackageId"]:checked');
+                if (checked) {
+                    const selectedPackageId = checked.value;
+                    const selectedServiceId = selectedPackageId.split('|')[0] || selectedPackageId;
+                    if (serviceSelect && selectedServiceId) serviceSelect.value = selectedServiceId;
+                }
+                redirect();
+            });
+        });
+
+        // Auto-reload when customer phone loses focus
+        if (customerPhone) {
+            customerPhone.addEventListener("blur", () => {
+                if (customerPhone.value) {
+                    redirect();
+                }
+            });
+        }
+
+        // Auto-reload when pet changes
+        if (petSelect) {
+            petSelect.addEventListener("change", redirect);
+        }
+
+        // Auto-reload when visit time changes
+        if (visitTime) {
+            visitTime.addEventListener("change", redirect);
+        }
+    });
+</script>

@@ -1,0 +1,231 @@
+@model StaffWeb.Models.ManagerVisitViewModel
+@{
+    ViewData["Title"] = "Số lượt khám";
+    var periodLabel = Model.Period switch
+    {
+        "week" => "Tuần",
+        "month" => "Tháng",
+        "year" => "Năm",
+        _ => "Ngày"
+    };
+}
+
+<style>
+    .chart-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1000;
+        display: none;
+        white-space: nowrap;
+    }
+    .line-chart-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        padding: 20px;
+    }
+    .line-chart {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+    }
+    .line-chart svg {
+        width: 100%;
+        height: 100%;
+    }
+    .chart-point {
+        cursor: pointer;
+        transition: r 0.2s ease, fill 0.2s ease;
+    }
+    .chart-point:hover {
+        r: 8;
+        fill: #d45f00;
+    }
+    .table tbody tr {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+
+<section class="card">
+    <h1 class="page-title">Số lượt khám</h1>
+    <p class="page-subtitle">Thống kê lượt khám theo khoảng ngày.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Từ ngày</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Đến ngày</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Chu kỳ</label>
+                <select name="period">
+                    @if (Model.Period == "day")
+                    {
+                        <option value="day" selected>Ngày</option>
+                    }
+                    else
+                    {
+                        <option value="day">Ngày</option>
+                    }
+                    @if (Model.Period == "week")
+                    {
+                        <option value="week" selected>Tuần</option>
+                    }
+                    else
+                    {
+                        <option value="week">Tuần</option>
+                    }
+                    @if (Model.Period == "month")
+                    {
+                        <option value="month" selected>Tháng</option>
+                    }
+                    else
+                    {
+                        <option value="month">Tháng</option>
+                    }
+                    @if (Model.Period == "year")
+                    {
+                        <option value="year" selected>Năm</option>
+                    }
+                    else
+                    {
+                        <option value="year">Năm</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem thống kê</button>
+        @if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+        {
+            <a class="btn btn-secondary" asp-action="VisitsExcel" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")" asp-route-period="@Model.Period">Xuất Excel</a>
+            <a class="btn btn-secondary" asp-action="VisitsPdf" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")" asp-route-period="@Model.Period">Xuất PDF</a>
+        }
+    </form>
+</section>
+
+@if (Model.Items.Count > 0)
+{
+    var maxVisits = Model.Items.Max(x => x.soluot);
+    <section class="card" style="margin-top: 20px;">
+        <h3>Biểu đồ lượt khám theo @periodLabel</h3>
+        <div class="line-chart-container">
+            <svg class="line-chart" viewBox="0 0 @((Model.Items.Count * 100)) 300" preserveAspectRatio="none">
+                @{
+                    var points = new List<string>();
+                    for (var i = 0; i < Model.Items.Count; i++)
+                    {
+                        var item = Model.Items[i];
+                        var x = i * 100 + 50;
+                        var y = 300 - (item.soluot * 250.0 / maxVisits);
+                        points.Add($"{x},{y}");
+                    }
+                    var polylinePoints = string.Join(" ", points);
+                }
+                
+                <!-- Line -->
+                <polyline points="@polylinePoints" 
+                          fill="none" 
+                          stroke="#2d7f7e" 
+                          stroke-width="3" 
+                          vector-effect="non-scaling-stroke"/>
+                
+                <!-- Points with hover -->
+                @for (var i = 0; i < Model.Items.Count; i++)
+                {
+                    var item = Model.Items[i];
+                    var x = i * 100 + 50;
+                    var y = 300 - (item.soluot * 250.0 / maxVisits);
+                    var label = Model.Period switch
+                    {
+                        "week" => $"Tuần {item.ngay:dd/MM}",
+                        "month" => item.ngay.ToString("MM/yyyy"),
+                        "year" => item.ngay.ToString("yyyy"),
+                        _ => item.ngay.ToString("dd/MM/yyyy")
+                    };
+                    
+                    <circle class="chart-point" 
+                            cx="@x" 
+                            cy="@y" 
+                            r="5" 
+                            fill="#2d7f7e"
+                            data-value="@item.soluot"
+                            data-label="@label"/>
+                }
+            </svg>
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 20px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>@periodLabel</th>
+                    <th>Số lượt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Items)
+                {
+                    var displayLabel = Model.Period switch
+                    {
+                        "week" => $"Tuần {row.ngay:dd/MM/yyyy}",
+                        "month" => row.ngay.ToString("MM/yyyy"),
+                        "year" => row.ngay.ToString("yyyy"),
+                        _ => row.ngay.ToString("dd/MM/yyyy")
+                    };
+                    <tr data-value="@row.soluot" data-label="@displayLabel">
+                        <td>@displayLabel</td>
+                        <td>@row.soluot</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+else if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+{
+    <div class="alert" style="margin-top: 16px;">Không có dữ liệu trong khoảng ngày này.</div>
+}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chartTooltip');
+        const elements = document.querySelectorAll('[data-value][data-label]');
+        
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const value = this.getAttribute('data-value');
+                const label = this.getAttribute('data-label');
+                tooltip.textContent = label + ': ' + value + ' lượt';
+                tooltip.style.display = 'block';
+            });
+            
+            el.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+        });
+    });
+</script>

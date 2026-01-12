@@ -1,0 +1,141 @@
+@model StaffWeb.Models.ManagerDoctorViewModel
+@{
+    ViewData["Title"] = "Thống kê bác sĩ";
+}
+
+<style>
+    .chart-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1000;
+        display: none;
+        white-space: nowrap;
+    }
+    .doctor-bar-row {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .doctor-bar-row:hover {
+        transform: scale(1.02);
+    }
+    .table tbody tr {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+
+<section class="card">
+    <h1 class="page-title">Thống kê bác sĩ</h1>
+    <p class="page-subtitle">Số lần khám và tiêm theo bác sĩ.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Từ ngày</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Đến ngày</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem báo cáo</button>
+        @if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+        {
+            <a class="btn btn-secondary" asp-action="DoctorsExcel" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")">Xuất Excel</a>
+            <a class="btn btn-secondary" asp-action="DoctorsPdf" asp-route-fromDate="@Model.FromDate.Value.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate.Value.ToString("yyyy-MM-dd")">Xuất PDF</a>
+        }
+        else
+        {
+            <a class="btn btn-secondary" asp-action="DoctorsExcel">Xuất Excel</a>
+            <a class="btn btn-secondary" asp-action="DoctorsPdf">Xuất PDF</a>
+        }
+    </form>
+</section>
+
+@if (Model.Items.Count > 0)
+{
+    var maxRevenue = Model.Items.Max(x => x.doanhthu);
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu theo bác sĩ</h3>
+        <div class="doctor-chart">
+            @foreach (var item in Model.Items)
+            {
+                var percent = maxRevenue <= 0 ? 0 : (double)(item.doanhthu / maxRevenue) * 100;
+                <div class="doctor-bar-row" data-value="@item.doanhthu.ToString("N0")" data-label="@item.hoten (@item.manv)">
+                    <div class="doctor-bar-label">@item.hoten (@item.manv)</div>
+                    <div class="doctor-bar-track">
+                        <div class="doctor-bar-fill" style="width:@percent%"></div>
+                    </div>
+                    <div class="doctor-bar-value">@item.doanhthu.ToString("N0")</div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+
+<section class="card" style="margin-top: 20px;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã NV</th>
+                <th>Họ tên</th>
+                <th>Số lần khám</th>
+                <th>Số lần tiêm</th>
+                <th>Doanh thu ước tính</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Items)
+            {
+                <tr data-value="@row.doanhthu.ToString("N0")" data-label="@row.hoten - Kham: @row.solankham, Tiem: @row.solantiem">
+                    <td>@row.manv</td>
+                    <td>@row.hoten</td>
+                    <td>@row.solankham</td>
+                    <td>@row.solantiem</td>
+                    <td>@row.doanhthu.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Items.Count == 0)
+    {
+        <p class="page-subtitle">Không có dữ liệu.</p>
+    }
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chartTooltip');
+        const elements = document.querySelectorAll('[data-value][data-label]');
+        
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const value = this.getAttribute('data-value');
+                const label = this.getAttribute('data-label');
+                tooltip.textContent = label + ': ' + value;
+                tooltip.style.display = 'block';
+            });
+            
+            el.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+        });
+    });
+</script>

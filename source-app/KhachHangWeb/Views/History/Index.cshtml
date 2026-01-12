@@ -1,0 +1,186 @@
+﻿@model KhachHangWeb.Models.PetHistoryViewModel
+@{
+    ViewData["Title"] = "Lịch sử thú cưng";
+}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700&display=swap">
+<style>
+  .history-shell { font-family: "Plus Jakarta Sans", sans-serif; background: linear-gradient(135deg, #e8f7ff 0%, #f9fff4 40%, #ffffff 100%); padding: 22px; border-radius: 16px; }
+  .history-header { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .history-card { background: #ffffff; border-radius: 14px; padding: 16px; box-shadow: 0 10px 24px rgba(18, 72, 64, 0.08); }
+  .history-title { font-size: 22px; font-weight: 700; color: #0c4b4b; margin-bottom: 6px; }
+  .history-sub { color: #2e6b6b; font-size: 13px; }
+  .section-title { font-weight: 700; color: #0a4550; margin-bottom: 8px; }
+  .tag { background: #e7f5ff; color: #0d5068; border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+  .history-table th { background: #e9f5f4; white-space: nowrap; }
+  .history-table td { vertical-align: middle; }
+  .muted { color: #6b7b7b; }
+  .history-grid { display: grid; gap: 16px; margin-top: 16px; }
+</style>
+
+<div class="history-shell">
+  <div class="history-header">
+    <div class="history-card ui-fade">
+      <div class="history-title">Thông tin khách hàng</div>
+      <div class="history-sub">Hệ thống tự động lấy theo tài khoản đăng nhập.</div>
+      <div class="mt-3">
+        <div class="tag">@Model.CustomerName (@Model.CustomerId)</div>
+      </div>
+      <form class="row g-2 mt-3" method="get">
+        <div class="col-md-7">
+          <input class="form-control" name="orderId" value="@Model.OrderId" placeholder="Mã hóa đơn" />
+        </div>
+        <div class="col-md-5">
+          <button class="btn btn-primary w-100" type="submit">Tra cứu</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="history-card ui-fade">
+      <div class="history-title">Thông tin thú cưng</div>
+      <div class="history-sub">Chọn thú cưng để lọc lịch sử khám/tiêm. Để trống để xem tất cả.</div>
+      <form class="row g-2 mt-3" method="get">
+        <input type="hidden" name="orderId" value="@Model.OrderId" />
+        <div class="col-md-7">
+          <select class="form-select" name="petId">
+            <option value="" selected="@(string.IsNullOrWhiteSpace(Model.PetId) ? "selected" : null)">Tất cả thú cưng</option>
+            @foreach (var p in Model.Pets)
+            {
+              <option value="@p.Id" selected="@(Model.PetId == p.Id ? "selected" : null)">@p.Id - @p.Name</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-5">
+          <button class="btn btn-success w-100" type="submit">Tra cứu</button>
+        </div>
+      </form>
+      <div class="mt-3">
+        <span class="tag">@(!string.IsNullOrWhiteSpace(Model.PetName) ? Model.PetName : "Tất cả")</span>
+      </div>
+    </div>
+  </div>
+
+  @if (!string.IsNullOrWhiteSpace(Model.Message))
+  {
+    <div class="alert alert-warning mt-3">@Model.Message</div>
+  }
+
+  <div class="history-grid">
+    <div class="history-card">
+      <div class="section-title">Lịch sử mua sản phẩm</div>
+      @if (!Model.Purchases.Any())
+      {
+        <p class="muted">Chưa có dữ liệu mua hàng.</p>
+      }
+      else
+      {
+        <div class="table-responsive">
+          <table class="table history-table">
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Ngày</th>
+                <th>Chi nhánh</th>
+                <th>Sản phẩm</th>
+                <th>SL</th>
+                <th>Thành tiền</th>
+                <th>Thanh toán</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+            @foreach (var p in Model.Purchases)
+            {
+              <tr>
+                <td>@p.OrderId</td>
+                <td>@p.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@(!string.IsNullOrWhiteSpace(p.BranchName) ? p.BranchName : "Mua online")</td>
+                <td>@p.ProductName</td>
+                <td>@p.Quantity</td>
+                <td>@String.Format("{0:N0} d", p.Amount)</td>
+                <td>@p.PaymentMethod</td>
+                <td>@p.Status</td>
+              </tr>
+            }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <div class="history-card">
+      <div class="section-title">Lịch sử khám bệnh</div>
+      @if (!Model.Exams.Any())
+      {
+        <p class="muted">Chưa có lịch sử khám.</p>
+      }
+      else
+      {
+        <div class="table-responsive">
+          <table class="table history-table">
+            <thead>
+              <tr>
+                <th>Mã dịch vụ</th>
+                <th>Ngày khám</th>
+                <th>Bác sĩ</th>
+                <th>Triệu chứng</th>
+                <th>Chẩn đoán</th>
+                <th>Ngày tái khám</th>
+              </tr>
+            </thead>
+            <tbody>
+            @foreach (var e in Model.Exams)
+            {
+              <tr>
+                <td>@e.ServiceId</td>
+                <td>@e.ExamDate.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@e.DoctorName (@e.DoctorId)</td>
+                <td>@e.Symptom</td>
+                <td>@e.Diagnosis</td>
+                <td>@(e.RevisitDate.HasValue ? e.RevisitDate.Value.ToString("dd/MM/yyyy") : "-")</td>
+              </tr>
+            }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <div class="history-card">
+      <div class="section-title">Lịch sử tiêm phòng</div>
+      @if (!Model.Vaccines.Any())
+      {
+        <p class="muted">Chưa có lịch sử tiêm phòng.</p>
+      }
+      else
+      {
+        <div class="table-responsive">
+          <table class="table history-table">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Mã vắc-xin</th>
+                <th>Tên vắc-xin</th>
+                <th>Bác sĩ</th>
+                <th>Ngày tiêm</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+            @foreach (var v in Model.Vaccines)
+            {
+              <tr>
+                <td>@v.Stt</td>
+                <td>@v.VaccineId</td>
+                <td>@v.VaccineName</td>
+                <td>@v.DoctorName (@v.DoctorId)</td>
+                <td>@v.Date.ToString("dd/MM/yyyy")</td>
+                <td>@v.Status</td>
+              </tr>
+            }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>

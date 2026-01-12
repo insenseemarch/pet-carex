@@ -1,0 +1,33 @@
+@model StaffWeb.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<section class="card" style="max-width: 520px; margin: 0 auto;">
+    <h1 class="page-title">Đăng nhập nhân viên</h1>
+    <p class="page-subtitle">Sử dụng tài khoản nhân viên để truy cập hệ thống.</p>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert">
+            <div>Kiểm tra lại thông tin đăng nhập.</div>
+            <div asp-validation-summary="All"></div>
+        </div>
+    }
+
+    <form method="post">
+        <div class="form-row">
+            <div>
+                <label>Tên đăng nhập</label>
+                <input asp-for="UserName" />
+                <span asp-validation-for="UserName"></span>
+            </div>
+            <div>
+                <label>Mật khẩu</label>
+                <input asp-for="Password" type="password" />
+                <span asp-validation-for="Password"></span>
+            </div>
+        </div>
+        <button type="submit" class="btn">Đăng nhập</button>
+    </form>
+</section>

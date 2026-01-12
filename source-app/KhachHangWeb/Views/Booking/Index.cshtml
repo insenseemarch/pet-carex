@@ -1,0 +1,224 @@
+@model KhachHangWeb.Models.BookingViewModel
+@{
+    ViewData["Title"] = "Đặt lịch";
+}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;700&display=swap">
+<style>
+  .booking-shell { font-family: "Sora", sans-serif; background: radial-gradient(circle at top left, #c3fff6 0%, #def6ff 40%, #f8fff9 100%); padding: 28px; border-radius: 18px; }
+  .booking-title { font-size: 28px; font-weight: 700; color: #0a6b62; margin-bottom: 16px; }
+  .booking-card { background: #ffffff; border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(12, 62, 54, 0.08); }
+  .booking-label { font-weight: 600; color: #0d3b33; }
+  .booking-actions { display: flex; gap: 12px; }
+  .booking-sub { color: #2a6b62; font-size: 14px; }
+  .booking-note { min-height: 90px; }
+</style>
+
+<div class="booking-shell">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <div class="booking-title">Đặt lịch</div>
+      <div class="booking-sub">Bạn có thể đặt lịch khám hoặc đặt lịch tiêm. Với gói tiêm, hệ thống sẽ tự tạo các đợt tiêm theo lịch gói.</div>
+    </div>
+    <a class="btn btn-outline-success" href="/booking/schedule">Tra cứu lịch bác sĩ</a>
+  </div>
+
+  @if (TempData["Booked"] != null)
+  {
+    <div class="alert alert-success">Đặt lịch thành công.</div>
+  }
+  @if (!ViewData.ModelState.IsValid)
+  {
+    <div class="alert alert-danger">Vui lòng kiểm tra lại thông tin.</div>
+  }
+
+  <div class="booking-card ui-fade">
+    <form method="post" action="/booking/create">
+      <input type="hidden" id="selectedServiceType" value="@Model.ServiceType" />
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label booking-label">Chi nhánh</label>
+          <select class="form-select" id="branchSelect" name="BranchId">
+            @foreach (var b in Model.Branches)
+            {
+              <option value="@b.Id" selected="@(Model.BranchId == b.Id ? "selected" : null)">@b.Name</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label booking-label">Mã thú cưng</label>
+          <select class="form-select" id="petSelect" name="PetId">
+            @foreach (var p in Model.Pets)
+            {
+              <option value="@p.Id" selected="@(Model.PetId == p.Id ? "selected" : null)">@p.Id - @p.Name</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label booking-label">Dịch vụ</label>
+          <select class="form-select" id="serviceSelect" name="ServiceId">
+            @foreach (var s in Model.Services)
+            {
+              <option value="@s.Id" selected="@(Model.ServiceId == s.Id ? "selected" : null)">@s.Name</option>
+            }
+          </select>
+        </div>
+
+        @if (Model.ServiceType == "Tiêm phòng" && Model.PendingPackages.Any())
+        {
+          <div class="col-12">
+            <div class="alert alert-warning">
+              <strong>Có gói tiêm đang chờ tiêm tiếp:</strong>
+              <div class="mt-2">
+                @foreach (var pkg in Model.PendingPackages)
+                {
+                  <div class="form-check">
+                    @{
+                      var composite = pkg.ServiceId; // only service id for aggregate package
+                      var inputId = $"pkg_{pkg.ServiceId}";
+                    }
+                    <input class="form-check-input" type="radio" name="SelectedPendingPackageId" id="@inputId" value="@composite" 
+                      @(Model.SelectedPendingPackageId == composite ? "checked" : "") />
+                    <label class="form-check-label" for="@inputId">
+                      <strong>@pkg.ServiceName</strong> - 
+                      Đã tiêm <strong>@pkg.CompletedCount/@pkg.TotalCount</strong> đợt
+                    </label>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+        else if (Model.ServiceType == "Tiêm phòng" && !Model.PendingPackages.Any())
+        {
+          <div class="col-12">
+            <div class="alert alert-info small">
+              Để đặt lịch tiêm mới, vui lòng liên hệ bác sĩ hoặc bộ phận tiếp tân.
+            </div>
+          </div>
+        }
+
+        @if (Model.SelectedServiceIsPackage && Model.ServiceType != "Tiêm phòng")
+        {
+          <div class="col-12">
+            <div class="alert alert-info small">
+              <strong>Gói tiêm</strong> - Hệ thống sẽ tự tạo các đợt tiêm (mỗi 2 tháng 1 lần) sau khi xác nhận.
+              @if (Model.PackageDiscountPercent.HasValue && Model.OriginalPrice.HasValue)
+              {
+                var discountAmount = Model.OriginalPrice.Value * Model.PackageDiscountPercent.Value / 100;
+                var finalPrice = Model.OriginalPrice.Value - discountAmount;
+                <br/>
+                <span class="text-success">
+                  <strong>Giảm giá @Model.PackageDiscountPercent.Value%</strong>: 
+                  <span style="text-decoration: line-through;">@Model.OriginalPrice.Value.ToString("N0") đ</span> 
+                  → <strong>@finalPrice.ToString("N0") đ</strong>
+                </span>
+              }
+            </div>
+          </div>
+        }
+        <div class="col-md-4">
+          <label class="form-label booking-label">Ngày hẹn</label>
+          <input class="form-control" id="dateInput" type="date" name="Date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label booking-label">Khung giờ</label>
+          <select class="form-select" id="slotSelect" name="Slot">
+            <option value="">Chọn khung giờ</option>
+            @foreach (var s in Model.Slots)
+            {
+              <option value="@s.Id" selected="@(Model.Slot == s.Id ? "selected" : null)">@s.Name</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label booking-label">Bác sĩ trực</label>
+          <select class="form-select" id="doctorSelect" name="DoctorId">
+            <option value="">Chọn bác sĩ</option>
+            @foreach (var d in Model.Doctors)
+            {
+              <option value="@d.Id" selected="@(Model.DoctorId == d.Id ? "selected" : null)">@d.Name</option>
+            }
+          </select>
+        </div>
+        @if ((Model.Doctors?.Count ?? 0) == 0)
+        {
+          <div class="col-12">
+            <div class="text-danger small booking-no-doctor">Không có bác sĩ phù hợp cho khung giờ đã chọn.</div>
+          </div>
+        }
+
+        <div class="col-12">
+          <label class="form-label booking-label">Ghi chú</label>
+          <textarea class="form-control booking-note" name="Note" placeholder="Triệu chứng hoặc yêu cầu thêm...">@Model.Note</textarea>
+        </div>
+      </div>
+
+      <div class="booking-actions mt-4">
+        <a class="btn btn-outline-secondary" href="/">Quay lại</a>
+        <button class="btn btn-success">Xác nhận</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const branch = document.getElementById("branchSelect");
+    const service = document.getElementById("serviceSelect");
+    const doctor = document.getElementById("doctorSelect");
+    const pet = document.getElementById("petSelect");
+    const date = document.getElementById("dateInput");
+    const slot = document.getElementById("slotSelect");
+
+    const redirect = () => {
+      const params = new URLSearchParams();
+      if (branch && branch.value) params.set("branchId", branch.value);
+      if (service && service.value) params.set("serviceId", service.value);
+      if (doctor && doctor.value) params.set("doctorId", doctor.value);
+      if (pet && pet.value) params.set("petId", pet.value);
+      if (slot && slot.value) params.set("slot", slot.value);
+      if (date && date.value) params.set("date", date.value);
+      
+      // Preserve selected pending package if any
+      const pendingRadios = document.querySelectorAll('input[name="SelectedPendingPackageId"]:checked');
+      if (pendingRadios.length > 0 && pendingRadios[0].value) {
+        params.set("selectedPendingPackageId", pendingRadios[0].value);
+      }
+
+      const target = "/booking" + (params.toString() ? "?" + params.toString() : "");
+      window.location.assign(target);
+    };
+
+    // Handle pending package selection
+    const pendingPackages = document.querySelectorAll('input[name="SelectedPendingPackageId"]');
+    pendingPackages.forEach(radio => {
+      let wasChecked = radio.checked;
+      radio.addEventListener("mousedown", () => { wasChecked = radio.checked; });
+      radio.addEventListener("click", () => {
+        setTimeout(() => {
+          const checked = document.querySelector('input[name="SelectedPendingPackageId"]:checked');
+          if (!checked && wasChecked) {
+            // toggled off → redirect without selectedPendingPackageId
+            redirect();
+          }
+        }, 0);
+      });
+      radio.addEventListener("change", (e) => {
+        const checked = document.querySelector('input[name="SelectedPendingPackageId"]:checked');
+        if (checked) {
+          const selectedPackageId = checked.value;
+          const selectedServiceId = selectedPackageId.split('|')[0] || selectedPackageId;
+          if (service && selectedServiceId) service.value = selectedServiceId;
+        }
+        redirect();
+      });
+    });
+
+    if (branch) branch.addEventListener("change", redirect);
+    if (service) service.addEventListener("change", redirect);
+    if (slot) slot.addEventListener("change", redirect);
+    if (doctor) doctor.addEventListener("change", redirect);
+    if (date) date.addEventListener("change", redirect);
+    if (pet) pet.addEventListener("change", redirect);
+  });
+</script>

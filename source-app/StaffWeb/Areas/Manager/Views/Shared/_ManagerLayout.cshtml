@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PetCareX Manager</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="manager-body">
+    <header class="manager-header">
+        <div class="manager-brand">
+            <a class="manager-logo" asp-area="Manager" asp-controller="Home" asp-action="Index">PetCareX</a>
+            <div>
+                <div class="manager-title">Manager Desk</div>
+                <div class="manager-subtitle">Báo cáo và thống kê chi nhánh</div>
+            </div>
+        </div>
+        <nav class="manager-nav">
+            <a class="manager-tab" asp-area="Manager" asp-controller="Home" asp-action="Index">Tổng quan</a>
+            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Revenue">Doanh thu</a>
+            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Doctors">Bác sĩ</a>
+            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Visits">Lượt khám</a>
+            <a class="manager-tab" asp-area="Manager" asp-controller="Reports" asp-action="Products">Sản phẩm</a>
+        </nav>
+        <div class="manager-user">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <span>@User.Identity?.Name</span>
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-secondary">Đăng xuất</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+            }
+        </div>
+    </header>
+    <main class="manager-main">
+        @RenderBody()
+    </main>
+</body>
+</html>

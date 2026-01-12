@@ -1,0 +1,374 @@
+﻿@model KhachHangWeb.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "Trang cá nhân";
+}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;500;700&display=swap">
+<style>
+  .profile-shell { font-family: "Archivo", sans-serif; background: linear-gradient(130deg, #cfd4ff 0%, #e7ddff 40%, #f6f4ff 100%); padding: 24px; border-radius: 18px; }
+  .profile-title { font-size: 26px; font-weight: 700; color: #2a2cc5; text-align: center; margin-bottom: 18px; letter-spacing: 1px; }
+  .profile-card { background: #ffffff; border-radius: 14px; padding: 18px; box-shadow: 0 10px 24px rgba(46, 42, 126, 0.12); }
+  .profile-label { font-weight: 600; color: #3d3d66; }
+  .pet-table th { background: #e6edff; }
+  .pet-table td { vertical-align: middle; }
+  .badge-soft { background: #eef0ff; color: #2d2f7a; border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+  .btn-sm { padding: 4px 8px; font-size: 12px; margin-right: 4px; }
+  .modal-edit { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-edit.show { display: flex; }
+  .modal-content { background: white; border-radius: 14px; padding: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+  .modal-header { font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #2a2cc5; }
+  .form-group { margin-bottom: 12px; }
+  .form-group label { display: block; font-weight: 600; margin-bottom: 4px; color: #3d3d66; }
+  .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .btn-modal { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+  .btn-save { background: #4CAF50; color: white; }
+  .btn-save:hover { background: #45a049; }
+  .btn-cancel { background: #f44336; color: white; }
+  .btn-cancel:hover { background: #da190b; }
+</style>
+
+<div class="profile-shell">
+  <div class="profile-title">TRANG THÔNG TIN CÁ NHÂN</div>
+  <div class="profile-card mb-4 ui-fade">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label profile-label">Họ và tên</label>
+        <input class="form-control" value="@Model.Customer.HoTen" readonly />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label profile-label">Email</label>
+        <input class="form-control" value="@Model.Customer.Email" readonly />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label profile-label">Gioi tinh</label>
+        <input class="form-control" value="@Model.Customer.GioiTinh" readonly />
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label profile-label">SDT</label>
+        <input class="form-control" value="@Model.Customer.Sdt" readonly />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label profile-label">CCCD</label>
+        <input class="form-control" value="@Model.Customer.Cccd" readonly />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label profile-label">Ngay sinh</label>
+        <input class="form-control" value="@(Model.Customer.NgaySinh.HasValue ? Model.Customer.NgaySinh.Value.ToString("dd/MM/yyyy") : "")" readonly />
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label profile-label">Tên đăng nhập</label>
+        <input class="form-control" value="@Model.Customer.TenDangNhap" readonly />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label profile-label">Cấp bậc</label>
+        <input class="form-control" value="@Model.Customer.CapBac" readonly />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label profile-label">Điểm tích lũy</label>
+        <input class="form-control" value="@Model.Customer.DiemTichLuy" readonly />
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-card ui-fade">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="profile-label">THÚ CƯNG ĐANG SỞ HỮU</div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <div class="badge-soft">Tổng: @Model.Pets.Count</div>
+        <button class="btn btn-sm btn-success" onclick="openAddModal()" title="Thêm thú cưng mới">+ Thêm thú cưng</button>
+      </div>
+    </div>
+    @if (!Model.Pets.Any())
+    {
+      <p>Chưa có thú cưng.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table pet-table">
+          <thead>
+            <tr>
+              <th>Mã thú cưng</th>
+              <th>Tên</th>
+              <th>Loại</th>
+              <th>Giống</th>
+              <th>Ngày sinh</th>
+              <th>Giới tính</th>
+              <th>Tình trạng</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="petTableBody">
+          @foreach (var p in Model.Pets)
+          {
+            <tr id="pet-row-@p.mathucung">
+              <td>@p.mathucung</td>
+              <td>@p.tenthucung</td>
+              <td>@p.loai</td>
+              <td>@p.giong</td>
+              <td>@(p.ngaysinh.HasValue ? p.ngaysinh.Value.ToString("dd/MM/yyyy") : "")</td>
+              <td>@p.gioitinh</td>
+              <td>@p.tinhtrangsuckhoe</td>
+              <td>
+                <button class="btn btn-sm btn-primary" onclick="openEditModal('@p.mathucung')" title="Sửa thông tin">✎ Sửa</button>
+                <button class="btn btn-sm btn-danger" onclick="deletePet('@p.mathucung')" title="Xóa thú cưng">✕ Xóa</button>
+              </td>
+            </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal Edit Pet -->
+<div id="editPetModal" class="modal-edit">
+  <div class="modal-content">
+    <div class="modal-header">Chỉnh sửa thông tin thú cưng</div>
+    <form id="editPetForm">
+      <input type="hidden" id="petId" name="petId" />
+      
+      <div class="form-group">
+        <label for="tenthucung">Tên thú cưng <span style="color:red;">*</span></label>
+        <input type="text" id="tenthucung" name="tenthucung" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="loai">Loại <span style="color:red;">*</span></label>
+        <input type="text" id="loai" name="loai" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="giong">Giống <span style="color:red;">*</span></label>
+        <input type="text" id="giong" name="giong" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="gioitinh">Giới tính</label>
+        <input type="text" id="gioitinh" name="gioitinh" />
+      </div>
+      
+      <div class="form-group">
+        <label for="ngaysinh">Ngày sinh</label>
+        <input type="date" id="ngaysinh" name="ngaysinh" />
+      </div>
+      
+      <div class="form-group">
+        <label for="tinhtrangsuckhoe">Tình trạng sức khỏe</label>
+        <input type="text" id="tinhtrangsuckhoe" name="tinhtrangsuckhoe" />
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-modal btn-save" onclick="updatePet()">Lưu</button>
+        <button type="button" class="btn-modal btn-cancel" onclick="closeEditModal()">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Add Pet -->
+<div id="addPetModal" class="modal-edit">
+  <div class="modal-content">
+    <div class="modal-header">Thêm thú cưng mới</div>
+    <form id="addPetForm">
+      <div class="form-group">
+        <label for="add_tenthucung">Tên thú cưng <span style="color:red;">*</span></label>
+        <input type="text" id="add_tenthucung" name="tenthucung" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="add_loai">Loại <span style="color:red;">*</span></label>
+        <input type="text" id="add_loai" name="loai" required placeholder="Chó, Mèo, ..." />
+      </div>
+      
+      <div class="form-group">
+        <label for="add_giong">Giống <span style="color:red;">*</span></label>
+        <input type="text" id="add_giong" name="giong" required placeholder="Alaska, Corgi, ..." />
+      </div>
+      
+      <div class="form-group">
+        <label for="add_gioitinh">Giới tính</label>
+        <input type="text" id="add_gioitinh" name="gioitinh" placeholder="Đực, Cái" />
+      </div>
+      
+      <div class="form-group">
+        <label for="add_ngaysinh">Ngày sinh</label>
+        <input type="date" id="add_ngaysinh" name="ngaysinh" />
+      </div>
+      
+      <div class="form-group">
+        <label for="add_tinhtrangsuckhoe">Tình trạng sức khỏe</label>
+        <input type="text" id="add_tinhtrangsuckhoe" name="tinhtrangsuckhoe" placeholder="Khỏe mạnh, Bình thường, ..." />
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-modal btn-save" onclick="createPet()">Lưu</button>
+        <button type="button" class="btn-modal btn-cancel" onclick="closeAddModal()">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openAddModal() {
+    document.getElementById('addPetForm').reset();
+    document.getElementById('addPetModal').classList.add('show');
+  }
+
+  function closeAddModal() {
+    document.getElementById('addPetModal').classList.remove('show');
+  }
+
+  function createPet() {
+    const tenthucung = document.getElementById('add_tenthucung').value;
+    const loai = document.getElementById('add_loai').value;
+    const giong = document.getElementById('add_giong').value;
+    const gioitinh = document.getElementById('add_gioitinh').value;
+    const ngaysinh = document.getElementById('add_ngaysinh').value;
+    const tinhtrangsuckhoe = document.getElementById('add_tinhtrangsuckhoe').value;
+
+    if (!tenthucung || !loai || !giong) {
+      alert('Vui lòng nhập đầy đủ thông tin bắt buộc (Tên, Loại, Giống).');
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.append('tenthucung', tenthucung);
+    params.append('loai', loai);
+    params.append('giong', giong);
+    params.append('gioitinh', gioitinh);
+    params.append('ngaysinh', ngaysinh);
+    params.append('tinhtrangsuckhoe', tinhtrangsuckhoe);
+
+    fetch('/Account/CreatePet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        closeAddModal();
+        location.reload();
+      } else {
+        alert('Lỗi: ' + data.message);
+      }
+    })
+    .catch(err => alert('Lỗi: ' + err));
+  }
+
+  function openEditModal(petId) {
+    fetch(`/Account/EditPet?petId=${petId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const pet = data.pet;
+          document.getElementById('petId').value = pet.mathucung;
+          document.getElementById('tenthucung').value = pet.tenthucung;
+          document.getElementById('loai').value = pet.loai;
+          document.getElementById('giong').value = pet.giong;
+          document.getElementById('gioitinh').value = pet.gioitinh;
+          document.getElementById('ngaysinh').value = pet.ngaysinh;
+          document.getElementById('tinhtrangsuckhoe').value = pet.tinhtrangsuckhoe;
+          document.getElementById('editPetModal').classList.add('show');
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(err => alert('Lỗi: ' + err));
+  }
+
+  function closeEditModal() {
+    document.getElementById('editPetModal').classList.remove('show');
+  }
+
+  function updatePet() {
+    const petId = document.getElementById('petId').value;
+    const tenthucung = document.getElementById('tenthucung').value;
+    const loai = document.getElementById('loai').value;
+    const giong = document.getElementById('giong').value;
+    const gioitinh = document.getElementById('gioitinh').value;
+    const ngaysinh = document.getElementById('ngaysinh').value;
+    const tinhtrangsuckhoe = document.getElementById('tinhtrangsuckhoe').value;
+
+    const params = new URLSearchParams();
+    params.append('petId', petId);
+    params.append('tenthucung', tenthucung);
+    params.append('loai', loai);
+    params.append('giong', giong);
+    params.append('gioitinh', gioitinh);
+    params.append('ngaysinh', ngaysinh);
+    params.append('tinhtrangsuckhoe', tinhtrangsuckhoe);
+
+    fetch('/Account/UpdatePet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        closeEditModal();
+        location.reload();
+      } else {
+        alert('Lỗi: ' + data.message);
+      }
+    })
+    .catch(err => alert('Lỗi: ' + err));
+  }
+
+  function deletePet(petId) {
+    if (!confirm('Bạn có chắc muốn xóa thú cưng này?')) return;
+
+    const params = new URLSearchParams();
+    params.append('petId', petId);
+
+    fetch('/Account/DeletePet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        const row = document.getElementById('pet-row-' + petId);
+        if (row) {
+          row.remove();
+        }
+        // Refresh nếu không còn thú cưng
+        const rowCount = document.querySelectorAll('#petTableBody tr').length;
+        if (rowCount === 0) {
+          location.reload();
+        }
+      } else {
+        alert('Lỗi: ' + data.message);
+      }
+    })
+    .catch(err => alert('Lỗi: ' + err));
+  }
+
+  // Đóng modal khi click ngoài
+  document.getElementById('editPetModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeEditModal();
+    }
+  });
+
+  document.getElementById('addPetModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeAddModal();
+    }
+  });
+</script>

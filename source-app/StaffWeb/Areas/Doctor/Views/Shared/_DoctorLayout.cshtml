@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PetCareX Doctor</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="doctor-body">
+    <header class="doctor-header">
+        <div class="doctor-brand">
+            <a class="doctor-logo" asp-area="Doctor" asp-controller="Home" asp-action="Index">PetCareX</a>
+            <div>
+                <div class="doctor-title">Doctor Desk</div>
+                <div class="doctor-subtitle">Hệ thống bác sĩ thú y</div>
+            </div>
+        </div>
+        <nav class="doctor-nav">
+            <a class="doctor-tab" href="/Doctor/Lookup/Index">Tra cứu</a>
+            <a class="doctor-tab" href="/Doctor/Lookup/DoctorHistory">Lịch sử khám</a>
+            <a class="doctor-tab" href="/Doctor/Appointments/Index">Lịch khám</a>
+            <a class="doctor-tab" href="/Doctor/Prescription/Create">Kê toa thuốc</a>
+        </nav>
+        <div class="doctor-user">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <span>@User.Identity?.Name</span>
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-secondary">Đăng xuất</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+            }
+        </div>
+    </header>
+    <main class="doctor-main">
+        @RenderBody()
+    </main>
+</body>
+</html>

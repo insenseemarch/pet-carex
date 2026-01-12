@@ -1,0 +1,65 @@
+@model StaffWeb.Models.ProcessVaccinationViewModel
+@{
+    ViewData["Title"] = "Xác nhận tiêm";
+}
+
+<section class="card">
+    <h1 class="page-title">Xác nhận tiêm phòng</h1>
+    <p class="page-subtitle">Xác nhận thông tin và hoàn tất tiêm phòng cho thú cưng.</p>
+
+    <form method="post" class="form-vertical">
+        <input type="hidden" asp-for="Stt" />
+        <input type="hidden" asp-for="PetId" />
+        <input type="hidden" asp-for="ServiceId" />
+
+        <div class="card" style="margin-bottom: 16px;">
+            <h3>Thông tin lịch tiêm</h3>
+            
+            <div class="form-row">
+                <div>
+                    <label>Thú cưng</label>
+                    <input type="text" value="@Model.PetName (@Model.PetId)" disabled />
+                </div>
+                <div>
+                    <label>Dịch vụ</label>
+                    <input type="text" value="@Model.ServiceName" disabled />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <label>Ngày tiêm</label>
+                    <input type="text" value="@Model.VisitDate.ToString("dd/MM/yyyy HH:mm")" disabled />
+                </div>
+                <div>
+                    <label>Trạng thái hiện tại</label>
+                    <input type="text" value="@Model.Status" disabled />
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 16px;">
+            <h3>Chọn vaccine để tiêm</h3>
+            
+            <div class="form-row">
+                <div>
+                    <label>Vaccine <span class="required">*</span></label>
+                    <select asp-for="SelectedVaccineId" required>
+                        <option value="">-- Chọn vaccine --</option>
+                        @foreach (var vx in Model.AvailableVaccines)
+                        {
+                            <option value="@vx.MaVacxin">@vx.TenVacxin (@vx.MaVacxin)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn">Xác nhận tiêm</button>
+            <a class="btn btn-secondary" asp-action="Index" asp-controller="Appointments">Hủy</a>
+        </div>
+
+        <div asp-validation-summary="All" class="text-danger"></div>
+    </form>
+</section>

@@ -1,0 +1,61 @@
+@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>PetCareX</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;700&display=swap" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.ui.css" />
+    <style> .navbar-brand { font-weight:700; color:var(--primary); } .nav-link{ font-weight:500; } </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="/">PetCareX</a>
+    <div class="collapse navbar-collapse show">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/shop">Mua hàng</a></li>
+        <li class="nav-item"><a class="nav-link" href="/cart">Giỏ hàng</a></li>
+        <li class="nav-item"><a class="nav-link" href="/booking">Đặt lịch</a></li>
+        <li class="nav-item"><a class="nav-link" href="/history">Lịch sử</a></li>
+      </ul>
+      <ul class="navbar-nav">
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            var displayName = User.FindFirst("HoTen")?.Value;
+            if (string.IsNullOrWhiteSpace(displayName))
+            {
+                displayName = User.Identity!.Name;
+            }
+            <li class="nav-item"><a class="nav-link" href="/account/profile">Xin chào @displayName</a></li>
+            <li class="nav-item">
+                <form method="post" action="/account/logout" class="d-inline">
+                    <button class="btn btn-sm btn-light">Đăng xuất</button>
+                </form>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item"><a class="nav-link" href="/account/login">Đăng nhập</a></li>
+            <li class="nav-item"><a class="nav-link" href="/account/register">Đăng ký</a></li>
+        }
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container mt-4 ui-fade">
+  @RenderBody()
+</div>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.ui-fade').forEach(el => io.observe(el));
+  });
+</script>
+</body>
+</html>

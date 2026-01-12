@@ -1,0 +1,219 @@
+@model StaffWeb.Models.DirectorProductViewModel
+@{
+    ViewData["Title"] = "Doanh thu sản phẩm";
+    
+    // Calculate pie chart data
+    var totalCategoryRevenue = Model.Categories.Sum(c => c.Value);
+    var categoryAngles = new List<(string Name, decimal Value, double Angle, double Start)>();
+    double currentAngle = 0;
+    foreach (var cat in Model.Categories)
+    {
+        var angle = totalCategoryRevenue > 0 ? (double)(cat.Value / totalCategoryRevenue) * 360 : 0;
+        categoryAngles.Add((cat.Name, cat.Value, angle, currentAngle));
+        currentAngle += angle;
+    }
+}
+
+<style>
+    .chart-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1000;
+        display: none;
+        white-space: nowrap;
+    }
+    .table tbody tr {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        background-color: #f8f9fa;
+    }
+    .pie-chart {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        transition: transform 0.2s ease;
+    }
+    .pie-chart:hover {
+        transform: scale(1.05);
+    }
+    .chart-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-left: 30px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .legend-item:hover {
+        transform: scale(1.05);
+    }
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+    }
+    .chart-container {
+        display: flex;
+        align-items: center;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+
+<section class="card">
+    <h1 class="page-title">Doanh thu sản phẩm</h1>
+    <p class="page-subtitle">Thống kê theo chi nhánh và toàn hệ thống.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Từ ngày</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Đến ngày</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div>
+                <label>Chi nhánh</label>
+                <select name="branchId">
+                    <option value="">Tất cả chi nhánh</option>
+                    @foreach (var branch in Model.Branches)
+                    {
+                        if (branch.Id == Model.BranchId)
+                        {
+                            <option value="@branch.Id" selected>@branch.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@branch.Id">@branch.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label>Top</label>
+                <input type="number" name="top" min="1" max="50" value="@Model.Top" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Xem báo cáo</button>
+    </form>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.BranchId) && Model.BranchRevenue.HasValue)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu sản phẩm - @Model.BranchName</h3>
+        <p><strong>Tổng doanh thu:</strong> @Model.BranchRevenue.Value.ToString("N0")</p>
+    </section>
+}
+else if (string.IsNullOrWhiteSpace(Model.BranchId) && Model.SystemRevenue.HasValue)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Doanh thu sản phẩm toàn hệ thống</h3>
+        <p><strong>Tổng doanh thu:</strong> @Model.SystemRevenue.Value.ToString("N0")</p>
+    </section>
+}
+
+@if (Model.Categories.Count > 0)
+{
+    var colors = new[] { "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899" };
+    <section class="card" style="margin-top: 20px;">
+        <h3>Cơ cấu doanh thu theo loại sản phẩm</h3>
+        <div class="chart-container">
+            @{
+                var conicGradient = "conic-gradient(from 0deg";
+                foreach (var (i, cat) in categoryAngles.Select((x, i) => (i, x)))
+                {
+                    var color = colors[i % colors.Length];
+                    var endAngle = cat.Start + cat.Angle;
+                    conicGradient += $", {color} {cat.Start}deg {endAngle}deg";
+                }
+                conicGradient += ")";
+            }
+            <div class="pie-chart" style="background: @conicGradient;" data-label="Biểu đồ cơ cấu doanh thu" data-value="@totalCategoryRevenue.ToString("N0")"></div>
+            <div class="chart-legend">
+                @foreach (var (i, cat) in Model.Categories.Select((x, i) => (i, x)))
+                {
+                    var color = colors[i % colors.Length];
+                    var percentage = totalCategoryRevenue > 0 ? (cat.Value / totalCategoryRevenue * 100).ToString("F1") : "0.0";
+                    <div class="legend-item" data-label="@cat.Name" data-value="@cat.Value.ToString("N0") (@percentage%)">
+                        <div class="legend-color" style="background: @color;"></div>
+                        <span>@cat.Name: @cat.Value.ToString("N0") (@percentage%)</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (Model.Items.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Sản phẩm bán chạy</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Mã SP</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr data-value="@item.tongdoanhthu.ToString("N0")" data-label="@item.tensp (SL: @item.tongsoluong)">
+                        <td>@item.masp</td>
+                        <td>@item.tensp</td>
+                        <td>@item.tongsoluong</td>
+                        <td>@item.tongdoanhthu.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@if (Model.FromDate.HasValue && Model.ToDate.HasValue && Model.Items.Count == 0)
+{
+    <div class="alert" style="margin-top: 16px;">Không có dữ liệu trong khoảng ngày này.</div>
+}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chartTooltip');
+        const elements = document.querySelectorAll('[data-value][data-label]');
+        
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const value = this.getAttribute('data-value');
+                const label = this.getAttribute('data-label');
+                tooltip.textContent = label + ': ' + value;
+                tooltip.style.display = 'block';
+            });
+            
+            el.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+        });
+    });
+</script>

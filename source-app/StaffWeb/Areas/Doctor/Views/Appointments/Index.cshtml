@@ -1,0 +1,143 @@
+@model StaffWeb.Models.DoctorAppointmentViewModel
+@{
+    ViewData["Title"] = "Lịch khám hôm nay";
+}
+
+<section class="card">
+    <h1 class="page-title">Lịch khám hôm nay</h1>
+    <p class="page-subtitle">Chọn lịch khám để bắt đầu khám bệnh hoặc tiêm phòng.</p>
+
+    <form method="get" class="form-row" style="margin-bottom: 16px;">
+        <div>
+            <label>Ngày</label>
+            <input name="date" type="date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+        </div>
+        <div style="align-self:end;">
+            <button type="submit" class="btn btn-secondary">Xem lịch</button>
+        </div>
+    </form>
+
+    <div class="card" style="margin-bottom: 16px;">
+        <h3>Đang chờ khám/tiêm</h3>
+        @if (Model.Pending.Count == 0)
+        {
+            <div class="muted">Hôm nay không có lịch đang chờ.</div>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Giờ</th>
+                        <th>Thú cưng</th>
+                        <th>Loại</th>
+                        <th>Dịch vụ</th>
+                        <th>Ghi chú</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.Pending)
+                {
+                    var isVaccine = item.ServiceType == "Tiêm phòng";
+                    <tr>
+                        <td>@item.VisitTime.ToString("HH:mm")</td>
+                        <td>@item.PetName (@item.PetId)</td>
+                        <td>
+                            @if (isVaccine)
+                            {
+                                <span class="badge bg-info">Tiêm phòng</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">Khám bệnh</span>
+                            }
+                        </td>
+                        <td>@item.ServiceName</td>
+                        <td>@item.Notes</td>
+                        <td>
+                            @if (isVaccine)
+                            {
+                                <a class="btn"
+                                   asp-area="Doctor"
+                                   asp-controller="Vaccination"
+                                   asp-action="ProcessAppointment"
+                                   asp-route-petId="@item.PetId"
+                                   asp-route-serviceId="@item.ServiceId"
+                                   asp-route-visitTicks="@item.VisitTime.Ticks">
+                                    Xác nhận tiêm
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="btn"
+                                   asp-area="Doctor"
+                                   asp-controller="Records"
+                                   asp-action="FromAppointment"
+                                   asp-route-petId="@item.PetId"
+                                   asp-route-serviceId="@item.ServiceId"
+                                   asp-route-visitTicks="@item.VisitTime.Ticks">
+                                    Bắt đầu khám
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="card">
+        <h3>Tất cả lịch khám trong ngày</h3>
+        @if (Model.All.Count == 0)
+        {
+            <div class="muted">Hôm nay chưa có lịch khám nào.</div>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Giờ</th>
+                        <th>Thú cưng</th>
+                        <th>Loại</th>
+                        <th>Dịch vụ</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.All)
+                {
+                    var isVaccine = item.ServiceType == "Tiêm phòng";
+                    <tr>
+                        <td>@item.VisitTime.ToString("HH:mm")</td>
+                        <td>@item.PetName (@item.PetId)</td>
+                        <td>
+                            @if (isVaccine)
+                            {
+                                <span class="badge bg-info">Tiêm phòng</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">Khám bệnh</span>
+                            }
+                        </td>
+                        <td>@item.ServiceName</td>
+                        <td>
+                            @if (item.IsPending)
+                            {
+                                <span class="badge bg-warning">Đang chờ</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Đã xử lý</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</section>

@@ -1,0 +1,58 @@
+@model StaffWeb.Models.DoctorDashboardViewModel
+@{
+    ViewData["Title"] = "Bác sĩ";
+}
+
+<section class="doctor-dashboard">
+    <div class="doctor-hero">
+        <h1>Chào bác sĩ, bắt đầu ca trực mới</h1>
+        <p>Tra cứu nhanh hồ sơ, kê toa và quản lý lịch khám trong một giao diện thống nhất.</p>
+        <div class="doctor-actions">
+            <a class="btn" href="/Doctor/Appointments/Index">Lịch khám</a>
+            <a class="btn btn-secondary" href="/Doctor/Lookup/Index">Tra cứu</a>
+        </div>
+    </div>
+
+    <div class="doctor-info-grid">
+        <div class="doctor-info-card">
+            <h3>Thông tin bác sĩ</h3>
+            <p><strong>Họ tên:</strong> @(Model.Doctor?.hoten ?? "Đang cập nhật")</p>
+            <p><strong>Mã NV:</strong> @(Model.Doctor?.manv ?? "-")</p>
+            <p><strong>Loại NV:</strong> @(Model.Doctor?.loainv ?? "-")</p>
+        </div>
+        <div class="doctor-info-card">
+            <h3>Chi nhánh</h3>
+            <p><strong>Tên:</strong> @(Model.Branch?.tencn ?? "Đang cập nhật")</p>
+            <p><strong>Địa chỉ:</strong> @(Model.Branch?.diachi ?? "-")</p>
+            <p><strong>SĐT:</strong> @(Model.Branch?.sdt ?? "-")</p>
+        </div>
+        <div class="doctor-info-card">
+            <h3>Ca trực</h3>
+            <p><strong>Ngày:</strong> @DateTime.Now.ToString("dd/MM/yyyy")</p>
+            <p><strong>Giờ:</strong> @DateTime.Now.ToString("HH:mm")</p>
+            <p><strong>Trạng thái:</strong> Đang làm việc</p>
+        </div>
+    </div>
+
+    @if (Model.ShowSearchBoxes)
+    {
+        <div class="doctor-cards">
+            <a class="doctor-card" href="/Doctor/Lookup/Pet">
+                <h3>Thông tin</h3>
+                <p>Tra cứu hồ sơ thú cưng hoặc khách hàng</p>
+            </a>
+            <a class="doctor-card" href="/Doctor/Medicines/Index">
+                <h3>Tra cứu thuốc</h3>
+                <p>Danh mục thuốc và liều lượng</p>
+            </a>
+            <a class="doctor-card" href="/Doctor/Lookup/Vaccines">
+                <h3>Tra cứu vaccine</h3>
+                <p>Lịch tiêm và các loại vaccine</p>
+            </a>
+            <a class="doctor-card" href="/Doctor/Lookup/WorkSchedule">
+                <h3>Lịch làm việc</h3>
+                <p>Xem lịch trực bác sĩ</p>
+            </a>
+        </div>
+    }
+</section>

@@ -1,0 +1,91 @@
+@model StaffWeb.Models.PetLookupViewModel
+@{
+    ViewData["Title"] = "Tra cứu thú cưng";
+}
+
+<section class="card">
+    <h1 class="page-title">Tra cứu thú cưng</h1>
+    <p class="page-subtitle">Tra cứu theo mã thú cưng hoặc số điện thoại khách hàng.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Mã thú cưng</label>
+                <input name="petId" value="@Model.PetId" />
+            </div>
+            <div>
+                <label>Số điện thoại</label>
+                <input name="phone" value="@Model.Phone" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Tra cứu</button>
+    </form>
+</section>
+
+@if (Model.Pet == null && !string.IsNullOrWhiteSpace(Model.PetId))
+{
+    <div class="alert" style="margin-top: 16px;">Không tìm thấy thú cưng.</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Phone) && string.IsNullOrWhiteSpace(Model.CustomerId))
+{
+    <div class="alert" style="margin-top: 16px;">Đây là khách hàng mới, khách hàng chưa có thông tin.</div>
+}
+
+@if (Model.Pet != null)
+{
+    <section class="grid two" style="margin-top: 20px;">
+        <div class="card">
+            <h3>Thông tin thú cưng</h3>
+            <p><strong>Mã:</strong> @Model.Pet.mathucung</p>
+            <p><strong>Tên:</strong> @Model.Pet.tenthucung</p>
+            <p><strong>Loại:</strong> @Model.Pet.loai</p>
+            <p><strong>Giống:</strong> @Model.Pet.giong</p>
+        </div>
+        <div class="card">
+            <h3>Thông tin khách hàng</h3>
+            <p><strong>Mã KH:</strong> @Model.CustomerId</p>
+            <p><strong>Họ tên:</strong> @Model.CustomerName</p>
+            <p><strong>SĐT:</strong> @Model.CustomerPhone</p>
+        </div>
+    </section>
+}
+
+@if (Model.Pet == null && !string.IsNullOrWhiteSpace(Model.CustomerId))
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Thông tin khách hàng</h3>
+        <p><strong>Mã KH:</strong> @Model.CustomerId</p>
+        <p><strong>Họ tên:</strong> @Model.CustomerName</p>
+        <p><strong>SĐT:</strong> @Model.CustomerPhone</p>
+    </section>
+}
+
+@if (Model.PetsByCustomer.Count > 0)
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Thú cưng của khách</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Tên</th>
+                    <th>Loại</th>
+                    <th>Giống</th>
+                    <th>Ngày sinh</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pet in Model.PetsByCustomer)
+                {
+                    <tr>
+                        <td>@pet.mathucung</td>
+                        <td>@pet.tenthucung</td>
+                        <td>@pet.loai</td>
+                        <td>@pet.giong</td>
+                        <td>@(pet.ngaysinh?.ToString("dd/MM/yyyy") ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}

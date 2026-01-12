@@ -1,0 +1,160 @@
+@model StaffWeb.Models.PrescriptionViewModel
+@{
+    ViewData["Title"] = "Kê toa thuốc";
+}
+
+<section class="card">
+    <h1 class="page-title">Kê toa thuốc</h1>
+    <p class="page-subtitle">Chọn nhiều thuốc và nhập liều lượng tương ứng.</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert">@TempData["Success"]</div>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert">Kiểm tra lại thông tin bắt buộc.</div>
+        <div asp-validation-summary="All"></div>
+        <div class="alert" style="margin-top: 10px;">
+            @foreach (var entry in ViewData.ModelState)
+            {
+                foreach (var err in entry.Value!.Errors)
+                {
+                    <div>@err.ErrorMessage</div>
+                }
+            }
+        </div>
+    }
+
+    <form method="post">
+        <div class="form-row">
+            <div>
+                <label>Mã thú cung (tùy chọn)</label>
+                <input asp-for="PetId" />
+                <span asp-validation-for="PetId"></span>
+            </div>
+            <div>
+                <label>Tên toa</label>
+                <input asp-for="PrescriptionName" placeholder="Toa thuốc ABC" />
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 16px;">
+            <h3>Danh sách thuốc</h3>
+            <div id="medicine-rows">
+                @for (var i = 0; i < Model.Items.Count; i++)
+                {
+                    <div class="form-row medicine-row">
+                        <div>
+                            <label>Thuốc</label>
+                            <select name="Items[@i].MedicineId">
+                                <option value="">Chọn thuốc</option>
+                                @foreach (var sp in Model.Medicines)
+                                {
+                                    <option value="@sp.masp">@sp.tensp</option>
+                                }
+                            </select>
+                        </div>
+                        <div>
+                            <label>Số lượng</label>
+                            <input name="Items[@i].Quantity" type="number" min="1" />
+                        </div>
+                        <div>
+                            <label>Liều lượng</label>
+                            <input name="Items[@i].Dosage" placeholder="2 lần/ngày" />
+                        </div>
+                        <div>
+                            <label>Ghi chú</label>
+                            <input name="Items[@i].Note" placeholder="Uống sau ăn" />
+                        </div>
+                        <div style="align-self:end;">
+                            <button type="button" class="btn btn-secondary remove-row">Xóa</button>
+                        </div>
+                    </div>
+                }
+            </div>
+            <button type="button" class="btn btn-secondary" id="add-medicine">Thêm thuốc</button>
+        </div>
+
+        <div style="margin-top: 16px;">
+            <button type="submit" class="btn">Lưu toa</button>
+        </div>
+    </form>
+</section>
+
+<template id="medicine-template">
+    <div class="form-row medicine-row">
+        <div>
+            <label>Thuốc</label>
+            <select name="Items[__index__].MedicineId">
+                <option value="">Chọn thuốc</option>
+                @foreach (var sp in Model.Medicines)
+                {
+                    <option value="@sp.masp">@sp.tensp</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label>Số lượng</label>
+            <input name="Items[__index__].Quantity" type="number" min="1" />
+        </div>
+        <div>
+            <label>Liều lượng</label>
+            <input name="Items[__index__].Dosage" placeholder="2 lần/ngày" />
+        </div>
+        <div>
+            <label>Ghi chú</label>
+            <input name="Items[__index__].Note" placeholder="Uống sau ăn" />
+        </div>
+        <div style="align-self:end;">
+            <button type="button" class="btn btn-secondary remove-row">Xóa</button>
+        </div>
+    </div>
+</template>
+
+<script>
+    (function () {
+        var rows = document.getElementById("medicine-rows");
+        var addBtn = document.getElementById("add-medicine");
+        var template = document.getElementById("medicine-template");
+        var form = document.querySelector("form");
+
+        function nextIndex() {
+            return rows.querySelectorAll(".medicine-row").length;
+        }
+
+        function bindRemove(container) {
+            var btns = container.querySelectorAll(".remove-row");
+            btns.forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var row = btn.closest(".medicine-row");
+                    if (row) {
+                        row.remove();
+                    }
+                });
+            });
+        }
+
+        bindRemove(rows);
+
+        addBtn.addEventListener("click", function () {
+            var html = template.innerHTML.replaceAll("__index__", nextIndex());
+            var wrapper = document.createElement("div");
+            wrapper.innerHTML = html;
+            var row = wrapper.firstElementChild;
+            rows.appendChild(row);
+            bindRemove(row);
+        });
+
+        form.addEventListener("submit", function () {
+            var rowList = rows.querySelectorAll(".medicine-row");
+            rowList.forEach(function (row, idx) {
+                row.querySelectorAll("select, input").forEach(function (el) {
+                    var name = el.getAttribute("name");
+                    if (!name) return;
+                    el.setAttribute("name", name.replace(/Items\\[\\d+\\]/, "Items[" + idx + "]"));
+                });
+            });
+        });
+    })();
+</script>

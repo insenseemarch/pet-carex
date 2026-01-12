@@ -1,0 +1,47 @@
+@model KhachHangWeb.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap">
+<style>
+  .login-shell { font-family: "Space Grotesk", sans-serif; background: radial-gradient(circle at top, #00d1c1 0%, #00b9d6 45%, #00a6b2 100%); padding: 28px; border-radius: 18px; color: #033b3a; max-width: 1100px; margin: 0 auto; }
+  .login-card { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 26px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15); }
+  .login-title { font-size: 28px; font-weight: 700; color: #0b3b49; text-align: center; margin-bottom: 14px; }
+  .login-sub { text-align: center; color: #2a5f6a; margin-bottom: 22px; }
+  .login-form { max-width: 760px; margin: 0 auto; }
+  .login-grid { display: grid; grid-template-columns: repeat(2, minmax(240px, 1fr)); gap: 18px; }
+  .login-actions { display: flex; gap: 12px; justify-content: center; margin-top: 6px; }
+  .login-link { padding: 10px 18px; border-radius: 10px; border: 2px solid transparent; background: #ffffff; color: #0b6a67; font-weight: 600; }
+  .login-link:hover { border-color: #0b6a67; }
+  .login-full { grid-column: 1 / -1; }
+  @@media (max-width: 720px) {
+    .login-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="login-shell">
+  <div class="login-card">
+    <div class="login-title">Đăng nhập</div>
+    <div class="login-sub">Vui lòng nhập thông tin để tiếp tục.</div>
+
+    @Html.ValidationSummary()
+
+    <form method="post" class="login-form">
+      <div class="login-grid">
+        <div>
+          <label class="form-label">Tên đăng nhập *</label>
+          <input asp-for="UserName" class="form-control" />
+        </div>
+        <div>
+          <label class="form-label">Mật khẩu *</label>
+          <input asp-for="Password" class="form-control" type="password" />
+        </div>
+
+        <div class="login-actions login-full">
+        <a class="login-link" href="/account/register">Đăng ký</a>
+          <button class="btn btn-success px-4">Đăng nhập</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

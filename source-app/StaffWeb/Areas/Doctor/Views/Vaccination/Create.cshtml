@@ -1,0 +1,181 @@
+@model StaffWeb.Models.VaccinationRecordViewModel
+@{
+    ViewData["Title"] = "Cập nhật tiêm phòng";
+}
+
+<section class="card">
+    <h1 class="page-title">Cập nhật tiêm phòng</h1>
+    <p class="page-subtitle">Xác nhận hoàn thành các đợt tiêm phòng đã đặt lịch.</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">@string.Join(", ", ViewData.ModelState.Values.SelectMany(x => x.Errors.Select(e => e.ErrorMessage)))</div>
+    }
+
+    <form method="post">
+        <div class="form-row">
+            <div>
+                <label>Mã thú cưng</label>
+                <input asp-for="PetId" placeholder="VD: TC001" />
+            </div>
+            <div class="align-end">
+                <label>&nbsp;</label>
+                <button type="submit" name="action" value="load" class="btn btn-primary">Tải lịch tiêm</button>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.PetId))
+        {
+            <div class="form-row">
+                <div class="full">
+                    <label>Đợt tiêm đang chờ</label>
+                    <input type="hidden" name="SelectedPendingServiceId" value="@Model.SelectedPendingServiceId" />
+                    
+                    @if (Model.PendingPackages.Count == 0)
+                    {
+                        <div class="alert alert-info">Thú cưng này không có đợt tiêm đang chờ.</div>
+                    }
+                    else
+                    {
+                        <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                            @foreach (var item in Model.PendingPackages)
+                            {
+                                <label style="display: block; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; margin: 0;">
+                                    <input type="radio"
+                                           name="SelectedPendingStt"
+                                           value="@item.Stt"
+                                           data-serviceid="@item.ServiceId"
+                                           @(Model.SelectedPendingStt == item.Stt ? "checked" : "") />
+                                    <strong>@item.ServiceName</strong> (@item.ServiceId)
+                                    <br/>
+                                    <small>
+                                        Vắc-xin: @item.VaccineName (@item.VaccineId) | 
+                                        Dự kiến: @item.PlannedDate?.ToString("dd/MM/yyyy") |
+                                        Trạng thái: @(string.IsNullOrWhiteSpace(item.Status) ? "Chờ tiêm" : item.Status)
+                                    </small>
+                                </label>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (Model.PendingPackages.Count > 0)
+            {
+                <div class="form-row">
+                    <div class="full">
+                        <button type="submit" class="btn btn-success">Xác nhận tiêm</button>
+                    </div>
+                </div>
+            }
+        }
+    </form>
+</section>
+
+<style>
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .form-row.full,
+    .form-row > div.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-row > div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-row > div.align-end {
+        justify-content: flex-end;
+    }
+
+    label:not(.btn) {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    input[type="text"],
+    select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .alert {
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+</style>
+
+<script>
+    (function () {
+        const updatePendingService = () => {
+            const selected = document.querySelector('input[name="SelectedPendingStt"]:checked');
+            const holder = document.querySelector('input[name="SelectedPendingServiceId"]');
+            if (holder) {
+                holder.value = selected?.dataset?.serviceid || "";
+            }
+        };
+        document.querySelectorAll('input[name="SelectedPendingStt"]').forEach(el => {
+            el.addEventListener('change', updatePendingService);
+        });
+        updatePendingService();
+    })();
+</script>

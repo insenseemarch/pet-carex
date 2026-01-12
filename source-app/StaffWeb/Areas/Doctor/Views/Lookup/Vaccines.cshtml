@@ -1,0 +1,87 @@
+@model StaffWeb.Models.VaccineLookupViewModel
+@{
+    ViewData["Title"] = "Tra cứu vaccine";
+}
+
+<section class="card">
+    <h1 class="page-title">Tra cứu vaccine</h1>
+    <p class="page-subtitle">Tìm vaccine và xem lịch tiêm theo thú cưng.</p>
+    <form method="get">
+        <div class="form-row">
+            <div>
+                <label>Từ khóa</label>
+                <input name="q" value="@Model.Query" placeholder="Tên vaccine hoặc loại" />
+            </div>
+            <div>
+                <label>Mã thú cưng (tùy chọn)</label>
+                <input name="petId" value="@Model.PetId" placeholder="Nhập để xem lịch tiêm" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Tra cứu</button>
+    </form>
+</section>
+
+<section class="card" style="margin-top: 20px;">
+    <h3>Danh sách vaccine</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên vaccine</th>
+                <th>Loại</th>
+                <th>Ngày SX</th>
+                <th>Hết hạn</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in Model.Vaccines)
+            {
+                <tr>
+                    <td>@v.mavacxin</td>
+                    <td>@v.tenvacxin</td>
+                    <td>@v.loaivacxin</td>
+                    <td>@(v.ngaysanxuat.ToString("dd/MM/yyyy"))</td>
+                    <td>@(v.ngayhethan.ToString("dd/MM/yyyy"))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Vaccines.Count == 0)
+    {
+        <p class="page-subtitle">Không có vaccine phù hợp.</p>
+    }
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.PetId))
+{
+    <section class="card" style="margin-top: 20px;">
+        <h3>Lịch tiêm của thú cưng @Model.PetId</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ngày tiêm</th>
+                    <th>Vaccine</th>
+                    <th>Dịch vụ</th>
+                    <th>Bác sĩ</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.PetVaccines)
+                {
+                    <tr>
+                        <td>@item.ngaytiem.ToString("dd/MM/yyyy")</td>
+                        <td>@item.mavacxinNavigation?.tenvacxin</td>
+                        <td>@item.madvNavigation?.madvNavigation?.tendv</td>
+                        <td>@item.mabsNavigation?.hoten</td>
+                        <td>@item.trangthai</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (Model.PetVaccines.Count == 0)
+        {
+            <p class="page-subtitle">Thú cưng này chưa có lịch tiêm.</p>
+        }
+    </section>
+}
